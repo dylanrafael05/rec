@@ -1,4 +1,14 @@
-grammar ReC;
+grammar Rec;
+
+options 
+{
+    language=CSharp;
+}
+
+@lexer::members
+{
+    public required Re.C.Vocabulary.Source Source { get; init; }
+}
 
 // Lexer rules //
 fragment LETTER : [_A-Za-z];
@@ -14,6 +24,7 @@ MLComment : '/*' .*? '*/' -> skip;
 
 Var      : 'var';
 Let      : 'let';
+End      : 'end';
 If       : 'if';
 Else     : 'else';
 While    : 'while';
@@ -36,6 +47,7 @@ Or       : 'or';
 True     : 'true';
 False    : 'false';
 Uninit   : 'uninit';
+As       : 'as';
 
 Identifier : LETTER+ (DIGIT | LETTER)*;
 
@@ -73,11 +85,20 @@ topLevelStatement
     | aliasDefine
     | letStmt
     | modStatement
+    | asStatement
     | useStatement
+    ;
+
+asStatement
+    : As typename Identifier* 
+        topLevelStatement*
+      End As
     ;
 
 modStatement
     : Mod (parts+=Identifier ('.' parts+=Identifier)*)
+        topLevelStatement*
+      (End Mod)?
     ;
 
 useStatement
@@ -168,7 +189,7 @@ typename
     : Identifier #TypenameSingle
     | '(' inner=typename ')' #TypenameSingle
     | parts+=Identifier ('.' parts+=Identifier)+ #TypenameMany
-    | base=typename '\'' (args+=typename)+ '\'' #TypenameGeneric
+    | '(' base=typename (args+=typename)+ ')' #TypenameGeneric
     | '*' base=typename #TypenamePointer
     | '[' base=typename (';' count=Integer)? ']' #TypenameArray
     | Fn '(' (args+=typenameFnArgs (',' args+=typenameFnArgs)*)? ')' ret=typename? #TypenameFn
@@ -209,16 +230,18 @@ structExprAssign
 
 dotComponent
     : Identifier
-    | 
+    | Identifier As typename
+    ;
 
 dotExpr
-    : dotExpr '.' Field=Identifier
+    : dotExpr '.' Field=dotComponent
     | termExpr
     ;
 
 termExpr
     : literal
     | Identifier
+    | Identifier As typename
     | '(' expr ')'
     | structExpr
     ;

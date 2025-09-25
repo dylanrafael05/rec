@@ -10,10 +10,10 @@ public class PointerType : Type
     public override string Name => $"*{Pointee.Name}";
     public override string FullName => $"*{Pointee.FullName}";
 
-    public override LLVMValueRef BuildDestructor(CodegenContext ctx)
+    public override LLVMValueRef BuildDestructor(ProgramContext ctx)
         => ctx.EmptyDestructor;
-    public override FieldDescriptor[] GetFields(CodegenContext ctx)
+    public override FieldDescriptor[] GetFields(ProgramContext ctx)
         => [];
-    protected override LLVMTypeRef BuildLLVMType(CodegenContext ctx)
+    protected override LLVMTypeRef BuildLLVMType(ProgramContext ctx)
         => LLVMTypeRef.CreatePointer(Pointee.GetLLVMType(ctx), 0);
 }

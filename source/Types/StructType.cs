@@ -11,7 +11,7 @@ public class StructType : NamedType
 
     public required Field[] Fields { get; init; }
 
-    protected override LLVMTypeRef BuildLLVMType(CodegenContext ctx)
+    protected override LLVMTypeRef BuildLLVMType(ProgramContext ctx)
     {
         var type = ctx.Context.CreateNamedStruct(FullName); /* TODO: mangling */
         type.StructSetBody([.. from f in Fields select f.Type.GetLLVMType(ctx)], false);
@@ -19,12 +19,12 @@ public class StructType : NamedType
         return type;
     }
 
-    public override LLVMValueRef BuildDestructor(CodegenContext ctx)
+    public override LLVMValueRef BuildDestructor(ProgramContext ctx)
     {
         throw new InvalidOperationException("TODO");
     }
 
-    public override FieldDescriptor[] GetFields(CodegenContext ctx)
+    public override FieldDescriptor[] GetFields(ProgramContext ctx)
     {
         var llvm = GetLLVMType(ctx);
 

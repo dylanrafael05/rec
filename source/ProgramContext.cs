@@ -4,7 +4,7 @@ using Re.C.Types;
 
 namespace Re.C;
 
-public class CodegenContext
+public class ProgramContext
 {
     public required LLVMContextRef Context { get; init; }
     public required LLVMModuleRef Module { get; init; }
@@ -17,7 +17,9 @@ public class CodegenContext
     public required Scope GlobalScope { get; init; }
     public required BuiltinTypes BuiltinTypes { get; init; }
 
-    public static CodegenContext Create(
+    public Scope? CurrentScope { get; set; }
+
+    public static ProgramContext Create(
         LLVMContextRef llvmContext,
         string moduleName)
     {
