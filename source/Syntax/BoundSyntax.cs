@@ -8,7 +8,17 @@ public class BoundSyntax
     public required SourceSpan Span { get; init; }
 }
 
-public class ModSyntax : BoundSyntax
+public class GroupSyntax : BoundSyntax
+{
+    public required List<BoundSyntax> Subsyntax { get; init; }
+}
+
+public class ModSyntax : GroupSyntax
+{
+    public required Scope Scope { get; init; }
+}
+
+public class UseSyntax : BoundSyntax
 {
     public required Scope Scope { get; init; }
 }

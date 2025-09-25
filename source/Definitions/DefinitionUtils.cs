@@ -13,7 +13,7 @@ public static class DefinitionUtils
             {
                 self.Parent.BuildFullName(builder);
 
-                if (self.Identifier.IsTemp)
+                if (self.Identifier.IsID)
                     return;
 
                 builder.Append("::");

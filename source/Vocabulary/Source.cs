@@ -1,7 +1,14 @@
 namespace Re.C.Vocabulary;
 
-public record Source(string Code);
+/// <summary>
+/// An object which represents a single unit of compilable
+/// code, given a name (typically the file the code is from).
+/// </summary>
+public record Source(string Name, string Code);
 
+/// <summary>
+/// A location within a source, stored in index and (line:column) formats.
+/// </summary>
 public record struct SourceLocation(int Line, int Column, int Index)
 {
     public static SourceLocation Min(SourceLocation lhs, SourceLocation rhs)
@@ -10,6 +17,10 @@ public record struct SourceLocation(int Line, int Column, int Index)
         => lhs.Index > rhs.Index ? lhs : rhs;
 }
 
+/// <summary>
+/// A span of locations within a source, as well as a reference
+/// to the source the span is a part of.
+/// </summary>
 public record struct SourceSpan(Source Source, SourceLocation Start, SourceLocation End)
 {
     public static SourceSpan Combine(params ReadOnlySpan<SourceSpan> spans)

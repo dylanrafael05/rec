@@ -3,12 +3,15 @@ using Re.C.Types.Descriptors;
 
 namespace Re.C.Types;
 
-public class PrimitiveType(LLVMTypeRef type) : NamedType
+public class ErrorType : Types.Type
 {
+    public override string Name => "<error>";
+    public override string FullName => "<error>";
+
     public override LLVMValueRef BuildDestructor(RecContext ctx)
-        => ctx.EmptyDestructor;
+        => throw new NotSupportedException();
     public override FieldDescriptor[] GetFields(RecContext ctx)
-        => [];
+        => throw new NotSupportedException();
     protected override LLVMTypeRef BuildLLVMType(RecContext ctx)
-        => type;
+        => throw new NotSupportedException();
 }

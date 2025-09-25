@@ -1,11 +1,12 @@
 namespace Re.C;
 
 /// <summary>
-/// 
+/// A wrapper type representing a unique identifier.
+/// Can either be a source-referencable name with optional associated type,
+/// or a compiler-internal numeric ID.
 /// </summary>
-/// <param name="Value"></param>
 public readonly record struct Identifier(
-    OneOf.OneOf<Identifier.Temporary, Identifier.Named> Value)
+    OneOf.OneOf<Identifier.OfID, Identifier.OfName> Value)
 {
     public override string ToString()
         => Value.Match(
@@ -21,18 +22,17 @@ public readonly record struct Identifier(
             }
         );
 
-    public static Identifier FromName(string name, Types.Type? associatedType = null)
-        => new(new Named(name, associatedType));
+    public static Identifier ID(ulong ID)
+        => new(new OfID(ID));
+    public static Identifier Name(string name, Types.Type? associatedType = null)
+        => new(new OfName(name, associatedType));
+    
+    public bool IsID => Value.Index is 0;
+    public bool IsName => Value.Index is 1;
 
-    public static Identifier FromTempID(ulong ID)
-        => new(new Temporary(ID));
+    public OfID AsID => Value.AsT0;
+    public OfName AsName => Value.AsT1;
 
-    public static implicit operator Identifier(string name)
-        => FromName(name);
-
-    public bool IsTemp => Value.Index is 0;
-    public bool IsNamed => Value.Index is 1;
-
-    public record struct Named(string Name, Types.Type? AssociatedType = null);
-    public record struct Temporary(ulong ID);
+    public record struct OfName(string Name, Types.Type? AssociatedType = null);
+    public record struct OfID(ulong ID);
 }

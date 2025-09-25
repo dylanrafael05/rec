@@ -48,6 +48,7 @@ True     : 'true';
 False    : 'false';
 Uninit   : 'uninit';
 As       : 'as';
+Cast     : 'cast';
 
 Identifier : LETTER+ (DIGIT | LETTER)*;
 
@@ -95,48 +96,51 @@ asStatement
       End As
     ;
 
+simpleScopedIdentifier
+    : (Parts+=Identifier ('.' Parts+=Identifier)*);
+
 modStatement
-    : Mod (parts+=Identifier ('.' parts+=Identifier)*)
-        topLevelStatement*
+    : Mod ModuleIdent=simpleScopedIdentifier
+        Substatements+=topLevelStatement*
       (End Mod)?
     ;
 
 useStatement
-    : Use (parts+=Identifier ('.' parts+=Identifier)*)
+    : Use Ident=simpleScopedIdentifier
     ;
 
 templateHeader
-    : Template (args+=Identifier)+
+    : Template (Args+=Identifier)+
     ;
 
 structFieldDefine
-    : name=Identifier type=typename
+    : Name=Identifier FieldType=typename
     ;
 
 structDefine
-    : templateHeader? Struct name=Identifier '{' 
-        (fields+=structFieldDefine ',' )*
-        (fields+=structFieldDefine ','?)?
+    : templateHeader? Struct Name=Identifier '{' 
+        (Fields+=structFieldDefine ',' )*
+        (Fields+=structFieldDefine ','?)?
       '}'
     ;
 
 fnArgumentDefine
-    : auto=Auto? Identifier typename
+    : Identifier typename
     ;
 
 fnDefine
-    : templateHeader? Fn name=Identifier 
-      '(' (args+=fnArgumentDefine (',' args+=fnArgumentDefine)*)? ')'
-      ret=typename?
+    : templateHeader? Fn Name=Identifier 
+      '(' (Args+=fnArgumentDefine (',' Args+=fnArgumentDefine)*)? ')'
+      Ret=typename?
       block
     ;
 
 aliasDefine
-    : Type name=Identifier '=' typename
+    : Type Name=Identifier '=' typename
     ;
 
 block
-    : '{' stmts+=statement* '}'
+    : '{' Statements+=statement* '}'
     ;
 
 statement
@@ -153,24 +157,24 @@ statement
     ;
 
 returnStmt
-    : Return value=expr;
+    : Return Value=expr;
 
 deferStmt
     : Defer block;
 
 ifStmt
-    : If cond=expr block ifTail?;
+    : If Cond=expr block ifTail?;
 
 ifTail
-    : Else end_block=block
-    | Else elif=ifStmt
+    : Else EndBlock=block
+    | Else Elif=ifStmt
     ;
     
 whileStmt
-    : While cond=expr block;
+    : While Cond=expr block;
 
 assignStmt
-    : target=expr '=' value=expr
+    : Target=expr '=' Value=expr
     ;
 
 letExpr 
@@ -178,21 +182,20 @@ letExpr
     | expr;
 
 letStmt
-    : spec=(Let|Var) target=Identifier type=typename? '=' value=letExpr
+    : spec=(Let|Var) Target=Identifier VarType=typename? '=' Value=letExpr
     ;
 
 typenameFnArgs
-    : Identifier? type=typename
+    : Identifier? ArgType=typename
     ;
 
 typename
-    : Identifier #TypenameSingle
-    | '(' inner=typename ')' #TypenameSingle
-    | parts+=Identifier ('.' parts+=Identifier)+ #TypenameMany
-    | '(' base=typename (args+=typename)+ ')' #TypenameGeneric
-    | '*' base=typename #TypenamePointer
-    | '[' base=typename (';' count=Integer)? ']' #TypenameArray
-    | Fn '(' (args+=typenameFnArgs (',' args+=typenameFnArgs)*)? ')' ret=typename? #TypenameFn
+    : Ident=simpleScopedIdentifier #TypenameSingle
+    | '(' Inner=typename ')' #TypenameWrapped
+    | '(' Base=typename (Args+=typename)+ ')' #TypenameGeneric
+    | '*' Base=typename #TypenamePointer
+    | '[' Base=typename (';' Count=Integer)? ']' #TypenameArray
+    | Fn '(' (Args+=typenameFnArgs (',' Args+=typenameFnArgs)*)? ')' Ret=typename? #TypenameFn
     ;
 
 expr
@@ -200,14 +203,18 @@ expr
     ;
 
 opExpr
-    : lhs=opExpr (And | Or) lhs=opExpr #LogicExpression
-    | lhs=opExpr ('==' | '!=' | '>' | '<' | '<=' | '>=') lhs=opExpr #CompareExpression
-    | lhs=opExpr ('*' | '/') lhs=opExpr #MulExpression
-    | rhs=opExpr ('&' | '|' | '>>' | '<<') rhs=opExpr #BitwiseExpression
-    | rhs=opExpr ('+' | '-') rhs=opExpr #AddExpression
-    | ('+' | '-' | '~' | Not) op=opExpr #UnaryExpression
-    | op=opExpr ('*' | '&') #MemoryExpression
-    | callExpr #CallExpression
+    : LHS=opExpr (And | Or) RHS=opExpr #LogicExpression
+    | LHS=opExpr ('==' | '!=' | '>' | '<' | '<=' | '>=') RHS=opExpr #CompareExpression
+    | LHS=opExpr ('*' | '/') RHS=opExpr #MulExpression
+    | LHS=opExpr ('&' | '|' | '>>' | '<<') RHS=opExpr #BitwiseExpression
+    | LHS=opExpr ('+' | '-') RHS=opExpr #AddExpression
+    | ('+' | '-' | '~' | Not) Operand=opExpr #UnaryExpression
+    | Operand=opExpr ('*' | '&') #MemoryExpression
+    | castExpr #CastExpression
+    ;
+
+castExpr
+    : Operand=callExpr Cast TargetType=typename
     ;
 
 explicitTemplateInstatiation
@@ -215,7 +222,7 @@ explicitTemplateInstatiation
     ;
 
 callExpr
-    : target=callExpr inst=explicitTemplateInstatiation? 
+    : Target=callExpr TemplateInst=explicitTemplateInstatiation? 
       '(' (args+=expr (',' args+=expr)*)? ')'
     | dotExpr
     ;

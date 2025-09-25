@@ -2,6 +2,8 @@ namespace Re.C.Types;
 
 public class BuiltinTypes
 {
+    public required Type Error { get; init; }
+    
     public required Type Bool { get; init; }
 
     public required Type I8 { get; init; }

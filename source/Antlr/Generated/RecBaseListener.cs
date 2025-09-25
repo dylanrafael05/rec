@@ -72,6 +72,18 @@ public partial class RecBaseListener : IRecListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitAsStatement([NotNull] RecParser.AsStatementContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="RecParser.simpleScopedIdentifier"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterSimpleScopedIdentifier([NotNull] RecParser.SimpleScopedIdentifierContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="RecParser.simpleScopedIdentifier"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitSimpleScopedIdentifier([NotNull] RecParser.SimpleScopedIdentifierContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="RecParser.modStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -314,19 +326,19 @@ public partial class RecBaseListener : IRecListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitTypenameSingle([NotNull] RecParser.TypenameSingleContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by the <c>TypenameMany</c>
+	/// Enter a parse tree produced by the <c>TypenameWrapped</c>
 	/// labeled alternative in <see cref="RecParser.typename"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterTypenameMany([NotNull] RecParser.TypenameManyContext context) { }
+	public virtual void EnterTypenameWrapped([NotNull] RecParser.TypenameWrappedContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by the <c>TypenameMany</c>
+	/// Exit a parse tree produced by the <c>TypenameWrapped</c>
 	/// labeled alternative in <see cref="RecParser.typename"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitTypenameMany([NotNull] RecParser.TypenameManyContext context) { }
+	public virtual void ExitTypenameWrapped([NotNull] RecParser.TypenameWrappedContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by the <c>TypenameGeneric</c>
 	/// labeled alternative in <see cref="RecParser.typename"/>.
@@ -452,6 +464,20 @@ public partial class RecBaseListener : IRecListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitUnaryExpression([NotNull] RecParser.UnaryExpressionContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>CastExpression</c>
+	/// labeled alternative in <see cref="RecParser.opExpr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterCastExpression([NotNull] RecParser.CastExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>CastExpression</c>
+	/// labeled alternative in <see cref="RecParser.opExpr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitCastExpression([NotNull] RecParser.CastExpressionContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by the <c>CompareExpression</c>
 	/// labeled alternative in <see cref="RecParser.opExpr"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -465,20 +491,6 @@ public partial class RecBaseListener : IRecListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitCompareExpression([NotNull] RecParser.CompareExpressionContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by the <c>CallExpression</c>
-	/// labeled alternative in <see cref="RecParser.opExpr"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterCallExpression([NotNull] RecParser.CallExpressionContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by the <c>CallExpression</c>
-	/// labeled alternative in <see cref="RecParser.opExpr"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitCallExpression([NotNull] RecParser.CallExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by the <c>MulExpression</c>
 	/// labeled alternative in <see cref="RecParser.opExpr"/>.
@@ -507,6 +519,18 @@ public partial class RecBaseListener : IRecListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitBitwiseExpression([NotNull] RecParser.BitwiseExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="RecParser.castExpr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterCastExpr([NotNull] RecParser.CastExprContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="RecParser.castExpr"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitCastExpr([NotNull] RecParser.CastExprContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="RecParser.explicitTemplateInstatiation"/>.
 	/// <para>The default implementation does nothing.</para>

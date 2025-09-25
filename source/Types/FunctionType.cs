@@ -26,11 +26,11 @@ public class FunctionType : Type
     public override string FullName => GetName(t => t.FullName);
 
 
-    public override LLVMValueRef BuildDestructor(ProgramContext ctx)
+    public override LLVMValueRef BuildDestructor(RecContext ctx)
         => ctx.EmptyDestructor;
-    public override FieldDescriptor[] GetFields(ProgramContext ctx)
+    public override FieldDescriptor[] GetFields(RecContext ctx)
         => [];
-    protected override LLVMTypeRef BuildLLVMType(ProgramContext ctx)
+    protected override LLVMTypeRef BuildLLVMType(RecContext ctx)
         => LLVMTypeRef.CreateFunction(
             Return?.GetLLVMType(ctx) ?? LLVMTypeRef.Void,
             [.. from p in Parameters select p.GetLLVMType(ctx)]

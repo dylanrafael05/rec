@@ -50,6 +50,12 @@ public interface IRecVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitAsStatement([NotNull] RecParser.AsStatementContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="RecParser.simpleScopedIdentifier"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitSimpleScopedIdentifier([NotNull] RecParser.SimpleScopedIdentifierContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="RecParser.modStatement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -171,12 +177,12 @@ public interface IRecVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitTypenameSingle([NotNull] RecParser.TypenameSingleContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>TypenameMany</c>
+	/// Visit a parse tree produced by the <c>TypenameWrapped</c>
 	/// labeled alternative in <see cref="RecParser.typename"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitTypenameMany([NotNull] RecParser.TypenameManyContext context);
+	Result VisitTypenameWrapped([NotNull] RecParser.TypenameWrappedContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>TypenameGeneric</c>
 	/// labeled alternative in <see cref="RecParser.typename"/>.
@@ -240,19 +246,19 @@ public interface IRecVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitUnaryExpression([NotNull] RecParser.UnaryExpressionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>CastExpression</c>
+	/// labeled alternative in <see cref="RecParser.opExpr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitCastExpression([NotNull] RecParser.CastExpressionContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>CompareExpression</c>
 	/// labeled alternative in <see cref="RecParser.opExpr"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitCompareExpression([NotNull] RecParser.CompareExpressionContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>CallExpression</c>
-	/// labeled alternative in <see cref="RecParser.opExpr"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitCallExpression([NotNull] RecParser.CallExpressionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>MulExpression</c>
 	/// labeled alternative in <see cref="RecParser.opExpr"/>.
@@ -267,6 +273,12 @@ public interface IRecVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitBitwiseExpression([NotNull] RecParser.BitwiseExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="RecParser.castExpr"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitCastExpr([NotNull] RecParser.CastExprContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="RecParser.explicitTemplateInstatiation"/>.
 	/// </summary>
