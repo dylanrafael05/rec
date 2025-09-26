@@ -77,7 +77,7 @@ CloseIndex : ']';
 
 // Parser rules
 program
-    : topLevelStatement*
+    : topLevelStatement* EOF
     ;
 
 topLevelStatement
@@ -100,12 +100,18 @@ simpleScopedIdentifier
     : (Parts+=Identifier ('.' Parts+=Identifier)*);
 
 modStatement
+locals [
+    Re.C.Definitions.Scope? Scope = null
+]
     : Mod ModuleIdent=simpleScopedIdentifier
         Substatements+=topLevelStatement*
       (End Mod)?
     ;
 
 useStatement
+locals [
+    Re.C.Definitions.Scope? ImportedScope = null
+]
     : Use Ident=simpleScopedIdentifier
     ;
 
@@ -118,6 +124,9 @@ structFieldDefine
     ;
 
 structDefine
+locals [
+    Re.C.Types.StructType? DefinedType = null
+]
     : templateHeader? Struct Name=Identifier '{' 
         (Fields+=structFieldDefine ',' )*
         (Fields+=structFieldDefine ','?)?
@@ -129,6 +138,9 @@ fnArgumentDefine
     ;
 
 fnDefine
+locals [
+    Re.C.Definitions.Function? DefinedFunction = null
+]
     : templateHeader? Fn Name=Identifier 
       '(' (Args+=fnArgumentDefine (',' Args+=fnArgumentDefine)*)? ')'
       Ret=typename?

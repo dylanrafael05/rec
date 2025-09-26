@@ -19,7 +19,7 @@ public partial class SyntaxResolver
 
         foreach (var partToken in context.ModuleIdent._Parts)
         {
-            var part = Identifier.Internal(partToken.Text);
+            var part = Identifier.Name(partToken.Text);
 
             if (scope.Definitions.TryGetValue(part, out var subscopeDef))
             {

@@ -8,6 +8,10 @@ public abstract class Type
     public abstract string Name { get; }
     public abstract string FullName { get; }
 
+    public virtual bool IsSigned => false;
+    public virtual bool IsInteger => false;
+    public virtual bool IsFloat => false;
+
     protected abstract LLVMTypeRef BuildLLVMType(RecContext ctx);
     public abstract LLVMValueRef BuildDestructor(RecContext ctx);
     public abstract FieldDescriptor[] GetFields(RecContext ctx);

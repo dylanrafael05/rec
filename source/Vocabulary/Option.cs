@@ -4,21 +4,21 @@ using OneOf;
 namespace Re.C.Vocabulary;
 
 /// <summary>
-/// An empty helper type that is implicitly
-/// convertible to an Option
-/// </summary>
-public record struct None();
-
-/// <summary>
 /// A helper class containing generic functions
 /// for Option construction
 /// </summary>
 public static class Option
 {
+    /// <summary>
+    /// An empty helper type that is implicitly
+    /// convertible to an Option
+    /// </summary>
+    public record struct NoneHelper();
+
     public static Option<T> Some<T>(T value)
         => new(value);
 
-    public static None None => new();
+    public static NoneHelper None => new();
     public static Option<T> NoneOf<T>() => new();
 }
 
@@ -29,7 +29,7 @@ public readonly struct Option<T>
 {
     public Option()
     {
-        _value = new None();
+        _value = new Option.NoneHelper();
     }
 
     public Option(T value)
@@ -37,10 +37,10 @@ public readonly struct Option<T>
         _value = value;
     }
 
-    public static implicit operator Option<T>(None _)
+    public static implicit operator Option<T>(Option.NoneHelper _)
         => new();
 
-    private readonly OneOf<None, T> _value;
+    private readonly OneOf<Option.NoneHelper, T> _value;
 
     /// <summary>
     /// Test if this instance is 'None'
@@ -64,7 +64,7 @@ public readonly struct Option<T>
         if (IsSome(out var value))
             return Option.Some(func(value));
 
-        return new None();
+        return new();
     }
 
     /// <summary>

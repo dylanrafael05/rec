@@ -1,5 +1,7 @@
 ﻿using LLVMSharp.Interop;
 using Re.C.Definitions;
+using Re.C.Passes;
+using Re.C.Syntax.Resolvers;
 using Re.C.Types;
 using Re.C.Vocabulary;
 
@@ -81,11 +83,36 @@ public class RecContext
     /// The diagnostic bag used for compilation. All diagnostics
     /// should be placed here.
     /// </summary>
-    public DiagnosticBag Diagnostics { get; } = new();
+    public DiagnosticBag Diagnostics { get; } = [];
     /// <summary>
     /// A mapping of sources to the scopes that they import.
     /// </summary>
     public Dictionary<Source, List<Scope>> ImportsBySource { get; } = [];
+
+    /// <summary>
+    /// A reference to all passes for this context.
+    /// </summary>
+    public RecPasses Passes { get; }
+    /// <summary>
+    /// A reference to all the resolvers for this context.
+    /// </summary>
+    public RecResolvers Resolvers { get; }
+
+    private RecContext()
+    {
+        Passes = new()
+        {
+            FileDeclarations = new(this),
+            TypeDeclarations = new(this),
+            FunctionDeclarations = new(this)
+        };
+
+        Resolvers = new()
+        {
+            Type = new(this),
+            Syntax = new(this)
+        };
+    }
 
     /// <summary>
     /// Create a new RecContext. Properly assigns all required fields.
@@ -118,26 +145,26 @@ public class RecContext
         var module = llvmContext.CreateModuleWithName(moduleName);
         var builder = llvmContext.CreateBuilder();
 
-        Types.Type MakePrimitive(LLVMTypeRef type, string name)
-            => scope.Define(new PrimitiveType(type) { Identifier = Identifier.Name(name) })!;
+        Types.Type MakePrimitive(LLVMTypeRef type, string name, PrimitiveType.Class cls)
+            => scope.Define(new PrimitiveType(type, cls) { Identifier = Identifier.Name(name) })!;
 
         var types = new BuiltinTypes
         {
             Error = new ErrorType(),
 
-            Bool = MakePrimitive(llvmContext.Int1Type, "bool"),
-            I8 = MakePrimitive(llvmContext.Int8Type, "i8"),
-            I16 = MakePrimitive(llvmContext.Int16Type, "i16"),
-            I32 = MakePrimitive(llvmContext.Int32Type, "i32"),
-            I64 = MakePrimitive(llvmContext.Int64Type, "i64"),
-            ISize = MakePrimitive(llvmContext.GetIntPtrType(targetData), "isize"),
-            U8 = MakePrimitive(llvmContext.Int8Type, "u8"),
-            U16 = MakePrimitive(llvmContext.Int16Type, "u16"),
-            U32 = MakePrimitive(llvmContext.Int32Type, "u32"),
-            U64 = MakePrimitive(llvmContext.Int64Type, "u64"),
-            USize = MakePrimitive(llvmContext.GetIntPtrType(targetData), "usize"),
-            F32 = MakePrimitive(llvmContext.FloatType, "f32"),
-            F64 = MakePrimitive(llvmContext.DoubleType, "f64"),
+            Bool = MakePrimitive(llvmContext.Int1Type, "bool", PrimitiveType.Class.Other),
+            I8 = MakePrimitive(llvmContext.Int8Type, "i8", PrimitiveType.Class.SignedInt),
+            I16 = MakePrimitive(llvmContext.Int16Type, "i16", PrimitiveType.Class.SignedInt),
+            I32 = MakePrimitive(llvmContext.Int32Type, "i32", PrimitiveType.Class.SignedInt),
+            I64 = MakePrimitive(llvmContext.Int64Type, "i64", PrimitiveType.Class.SignedInt),
+            ISize = MakePrimitive(llvmContext.GetIntPtrType(targetData), "isize", PrimitiveType.Class.SignedInt),
+            U8 = MakePrimitive(llvmContext.Int8Type, "u8", PrimitiveType.Class.UnsignedInt),
+            U16 = MakePrimitive(llvmContext.Int16Type, "u16", PrimitiveType.Class.UnsignedInt),
+            U32 = MakePrimitive(llvmContext.Int32Type, "u32", PrimitiveType.Class.UnsignedInt),
+            U64 = MakePrimitive(llvmContext.Int64Type, "u64", PrimitiveType.Class.UnsignedInt),
+            USize = MakePrimitive(llvmContext.GetIntPtrType(targetData), "usize", PrimitiveType.Class.UnsignedInt),
+            F32 = MakePrimitive(llvmContext.FloatType, "f32", PrimitiveType.Class.Float),
+            F64 = MakePrimitive(llvmContext.DoubleType, "f64", PrimitiveType.Class.Float),
         };
 
         var emptyDestructor = module.AddFunction(

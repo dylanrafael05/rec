@@ -48,7 +48,7 @@ public static class IdentifierResolution
 
         foreach (var part in identifier._Parts)
         {
-            def = ResolveOne(ctx, part.SourceSpan, Identifier.Internal(part.Text), def);
+            def = ResolveOne(ctx, part.SourceSpan, Identifier.Name(part.Text), def);
 
             if (def is null)
                 break;

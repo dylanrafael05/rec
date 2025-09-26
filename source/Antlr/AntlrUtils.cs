@@ -22,6 +22,15 @@ public static class AntlrUtils
                 );
             }
         }
+        
+        public Identifier TextAsIdentifier
+            => Identifier.Name(self.Text);
+    }
+
+    extension(ITerminalNode self)
+    {
+        public Identifier TextAsIdentifier
+            => self.Symbol.TextAsIdentifier;
     }
 
     extension(IParseTree self)

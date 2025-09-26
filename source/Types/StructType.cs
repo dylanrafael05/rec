@@ -9,7 +9,15 @@ public class StructType : NamedType
 {
     public record struct Field(string Name, Type Type);
 
-    public required Field[] Fields { get; init; }
+    public Field[]? Fields { get; private set; }
+
+    public void SetBody(Field[] fields)
+    {
+        if (Fields is not null)
+            throw Panic("Attepmt to set the body of a struct more than once.");
+
+        Fields = fields;
+    }
 
     protected override LLVMTypeRef BuildLLVMType(RecContext ctx)
     {
@@ -21,15 +29,17 @@ public class StructType : NamedType
 
     public override LLVMValueRef BuildDestructor(RecContext ctx)
     {
-        throw new InvalidOperationException("TODO");
+        throw Todo;
     }
 
     public override FieldDescriptor[] GetFields(RecContext ctx)
     {
         var llvm = GetLLVMType(ctx);
 
+        throw Todo;
+
         return [
-            ..from f in Fields.Indexed select new FieldDescriptor
+            ..from f in Fields.UnwrapNull().Indexed select new FieldDescriptor
             {
                 Name = f.value.Name,
                 Offset = ctx.TargetData.OffsetOfElement(llvm, (uint) f.index),

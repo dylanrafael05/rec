@@ -18,6 +18,26 @@ public class Scope : DefinitionBase
         Definitions[def.Identifier] = def;
         return def;
     }
+    
+    /// <summary>
+    /// Define the provided definition within this scope,
+    /// returning the definition if sucessful and reporting
+    /// a diagnostic if unsuccessful.
+    /// </summary>
+    public Definition? DefineOrDiagnose<Definition>(RecContext ctx, SourceSpan span, Definition def)
+        where Definition : class, IDefinition
+    {
+        if (Definitions.ContainsKey(def.Identifier))
+        {
+            ctx.Diagnostics.AddError(
+                span, Errors.Redefinition(def.Identifier, this));
+            
+            return null;
+        }
+
+        Definitions[def.Identifier] = def;
+        return def;
+    }
 
     /// <summary>
     /// Search within this scope for a definition that matches
