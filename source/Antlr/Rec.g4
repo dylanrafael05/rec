@@ -139,12 +139,13 @@ fnArgumentDefine
 
 fnDefine
 locals [
-    Re.C.Definitions.Function? DefinedFunction = null
+    Re.C.Definitions.Function? DefinedFunction = null,
+    Re.C.Syntax.BoundSyntax[]? BoundStatements = null
 ]
     : templateHeader? Fn Name=Identifier 
       '(' (Args+=fnArgumentDefine (',' Args+=fnArgumentDefine)*)? ')'
       Ret=typename?
-      block
+      Body=block
     ;
 
 aliasDefine
@@ -194,7 +195,7 @@ letExpr
     | expr;
 
 letStmt
-    : spec=(Let|Var) Target=Identifier VarType=typename? '=' Value=letExpr
+    : Spec=(Let|Var) Target=Identifier VarType=typename? '=' Value=letExpr
     ;
 
 typenameFnArgs
@@ -266,13 +267,9 @@ termExpr
     ;
 
 literal 
-    : Integer
-    | Float
-    | String
-    | boolLiteral
-    ;
-
-boolLiteral
-    : True
-    | False
+    : Integer       #IntegerLiteral
+    | Float         #FloatLiteral
+    | String        #StringLiteral
+    | True          #BoolLiteral
+    | False         #BoolLiteral
     ;

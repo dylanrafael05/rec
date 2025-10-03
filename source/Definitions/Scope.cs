@@ -3,6 +3,10 @@ namespace Re.C.Definitions;
 public class Scope : DefinitionBase
 {
     public Dictionary<Identifier, IDefinition> Definitions { get; } = [];
+    private ulong tempCounter = 0;
+
+    public Identifier UniqueID()
+        => Identifier.ID(unchecked(tempCounter++));
 
     /// <summary>
     /// Define the provided definition within this scope,
@@ -16,6 +20,10 @@ public class Scope : DefinitionBase
             return null;
 
         Definitions[def.Identifier] = def;
+        
+        def.Parent = this;
+        def.IsLinked = true;
+
         return def;
     }
     

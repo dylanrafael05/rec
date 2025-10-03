@@ -16,4 +16,7 @@ public static class Errors
         => $"Cannot use '.' here; target is not a scope";
     public static string Redefinition(Identifier name, Scope scope)
         => $"Redefinition of '{name}' in '{scope}'";
+
+    public static string UnknownEscapeSequence(string escape)
+        => $"Unrecognized escape sequence '{escape}'";
 }

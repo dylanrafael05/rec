@@ -19,6 +19,8 @@ public class TypeDeclarationsPass(RecContext ctx) : BasePass(ctx)
             context.CalculateSourceSpan(),
             type);
 
+        context.DefinedType = type;
+
         return default;
     }
 }

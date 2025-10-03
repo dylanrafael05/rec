@@ -4,5 +4,5 @@ namespace Re.C.Syntax.Resolvers;
 
 public partial class SyntaxResolver(RecContext ctx) : RecBaseVisitor<BoundSyntax>
 {
-    private RecContext Context { get; } = ctx;
+    public RecContext CTX { get; } = ctx;
 }

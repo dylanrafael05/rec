@@ -13,16 +13,13 @@ namespace Re.C.Passes;
 public class BasePass(RecContext ctx) : RecBaseVisitor<Unit>
 {
     public RecContext CTX { get; } = ctx;
-    public Stack<Scope> ScopeStack { get; } = [];
 
     public override Unit VisitModStatement([NotNull] RecParser.ModStatementContext context)
     {
-        ScopeStack.Push(CTX.CurrentScope);
-        CTX.CurrentScope = context.Scope.UnwrapNull();
-
+        CTX.EnterScope(context.Scope.UnwrapNull());
         VisitChildren(context);
+        CTX.ExitScope();
 
-        CTX.CurrentScope = ScopeStack.Pop();
         return default;
     }
 }

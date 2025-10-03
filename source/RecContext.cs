@@ -53,6 +53,10 @@ public class RecContext
     public required Scope GlobalScope { get; init; }
 
     /// <summary>
+    /// The function within which compilation is currently taking place.
+    /// </summary>
+    public Function? CurrentFunction { get; set; }
+    /// <summary>
     /// The current scope at this point in the compilation.
     /// This will be updated as syntax is resolved and compiled.
     /// </summary>
@@ -78,6 +82,11 @@ public class RecContext
             return result;
         }
     }
+    
+    /// <summary>
+    /// A stack storing all scopes as they are superceded.
+    /// </summary>
+    public Stack<Scope> ScopeStack { get; } = [];
 
     /// <summary>
     /// The diagnostic bag used for compilation. All diagnostics
@@ -112,6 +121,24 @@ public class RecContext
             Type = new(this),
             Syntax = new(this)
         };
+    }
+
+    /// <summary>
+    /// Change the current scope to the one provided.
+    /// </summary>
+    public void EnterScope(Scope scope)
+    {
+        ScopeStack.Push(CurrentScope);
+        CurrentScope = scope;
+    }
+
+    /// <summary>
+    /// Return the current scope to what it was before the
+    /// matching call to EnterScope().
+    /// </summary>
+    public void ExitScope()
+    {
+        CurrentScope = ScopeStack.Pop();
     }
 
     /// <summary>
