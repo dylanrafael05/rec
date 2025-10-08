@@ -84,7 +84,7 @@ topLevelStatement
     : fnDefine
     | structDefine
     | aliasDefine
-    | letStmt
+    | letStatement
     | modStatement
     | asStatement
     | useStatement
@@ -152,100 +152,145 @@ aliasDefine
     : Type Name=Identifier '=' typename
     ;
 
+// Statements //
+statement
+    : assignStatement
+    | letStatement
+    | ifStatement
+    | whileStatement
+    | deferStatement
+    | returnStatement
+    | continueStatement
+    | breakStatement
+    | block
+    | expression
+    ;
+    
 block
     : '{' Statements+=statement* '}'
     ;
 
-statement
-    : assignStmt
-    | letStmt
-    | ifStmt
-    | whileStmt
-    | deferStmt
-    | returnStmt
-    | Continue
-    | Break
-    | block
-    | expr
-    ;
+continueStatement
+    : Continue;
 
-returnStmt
-    : Return Value=expr;
+breakStatement
+    : Break;
 
-deferStmt
+returnStatement
+    : Return Value=expression;
+
+deferStatement
     : Defer block;
 
-ifStmt
-    : If Cond=expr block ifTail?;
+ifStatement
+    : If Cond=expression block ifTail?;
 
 ifTail
     : Else EndBlock=block
-    | Else Elif=ifStmt
+    | Else Elif=ifStatement
     ;
     
-whileStmt
-    : While Cond=expr block;
+whileStatement
+    : While Cond=expression block;
 
-assignStmt
-    : Target=expr '=' Value=expr
+assignStatement
+    : Target=expression '=' Value=expression
     ;
 
-letExpr 
-    : Uninit
-    | expr;
-
-letStmt
-    : Spec=(Let|Var) Target=Identifier VarType=typename? '=' Value=letExpr
+letStatement
+    : Spec=(Let|Var) Target=Identifier VarType=typename? '=' Value=expression
     ;
 
+// Typename syntax //
 typenameFnArgs
     : Identifier? ArgType=typename
     ;
 
 typename
-    : Ident=simpleScopedIdentifier #TypenameSingle
-    | '(' Inner=typename ')' #TypenameWrapped
-    | '(' Base=typename (Args+=typename)+ ')' #TypenameGeneric
-    | '*' Base=typename #TypenamePointer
-    | '[' Base=typename (';' Count=Integer)? ']' #TypenameArray
-    | Fn '(' (Args+=typenameFnArgs (',' Args+=typenameFnArgs)*)? ')' Ret=typename? #TypenameFn
+    : Ident=simpleScopedIdentifier 
+        #TypenameSingle
+    | '(' Inner=typename ')' 
+        #TypenameWrapped
+    | '(' Base=typename (Args+=typename)+ ')' 
+        #TypenameGeneric
+    | '*' Base=typename 
+        #TypenamePointer
+    | '[' Base=typename (';' Count=Integer)? ']' 
+        #TypenameArray
+    | Fn '(' (Args+=typenameFnArgs (',' Args+=typenameFnArgs)*)? ')' Ret=typename? 
+        #TypenameFn
     ;
 
-expr
-    : opExpr
+// Define operators //
+logicalOperator
+    : And #AndOperator
+    | Or  #OrOperator
     ;
 
-opExpr
-    : LHS=opExpr (And | Or) RHS=opExpr #LogicExpression
-    | LHS=opExpr ('==' | '!=' | '>' | '<' | '<=' | '>=') RHS=opExpr #CompareExpression
-    | LHS=opExpr ('*' | '/') RHS=opExpr #MulExpression
-    | LHS=opExpr ('&' | '|' | '>>' | '<<') RHS=opExpr #BitwiseExpression
-    | LHS=opExpr ('+' | '-') RHS=opExpr #AddExpression
-    | ('+' | '-' | '~' | Not) Operand=opExpr #UnaryExpression
-    | Operand=opExpr ('*' | '&') #MemoryExpression
-    | castExpr #CastExpression
+compOperator 
+    : '==' #EqualsOperator
+    | '!=' #NotEqualsOperator
+    | '>'  #GreaterThanOperator
+    | '<'  #LessThanOperator
+    | '<=' #GreaterEqualOperator
+    | '>=' #LessEqualOperator
     ;
 
-castExpr
-    : Operand=callExpr Cast TargetType=typename
+muldivOperator
+    : '*' #MulOperator
+    | '/' #DivOperator
     ;
 
-explicitTemplateInstatiation
+bitwiseOperator
+    : '&'     #BitAndOperator
+    | '|'     #BitOrOperator
+    | '^'     #BitXorOperator
+    | '<' '<' #BitShiftLeftOperator
+    | '>' '>' #BitShiftRightOperator
+    ;
+
+addsubOperator
+    : '+' #AddOperator
+    | '-' #SubOperator
+    ;
+
+unaryOperator
+    : '+' #PositOperator
+    | '-' #NegateOperator
+    | '~' #BitNotOperator
+    ;
+
+memoryOperator
+    : '*' #DereferenceOperator
+    | '&' #AddressofOperator
+    ;
+
+// Main expression format //
+expression
+    : LHS=expression logicalOperator RHS=expression       #BinaryExpression
+    | LHS=expression compOperator    RHS=expression       #BinaryExpression
+    | LHS=expression bitwiseOperator RHS=expression       #BinaryExpression
+    | LHS=expression muldivOperator  RHS=expression       #BinaryExpression
+    | LHS=expression addsubOperator  RHS=expression       #BinaryExpression
+    | Operand=expression Cast '(' TargetType=typename ')' #CastExpression
+    | Op=unaryOperator Operand=expression                 #UnaryExpression
+    | Operand=expression Op=memoryOperator                #MemoryExpression
+    | Target=expression TemplateInst=templateInstantiation? 
+      '(' (Args+=expression (',' Args+=expression)*)? ')' #CallExpression
+    | Base=expression '.' Field=dotComponent              #DotExpression
+    | term                                                #TermExpression
+    ;
+
+templateInstantiation
     : '\'' args+=typename* '\''
     ;
-
-callExpr
-    : Target=callExpr TemplateInst=explicitTemplateInstatiation? 
-      '(' (args+=expr (',' args+=expr)*)? ')'
-    | dotExpr
-    ;
-
-structExpr
-    : New typename '{' parts+=structExprAssign+ '}'
-    ;
-
+    
 structExprAssign
-    : Field=Identifier '=' Value=expr
+    : Field=Identifier '=' Value=expression
+    ;
+
+structExpression
+    : New StructType=typename '{' Parts+=structExprAssign+ '}'
     ;
 
 dotComponent
@@ -253,17 +298,16 @@ dotComponent
     | Identifier As typename
     ;
 
-dotExpr
-    : dotExpr '.' Field=dotComponent
-    | termExpr
+variableReference
+    : Identifier
+    | Identifier As typename
     ;
 
-termExpr
-    : literal
-    | Identifier
-    | Identifier As typename
-    | '(' expr ')'
-    | structExpr
+term
+    : literal                
+    | variableReference
+    | '(' expression ')'     
+    | structExpression      
     ;
 
 literal 

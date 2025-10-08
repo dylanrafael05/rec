@@ -7,8 +7,15 @@ namespace Re.C.Types;
 
 public class FunctionType : Type
 {
-    public required Type[] Parameters { get; init; }
+    public required Seq<Type> Parameters { get; init; }
     public required Type? Return { get; init; }
+
+    public override bool Equals(Type? other)
+        => other is FunctionType fn
+        && fn.Parameters == Parameters
+        && object.Equals(fn.Return, Return);
+    public override int GetHashCode()
+        => HashCode.Combine(Parameters, Return);
 
     private string GetName(Func<Type, string> stringifier)
     {
@@ -35,4 +42,13 @@ public class FunctionType : Type
             Return?.GetLLVMType(ctx) ?? LLVMTypeRef.Void,
             [.. from p in Parameters select p.GetLLVMType(ctx)]
         );
+
+    public override void PropogateVisitor<V>(V visitor)
+    {
+        foreach (var param in Parameters)
+            visitor.Visit(param);
+
+        if (Return is not null)
+            visitor.Visit(Return);
+    }
 }

@@ -1,4 +1,5 @@
 using Re.C.Definitions;
+using Re.C.Syntax;
 
 namespace Re.C;
 
@@ -19,4 +20,12 @@ public static class Errors
 
     public static string UnknownEscapeSequence(string escape)
         => $"Unrecognized escape sequence '{escape}'";
+
+    public static string TypeMismatch(Types.Type expected, Types.Type real)
+        => $"Expected a value of type {expected} but got {real}";
+
+    public static string MathOnNonArithmeticType(Types.Type type)
+        => $"Cannot perform arithmetic on non-arithmetic type {type}";
+    public static string InvalidBinaryTypes(BinaryOperator op, Types.Type lhs, Types.Type rhs)
+        => $"Binary operator {BinaryOperator.GetRepr(op)} does not accept operands of {lhs} and {rhs}";
 }

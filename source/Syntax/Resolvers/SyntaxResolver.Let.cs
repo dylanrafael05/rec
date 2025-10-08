@@ -8,15 +8,41 @@ namespace Re.C.Syntax.Resolvers;
 
 public partial class SyntaxResolver
 {
-    public override BoundSyntax VisitLetStmt([NotNull] RecParser.LetStmtContext context)
+    public override BoundSyntax VisitLetStatement([NotNull] RecParser.LetStatementContext context)
     {
-        // TODO: this
-        throw Todo;
+        var span = context.CalculateSourceSpan();
+        var expr = (Visit(context.Value) as Expression).UnwrapNull();
+        var type = CTX.Resolvers.Type.Visit(context.VarType) ?? expr.Type;
 
-        // return new LetStatement
-        // {
-        //     Span = context.CalculateSourceSpan(),
+        if (type != expr.Type)
+        {
+            CTX.Diagnostics.AddError(
+                expr.Span,
+                Errors.TypeMismatch(type, expr.Type));
+        }
 
-        // };
+        var variable = CTX.CurrentScope.DefineOrDiagnose(
+            CTX, span,
+            new Variable
+            {
+                Identifier = context.Target.TextAsIdentifier,
+                Type = type.UnwrapNull()
+            }
+        );
+
+        if (variable is null)
+        {
+            return new ErrorStatement
+            {
+                Span = span
+            };
+        }
+
+        return new LetStatement
+        {
+            Span = span,
+            Variable = variable,
+            TargetValue = expr
+        };
     }
 }

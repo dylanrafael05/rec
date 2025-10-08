@@ -6,7 +6,8 @@ namespace Re.C.Syntax;
 /// </summary>
 public enum UnaryOperator
 {
-    Negate,
-    BitNot,
-    LogicNot,
+    [EnumRepr("+")] Posit,
+    [EnumRepr("-")] Negate,
+    [EnumRepr("~")] BitNot,
+    [EnumRepr("not")] LogicNot,
 }

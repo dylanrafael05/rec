@@ -20,13 +20,13 @@ public class Scope : DefinitionBase
             return null;
 
         Definitions[def.Identifier] = def;
-        
+
         def.Parent = this;
         def.IsLinked = true;
 
         return def;
     }
-    
+
     /// <summary>
     /// Define the provided definition within this scope,
     /// returning the definition if sucessful and reporting
@@ -39,7 +39,7 @@ public class Scope : DefinitionBase
         {
             ctx.Diagnostics.AddError(
                 span, Errors.Redefinition(def.Identifier, this));
-            
+
             return null;
         }
 
@@ -99,5 +99,30 @@ public class Scope : DefinitionBase
 
         // Otherwise, recurse and search in the parent scope.
         return Parent.Search(identifier, importedScopes);
+    }
+
+    /// <summary>
+    /// The same as Search, but emits an error when fails.
+    /// </summary>
+    public IDefinition? SearchOrDiagnose(
+        RecContext ctx,
+        SourceSpan span,
+        Identifier identifier,
+        IReadOnlyList<Scope>? importedScopes = null)
+    {
+        var def = Search(identifier, importedScopes);
+
+        if (def is null)
+        {
+            var msg = (this == ctx.CurrentScope) switch
+            {
+                true  => Errors.UndefinedInCurrentScope(identifier),
+                false => Errors.UndefinedInGivenScope(identifier, this)
+            };
+
+            ctx.Diagnostics.AddError(span, msg);
+        }
+
+        return def;
     }
 }

@@ -3,6 +3,7 @@ namespace Re.C.Types;
 public class BuiltinTypes
 {
     public required Type Error { get; init; }
+    public required Type None { get; init; }
     
     public required Type Bool { get; init; }
 

@@ -1,6 +1,7 @@
 using LLVMSharp.Interop;
 using Re.C.Definitions;
 using Re.C.Types.Descriptors;
+using Re.C.Visitor;
 using Re.C.Vocabulary;
 
 namespace Re.C.Types;
@@ -48,5 +49,11 @@ public class StructType : NamedType
                 ParentType = default /* TODO */
             }
         ];
+    }
+
+    public override void PropogateVisitor<V>(V visitor)
+    {
+        foreach (var field in Fields ?? [])
+            visitor.Visit(field.Type);
     }
 }

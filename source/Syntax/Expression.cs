@@ -6,5 +6,6 @@ namespace Re.C.Syntax;
 /// </summary>
 public class Expression : BoundSyntax
 {
-    public required Types.Type? Type { get; init; }
+    public required Types.Type Type { get; init; }
+    public virtual bool Assignable => false;
 }

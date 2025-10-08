@@ -1,31 +1,31 @@
 namespace Re.C.Syntax;
 
+
 /// <summary>
 /// An enumeration of all the types of binary
 /// operators that Re:C supports.
 /// </summary>
 public enum BinaryOperator
 {
-    Add,
-    Subtract,
-    Multiply,
-    Divide,
-    Modulo,
+    [EnumRepr("+")] Add,
+    [EnumRepr("-")] Subtract,
+    [EnumRepr("*")] Multiply,
+    [EnumRepr("/")] Divide,
+    [EnumRepr("%")] Modulo,
 
-    CompEq,
-    CompNe,
-    CompGr,
-    CompGEq,
-    CompLe,
-    CompLEq,
+    [EnumRepr("==")] CompEq,
+    [EnumRepr("!=")] CompNe,
+    [EnumRepr(">")] CompGr,
+    [EnumRepr(">=")] CompGEq,
+    [EnumRepr("<")] CompLe,
+    [EnumRepr("<=")] CompLEq,
 
+    [EnumRepr("<<")] BitLeft,
+    [EnumRepr(">>")] BitRight,
+    [EnumRepr("&")] BitAnd,
+    [EnumRepr("|")] BitOr,
+    [EnumRepr("^")] BitXor,
 
-    BitLeft,
-    BitRight,
-    BitAnd,
-    BitOr,
-    BitXor,
-
-    LogicAnd,
-    LogicOr,
+    [EnumRepr("and")] LogicAnd,
+    [EnumRepr("or")] LogicOr,
 }

@@ -173,11 +173,12 @@ public class RecContext
         var builder = llvmContext.CreateBuilder();
 
         Types.Type MakePrimitive(LLVMTypeRef type, string name, PrimitiveType.Class cls)
-            => scope.Define(new PrimitiveType(type, cls) { Identifier = Identifier.Name(name) })!;
+            => scope.Define(new PrimitiveType(type, cls) { Identifier = Identifier.Name(name) }).UnwrapNull();
 
         var types = new BuiltinTypes
         {
             Error = new ErrorType(),
+            None = scope.Define(new NoneType { Identifier = Identifier.Name("none") }).UnwrapNull(),
 
             Bool = MakePrimitive(llvmContext.Int1Type, "bool", PrimitiveType.Class.Other),
             I8 = MakePrimitive(llvmContext.Int8Type, "i8", PrimitiveType.Class.SignedInt),

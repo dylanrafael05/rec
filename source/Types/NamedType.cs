@@ -9,6 +9,13 @@ public abstract class NamedType : Type, IDefinition
     public required Identifier Identifier { get; init; }
     public bool IsLinked { get; set; }
 
+    public override bool Equals(Type? other)
+        => other is NamedType t
+        && t.Identifier == Identifier
+        && t.Parent == Parent;
+    public override int GetHashCode()
+        => HashCode.Combine(Identifier, Parent);
+
     public override string Name => Identifier.ToString();
     public override string FullName => (this as IDefinition).FullName;
 }

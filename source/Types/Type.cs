@@ -1,16 +1,32 @@
 using LLVMSharp.Interop;
 using Re.C.Types.Descriptors;
+using Re.C.Visitor;
 
 namespace Re.C.Types;
 
-public abstract class Type
+public abstract class Type : IEquatable<Type>, IVisitable<Type>
 {
     public abstract string Name { get; }
     public abstract string FullName { get; }
 
+    // TODO; how to handle visitation?
+
     public virtual bool IsSigned => false;
     public virtual bool IsInteger => false;
     public virtual bool IsFloat => false;
+    public virtual bool IsPrimitive => false;
+    public bool IsArithmetic => IsInteger || IsFloat;
+    public bool ContainsError => this.Contains(static t => t is ErrorType);
+
+    public abstract bool Equals(Type? other);
+    public sealed override bool Equals(object? other)
+        => (other is Type t) && Equals(t);
+    public abstract override int GetHashCode();
+
+    public static bool operator ==(Type? a, Type? b)
+        => object.Equals(a, b);
+    public static bool operator !=(Type? a, Type? b)
+        => !(a == b);
 
     protected abstract LLVMTypeRef BuildLLVMType(RecContext ctx);
     public abstract LLVMValueRef BuildDestructor(RecContext ctx);
@@ -23,7 +39,11 @@ public abstract class Type
 
         result = BuildLLVMType(ctx);
         ctx.TypeCache[this] = result;
-        
+
         return result;
     }
+
+    public virtual void PropogateVisitor<V>(V visitor)
+        where V : IVisitor<Type>, allows ref struct
+    { }
 }
