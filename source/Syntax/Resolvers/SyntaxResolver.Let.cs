@@ -11,7 +11,7 @@ public partial class SyntaxResolver
     public override BoundSyntax VisitLetStatement([NotNull] RecParser.LetStatementContext context)
     {
         var span = context.CalculateSourceSpan();
-        var expr = (Visit(context.Value) as Expression).UnwrapNull();
+        var expr = Visit(context.Value).UnwrapAs<Expression>();
         var type = CTX.Resolvers.Type.Visit(context.VarType) ?? expr.Type;
 
         if (type != expr.Type)

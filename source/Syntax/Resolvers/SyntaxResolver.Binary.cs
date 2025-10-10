@@ -1,6 +1,4 @@
-using System.Text;
 using Antlr4.Runtime.Misc;
-using Antlr4.Runtime.Tree;
 using Re.C.Antlr;
 using Re.C.Definitions;
 using Re.C.Types;
@@ -25,8 +23,8 @@ public partial class SyntaxResolver
         BinaryTypeResolver resolver)
     {
         // Expressionize the lhs and rhs
-        var lhsOut = (Expression)Visit(bin.LHS);
-        var rhsOut = (Expression)Visit(bin.LHS);
+        var lhsOut = Visit(bin.LHS).UnwrapAs<Expression>();
+        var rhsOut = Visit(bin.LHS).UnwrapAs<Expression>();
 
         // Fail early if either operand contains an error
         if (lhsOut.Type.ContainsError)

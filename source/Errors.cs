@@ -23,9 +23,13 @@ public static class Errors
 
     public static string TypeMismatch(Types.Type expected, Types.Type real)
         => $"Expected a value of type {expected} but got {real}";
+    public static string InvalidAssignmentTarget()
+        => $"Cannot assign to this expression";
 
     public static string MathOnNonArithmeticType(Types.Type type)
         => $"Cannot perform arithmetic on non-arithmetic type {type}";
     public static string InvalidBinaryTypes(BinaryOperator op, Types.Type lhs, Types.Type rhs)
         => $"Binary operator {BinaryOperator.GetRepr(op)} does not accept operands of {lhs} and {rhs}";
+    public static string InvalidUnaryType(UnaryOperator op, Types.Type operand)
+        => $"Unary operator {UnaryOperator.GetRepr(op)} does not accept operand of type {operand}";
 }

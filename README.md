@@ -28,3 +28,4 @@ Furthermore, code in this codebase should generally strive to remain consistent.
 - Prefer generalizeable methodology when applicable; if you see yourself needing to perform a task multiple times, attempt to create an ergonomic API for it.
 - Minimize allocations where possible; when it is feasible, try to implement your functions such that they do not allocate new memory. See the implementation of `Visitor` for an example of this.
 - Prefer using modern features over boilerplate when available; use *primary constructors* over single-constructor classes, *records* over explicit definitions of equality for dataclasses, and *extension blocks* over extension methods when possible.
+- Use *partial classes* when defining a large class, such as a visitor.
