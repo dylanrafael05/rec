@@ -12,7 +12,11 @@ public partial class SyntaxResolver
     {
         var span = context.CalculateSourceSpan();
         var expr = Visit(context.Value).UnwrapAs<Expression>();
-        var type = CTX.Resolvers.Type.Visit(context.VarType) ?? expr.Type;
+        var type = context.VarType switch
+        {
+            null        => expr.Type,
+            var nonnull => CTX.Resolvers.Type.Visit(nonnull)
+        };
 
         if (type != expr.Type)
         {
