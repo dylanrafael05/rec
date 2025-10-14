@@ -1,6 +1,7 @@
 using LLVMSharp.Interop;
 using Re.C.Definitions;
 using Re.C.Types.Descriptors;
+using Re.C.Visitor;
 using Re.C.Vocabulary;
 
 namespace Re.C.Types;
@@ -8,7 +9,7 @@ namespace Re.C.Types;
 public class FunctionType : Type
 {
     public required Seq<Type> Parameters { get; init; }
-    public required Type? Return { get; init; }
+    public required Type Return { get; init; }
 
     public override bool Equals(Type? other)
         => other is FunctionType fn
@@ -48,7 +49,6 @@ public class FunctionType : Type
         foreach (var param in Parameters)
             visitor.Visit(param);
 
-        if (Return is not null)
-            visitor.Visit(Return);
+        visitor.Visit(Return);
     }
 }

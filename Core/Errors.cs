@@ -32,4 +32,6 @@ public static class Errors
         => $"Binary operator {BinaryOperator.GetRepr(op)} does not accept operands of {lhs} and {rhs}";
     public static string InvalidUnaryType(UnaryOperator op, Types.Type operand)
         => $"Unary operator {UnaryOperator.GetRepr(op)} does not accept operand of type {operand}";
+    public static string InvalidConditionType(Types.Type condition)
+        => $"Control flow conditions must be booleans, not {condition}";
 }

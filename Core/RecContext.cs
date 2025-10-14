@@ -41,7 +41,7 @@ public class RecContext
     /// counterparts.
     /// </summary>
     public Dictionary<Types.Type, LLVMTypeRef> TypeCache { get; } = [];
-    
+
     /// <summary>
     /// A reference to all the builtin types.
     /// </summary>
@@ -82,7 +82,7 @@ public class RecContext
             return result;
         }
     }
-    
+
     /// <summary>
     /// A stack storing all scopes as they are superceded.
     /// </summary>

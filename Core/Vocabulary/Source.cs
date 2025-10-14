@@ -4,7 +4,7 @@ namespace Re.C.Vocabulary;
 /// An object which represents a single unit of compilable
 /// code, given a name (typically the file the code is from).
 /// </summary>
-public record Source(string Name, string Code);
+public record Source(string Name, string Content);
 
 /// <summary>
 /// A location within a source, stored in index and (line:column) formats.

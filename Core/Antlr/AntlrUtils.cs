@@ -1,4 +1,5 @@
 using Antlr4.Runtime;
+using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 using Re.C.Vocabulary;
 
@@ -12,8 +13,7 @@ public static class AntlrUtils
         {
             get
             {
-                var reclexer = self.TokenSource as RecLexer
-                    ?? throw new InvalidCastException();
+                var reclexer = self.TokenSource.UnwrapAs<RecLexer>();
 
                 return new(
                     reclexer.Source,
@@ -22,7 +22,7 @@ public static class AntlrUtils
                 );
             }
         }
-        
+
         public Identifier TextAsIdentifier
             => Identifier.Name(self.Text);
     }
@@ -40,24 +40,10 @@ public static class AntlrUtils
             if (self is ITerminalNode term)
                 return term.Symbol.SourceSpan;
 
-            var result = (SourceSpan?)default;
+            var first = self.GetChild(0).CalculateSourceSpan();
+            var last = self.GetChild(self.ChildCount - 1).CalculateSourceSpan();
 
-            for (var i = 0; i < self.ChildCount; i++)
-            {
-                var child = self.GetChild(i);
-                var subresult = child.CalculateSourceSpan();
-
-                if (result is SourceSpan res)
-                {
-                    result = SourceSpan.Combine(subresult, res);
-                }
-                else
-                {
-                    result = subresult;
-                }
-            }
-
-            return result!.Value;
+            return SourceSpan.Combine(first, last);
         }
     }
 }

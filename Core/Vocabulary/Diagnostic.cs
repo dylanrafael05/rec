@@ -33,11 +33,18 @@ public record struct Diagnostic(
 public class DiagnosticBag : IReadOnlyCollection<Diagnostic>
 {
     private readonly List<Diagnostic> diagnostics = [];
+    private readonly HashSet<Source> sourcesWithError = [];
+
     public IReadOnlyList<Diagnostic> Diagnostics => diagnostics;
 
     public int Count => diagnostics.Count;
     public void Add(Diagnostic diagnostic)
-        => diagnostics.Add(diagnostic);
+    {
+        diagnostics.Add(diagnostic);
+
+        if(diagnostic.Kind is DiagnosticKind.Error)
+            sourcesWithError.Add(diagnostic.Span.Source);
+    }
 
     public void AddInfo(SourceSpan span, string message)
         => Add(new(DiagnosticKind.Info, span, message));
@@ -45,6 +52,9 @@ public class DiagnosticBag : IReadOnlyCollection<Diagnostic>
         => Add(new(DiagnosticKind.Warning, span, message));
     public void AddError(SourceSpan span, string message)
         => Add(new(DiagnosticKind.Error, span, message));
+
+    public bool HasErrors(Source source)
+        => sourcesWithError.Contains(source);
 
     public IEnumerator<Diagnostic> GetEnumerator()
         => diagnostics.GetEnumerator();

@@ -10,6 +10,12 @@ options
     public required Re.C.Vocabulary.Source Source { get; init; }
 }
 
+@parser::members
+{
+    public int LoopDepth { get; set; }
+    public bool InLoop => LoopDepth > 0;
+}
+
 // Lexer rules //
 fragment LETTER : [_A-Za-z];
 fragment DIGIT : [0-9];
@@ -171,10 +177,10 @@ block
     ;
 
 continueStatement
-    : Continue;
+    : {InLoop}? Continue;
 
 breakStatement
-    : Break;
+    : {InLoop}? Break;
 
 returnStatement
     : Return Value=expression;
@@ -183,15 +189,18 @@ deferStatement
     : Defer block;
 
 ifStatement
-    : If Cond=expression block ifTail?;
+    : If Cond=expression Body=block Tail=ifTail?;
 
 ifTail
-    : Else EndBlock=block
-    | Else Elif=ifStatement
+    : Else EndBlock=block       #ElseStatement
+    | Else Elif=ifStatement     #ElifStatement
     ;
     
 whileStatement
-    : While Cond=expression block;
+    : While Cond=expression 
+      {LoopDepth++;} 
+        Body=block 
+      {LoopDepth--;};
 
 assignStatement
     : Target=expression '=' Value=expression

@@ -9,4 +9,6 @@ public readonly struct RecPasses
     public required FileDeclarationsPass FileDeclarations { get; init; }
     public required TypeDeclarationsPass TypeDeclarations { get; init; }
     public required FunctionDeclarationsPass FunctionDeclarations { get; init; }
+    public required TypeDefinitionsPass TypeDefinitions { get; init; }
+    public required FunctionDefinitionsPass FunctionDefinitions { get; init; }
 }
