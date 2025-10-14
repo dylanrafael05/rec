@@ -46,9 +46,7 @@ public class FunctionType : Type
 
     public override void PropogateVisitor<V>(V visitor)
     {
-        foreach (var param in Parameters)
-            visitor.Visit(param);
-
         visitor.Visit(Return);
+        visitor.VisitMany(Parameters);
     }
 }

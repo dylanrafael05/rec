@@ -1,1 +1,1 @@
-antlr4 source/Antlr/Rec.g4 -visitor -o source/Antlr/Generated
+antlr4 Core/Antlr/Rec.g4 -visitor -o Core/Antlr/Generated

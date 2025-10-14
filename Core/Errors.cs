@@ -1,5 +1,6 @@
 using Re.C.Definitions;
 using Re.C.Syntax;
+using Re.C.Types;
 
 namespace Re.C;
 
@@ -34,4 +35,9 @@ public static class Errors
         => $"Unary operator {UnaryOperator.GetRepr(op)} does not accept operand of type {operand}";
     public static string InvalidConditionType(Types.Type condition)
         => $"Control flow conditions must be booleans, not {condition}";
+
+    public static string CallToNonFunctionType(Types.Type type)
+        => $"Cannot call a non-function value of type {type}";
+    public static string InvalidCallToFunction(FunctionType fn, IEnumerable<Types.Type> types)
+        => $"Invalid call; expected ({string.Join(", ", fn.Parameters)}), got ({string.Join(", ", types)})";
 }

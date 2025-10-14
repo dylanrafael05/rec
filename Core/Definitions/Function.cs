@@ -7,5 +7,7 @@ public class Function : DefinitionBase
 {
     public required Identifier[] ArgumentNames { get; init; }
     public required FunctionType Type { get; init; }
+    public required Scope InnerScope { get; init; }
+
     public Option<LLVMValueRef> LLVMFunction { get; set; }
 }

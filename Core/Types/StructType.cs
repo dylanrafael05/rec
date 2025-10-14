@@ -53,7 +53,7 @@ public class StructType : NamedType
 
     public override void PropogateVisitor<V>(V visitor)
     {
-        foreach (var field in Fields ?? [])
-            visitor.Visit(field.Type);
+        if(Fields is not null)
+            visitor.VisitMany(Fields, f => f.Type);
     }
 }

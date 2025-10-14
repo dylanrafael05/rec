@@ -7,4 +7,9 @@ public class UnaryExpression : Expression
 {
     public required Expression Operand { get; init; }
     public required UnaryOperator Operator { get; init; }
+
+    public override void PropogateVisitor<V>(V visitor)
+    {
+        visitor.Visit(Operand);
+    }
 }

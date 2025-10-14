@@ -4,7 +4,11 @@ namespace Re.C.Vocabulary;
 /// An object which represents a single unit of compilable
 /// code, given a name (typically the file the code is from).
 /// </summary>
-public record Source(string Name, string Content);
+public record Source(string Name, string Content)
+{
+    public override string ToString()
+        => $"Source '{Name}'";
+}
 
 /// <summary>
 /// A location within a source, stored in index and (line:column) formats.
@@ -15,6 +19,9 @@ public record struct SourceLocation(int Line, int Column, int Index)
         => lhs.Index < rhs.Index ? lhs : rhs;
     public static SourceLocation Max(SourceLocation lhs, SourceLocation rhs)
         => lhs.Index > rhs.Index ? lhs : rhs;
+
+    public override readonly string ToString()
+        => $"{Line}:{Column}@{Index}";
 }
 
 /// <summary>
@@ -23,6 +30,9 @@ public record struct SourceLocation(int Line, int Column, int Index)
 /// </summary>
 public record struct SourceSpan(Source Source, SourceLocation Start, SourceLocation End)
 {
+    public override readonly string ToString()
+        => $"({Source}) {Start} to {End}";
+    
     public static SourceSpan Combine(params ReadOnlySpan<SourceSpan> spans)
     {
         if (spans.Length == 0)

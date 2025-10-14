@@ -15,6 +15,9 @@ public static class AntlrUtils
             {
                 var reclexer = self.TokenSource.UnwrapAs<RecLexer>();
 
+                if (self.StartIndex is -1)
+                    throw Panic("Token does not implement start index");
+
                 return new(
                     reclexer.Source,
                     new(self.Line, self.Column, self.StartIndex),
@@ -35,13 +38,29 @@ public static class AntlrUtils
 
     extension(IParseTree self)
     {
+        private IToken LeftmostToken()
+        {
+            if (self is ITerminalNode term)
+                return term.Symbol;
+
+            return self.GetChild(0).LeftmostToken();
+        }
+
+        private IToken RightmostToken()
+        {
+            if (self is ITerminalNode term)
+                return term.Symbol;
+
+            return self.GetChild(self.ChildCount - 1).RightmostToken();
+        }
+
         public SourceSpan CalculateSourceSpan()
         {
             if (self is ITerminalNode term)
                 return term.Symbol.SourceSpan;
 
-            var first = self.GetChild(0).CalculateSourceSpan();
-            var last = self.GetChild(self.ChildCount - 1).CalculateSourceSpan();
+            var first = self.LeftmostToken().SourceSpan;
+            var last = self.RightmostToken().SourceSpan;
 
             return SourceSpan.Combine(first, last);
         }

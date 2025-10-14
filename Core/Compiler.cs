@@ -14,8 +14,15 @@ public class Compiler
         CTX = ctx;
     }
 
+    private readonly List<Source> sources = [];
+
+    public void AddSource(Source source)
+    {
+        sources.Add(source);
+    }
+
     public RecContext CTX { get; }
-    public List<Source> Sources { get; } = [];
+    public IReadOnlyList<Source> Sources => sources;
     public Dictionary<Source, IParseTree> ParseTrees { get; } = [];
 
     // TODO: complete definition of compiler class;
@@ -25,31 +32,26 @@ public class Compiler
         foreach (var source in Sources)
             LexAndParse(source);
 
-        var passes = new RecPasses
-        {
-            FileDeclarations = new FileDeclarationsPass(CTX),
-            TypeDeclarations = new TypeDeclarationsPass(CTX),
-            FunctionDeclarations = new FunctionDeclarationsPass(CTX),
-            TypeDefinitions = new TypeDefinitionsPass(CTX),
-            FunctionDefinitions = new FunctionDefinitionsPass(CTX)
-        };
-
-        RunASTPass(passes.FileDeclarations);
-        RunASTPass(passes.TypeDeclarations);
-        RunASTPass(passes.FunctionDeclarations);
-        RunASTPass(passes.TypeDeclarations);
-        RunASTPass(passes.FunctionDefinitions);
+        RunASTPass(CTX.Passes.FileDeclarations);
+        RunASTPass(CTX.Passes.TypeDeclarations);
+        RunASTPass(CTX.Passes.FunctionDeclarations);
+        RunASTPass(CTX.Passes.TypeDeclarations);
+        RunASTPass(CTX.Passes.FunctionDefinitions);
     }
     
     public void RunASTPass(IRecVisitor<Unit> visitor)
     {
         foreach(var source in Sources)
         {
+            CTX.CurrentSource = source;
+
             if (CTX.Diagnostics.HasErrors(source))
                 continue;
 
             var tree = ParseTrees[source];
             visitor.Visit(tree);
+            
+            CTX.CurrentSource = null;
         }
     }
 
@@ -58,9 +60,11 @@ public class Compiler
         var charStream = CharStreams.fromString(source.Content);
 
         var lexer = new RecLexer(charStream) { Source = source };
+        lexer.RemoveErrorListeners();
         lexer.AddErrorListener(new DiagnosticLexerListener(CTX));
 
         var parser = new RecParser(new CommonTokenStream(lexer));
+        parser.RemoveErrorListeners();
         parser.AddErrorListener(new DiagnosticParserListener(CTX));
 
         var tree = parser.program();

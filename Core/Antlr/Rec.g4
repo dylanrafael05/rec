@@ -146,7 +146,7 @@ fnArgumentDefine
 fnDefine
 locals [
     Re.C.Definitions.Function? DefinedFunction = null,
-    Re.C.Syntax.BoundSyntax[]? BoundStatements = null
+    Re.C.Syntax.Block? BoundBody = null
 ]
     : templateHeader? Fn Name=Identifier 
       '(' (Args+=fnArgumentDefine (',' Args+=fnArgumentDefine)*)? ')'
@@ -160,16 +160,16 @@ aliasDefine
 
 // Statements //
 statement
-    : assignStatement
-    | letStatement
+    : assignStatement ';'
+    | letStatement ';'
     | ifStatement
     | whileStatement
-    | deferStatement
-    | returnStatement
-    | continueStatement
-    | breakStatement
+    | deferStatement ';'
+    | returnStatement ';'
+    | continueStatement ';'
+    | breakStatement ';'
     | block
-    | expression
+    | expression ';'
     ;
     
 block

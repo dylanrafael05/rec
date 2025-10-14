@@ -73,7 +73,7 @@ public class RecContext
     {
         get
         {
-            if (!ImportsBySource.TryGetValue(CurrentSource!, out var result))
+            if (!ImportsBySource.TryGetValue(CurrentSource.UnwrapNull(), out var result))
             {
                 result = [];
                 ImportsBySource.Add(CurrentSource!, result);
@@ -113,7 +113,9 @@ public class RecContext
         {
             FileDeclarations = new(this),
             TypeDeclarations = new(this),
-            FunctionDeclarations = new(this)
+            FunctionDeclarations = new(this),
+            TypeDefinitions = new(this),
+            FunctionDefinitions = new(this)
         };
 
         Resolvers = new()
@@ -165,7 +167,7 @@ public class RecContext
 
         var scope = new Scope
         {
-            Identifier = Identifier.ID(0),
+            Identifier = Identifier.None,
             Parent = null
         };
 
@@ -199,9 +201,10 @@ public class RecContext
             "__empty_destructor",
             LLVMTypeRef.CreateFunction(LLVMTypeRef.Void, [LLVMTypeRef.CreatePointer(LLVMTypeRef.Void, 0)]));
 
-        builder.PositionAtEnd(emptyDestructor.EntryBasicBlock);
-        builder.BuildRetVoid();
-        builder.ClearInsertionPosition();
+        // TODO: this crashes. make it not crash
+        // builder.PositionAtEnd(emptyDestructor.EntryBasicBlock);
+        // builder.BuildRetVoid();
+        // builder.ClearInsertionPosition();
 
         return new()
         {

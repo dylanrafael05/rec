@@ -24,7 +24,7 @@ public partial class SyntaxResolver
     {
         // Expressionize the lhs and rhs
         var lhsOut = Visit(bin.LHS).UnwrapAs<Expression>();
-        var rhsOut = Visit(bin.LHS).UnwrapAs<Expression>();
+        var rhsOut = Visit(bin.RHS).UnwrapAs<Expression>();
 
         // Fail early if either operand contains an error
         if (lhsOut.Type.ContainsError)

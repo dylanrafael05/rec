@@ -18,7 +18,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
             ],
 
             Return = context.Ret is null
-                ? null
+                ? CTX.BuiltinTypes.None
                 : CTX.Resolvers.Type.Visit(context.Ret)
         };
 
@@ -33,7 +33,9 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
             ],
 
             Identifier = context.Name.TextAsIdentifier,
-            Type = type
+            Type = type,
+
+            InnerScope = new Scope { Identifier = Identifier.None, Parent = CTX.CurrentScope }
         };
 
         context.DefinedFunction = CTX.CurrentScope.DefineOrDiagnose(
@@ -45,6 +47,18 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
             // TODO: mangle names here?
             function.LLVMFunction = Option.Some(
                 CTX.Module.AddFunction(function.FullName, function.Type.GetLLVMType(CTX)));
+
+            // Define all arguments as variables in the function's inner scope
+            foreach(var ((name, argtype), syntax) in function.ArgumentNames
+                .Zip(function.Type.Parameters)
+                .Zip(context._Args))
+            {
+                function.InnerScope.DefineOrDiagnose(CTX, syntax.CalculateSourceSpan(), new Variable
+                {
+                    Type = argtype,
+                    Identifier = name
+                });
+            }
         }
 
         return default;

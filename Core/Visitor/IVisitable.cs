@@ -1,25 +1,33 @@
 namespace Re.C.Visitor;
 
 /// <summary>
-/// An interface for types which are their own visitation
-/// handlers.
+/// A type representing the label of a child with relation
+/// to its visitable parent.
 /// </summary>
-public interface IVisitable<T> : IVisitationHandler<T>
-    where T : IVisitable<T>
+public readonly record struct VisitLabel(string Label, Option<int> Index)
 {
-    public void PropogateVisitor<V>(V visitor)
-        where V : IVisitor<T>, allows ref struct;
+    public static implicit operator VisitLabel(string label)
+        => new(label, Option.None);
 
-    void IVisitationHandler<T>.PropogateVisitor<V>(T value, V visitor)
-        => value.PropogateVisitor(visitor);
+    public override string ToString()
+    {
+        if (Index.IsNone)
+        {
+            return Label;
+        }
+        else
+        {
+            return $"{Label}[{Index.Unwrap()}]";
+        }
+    }
 }
 
 /// <summary>
-/// An interface which provides a method for propogating down
-/// a provided type.
+/// An interface for types which can be visited.
 /// </summary>
-public interface IVisitationHandler<T>
+public interface IVisitable<out T>
+    where T : IVisitable<T>
 {
-    public void PropogateVisitor<V>(T value, V visitor)
+    public void PropogateVisitor<V>(V visitor)
         where V : IVisitor<T>, allows ref struct;
 }

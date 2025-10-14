@@ -25,22 +25,31 @@ public partial class SyntaxResolver
             };
         }
 
-        if (defn is not Variable var)
+        if (defn is Variable var)
         {
-            // TODO: report an error message here //
-            
-            return new ErrorExpression
+            return new VariableExpression
             {
                 Span = span,
-                Type = CTX.BuiltinTypes.Error
+                Type = var.Type,
+                Variable = var
             };
         }
-
-        return new VariableExpression
+        else if (defn is Function fn)
+        {
+            return new FunctionExpression
+            {
+                Span = span,
+                Type = fn.Type,
+                Function = fn
+            };
+        }
+        
+        // TODO: report an error message here //
+        
+        return new ErrorExpression
         {
             Span = span,
-            Type = var.Type,
-            Variable = var
+            Type = CTX.BuiltinTypes.Error
         };
     }
 }

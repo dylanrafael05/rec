@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using OneOf.Types;
+
 namespace Re.C.Visitor;
 
 /// <summary>
@@ -15,7 +18,34 @@ namespace Re.C.Visitor;
 /// these stateful visitors.
 /// </summary>
 public interface IVisitor<in T> : IStatefulVisitor<T>
-{ }
+    where T : IVisitable<T>
+{
+    public void Visit(T value, [CallerArgumentExpression(nameof(value))] string label = "")
+    {
+        Visitors.DefaultVisit(this, value, label);
+    }
+
+    public void Visit(T value, VisitLabel label)
+    {
+        Visitors.DefaultVisit(this, value, label);
+    }
+
+    public void VisitMany<C>(
+        C values,
+        [CallerArgumentExpression(nameof(values))] string label = "")
+        where C : IEnumerable<T>
+    {
+        Visitors.DefaultVisitMany<IVisitor<T>, C, T>(this, values, label);
+    }
+    
+    public void VisitMany<I>(
+        IEnumerable<I> values,
+        Func<I, T> mapper,
+        [CallerArgumentExpression(nameof(values))] string label = "")
+    {
+        Visitors.DefaultVisitMany(this, values, mapper, label);
+    }
+}
 
 /// <summary>
 /// The interface of any visitor type. Note that classes
@@ -25,191 +55,12 @@ public interface IVisitor<in T> : IStatefulVisitor<T>
 /// ever be implemented by non-readonly structs.
 /// </summary>
 public interface IStatefulVisitor<in T>
+    where T : IVisitable<T>
 {
-    void OnVisit(T value);
+    public void OnVisit(T value, VisitLabel label);
 
-    void BeforeVisit(T value);
-    void AfterVisit(T value);
+    public void BeforeVisit(T value, VisitLabel label);
+    public void AfterVisit(T value, VisitLabel label);
 
-    bool ShouldContinue { get; }
-}
-
-/// <summary>
-/// A helper static class containing extension methods defining the main
-/// interfaces with which user code interacts with visitors.
-/// </summary>
-public static class Visitors
-{
-    /// <summary>
-    /// The main interface with which visitors are interacted.
-    /// 
-    /// This must be defined as an extension method rather than a defaulted
-    /// interface member to ensure ref struct support, as the defaulted member
-    /// must box the 'this' parameter.
-    /// </summary>
-    public static void Visit<V, T>(this V visitor, T value)
-        where V : IVisitor<T>, allows ref struct
-        where T : IVisitable<T>
-    {
-        Visit(visitor, value, value);
-    }
-
-    /// <summary>
-    /// A variant of <see cref="Visit{V, T}(V, T)"/> which accepts a 
-    /// distinct visitation handler.
-    /// </summary>
-    public static void Visit<V, T, H>(this V visitor, T value, H visitationHandler)
-        where V : IVisitor<T>, allows ref struct
-        where H : IVisitationHandler<T>
-    {
-        visitor.BeforeVisit(value);
-
-        if (visitor.ShouldContinue)
-        {
-            visitor.OnVisit(value);
-            visitationHandler.PropogateVisitor(value, visitor);
-        }
-
-        visitor.AfterVisit(value);
-    }
-
-    /// <summary>
-    /// A version of <see cref="Visit{V, T}(V, T)"/> which takes the
-    /// visitor by reference and does not require it to be readonly.
-    /// 
-    /// This version does not, however, support ref struct inputs,
-    /// as it is not allowed to take a reference to a ref struct.
-    /// </summary>
-    public static void Visit<V, T>(this ref V visitor, T value)
-        where V : struct, IStatefulVisitor<T>
-        where T : IVisitable<T>
-    {
-        var inner = new ExfiltrateStateVisitor<V, T>(ref visitor);
-        inner.Visit(value);
-    }
-
-    /// <summary>
-    /// A variant of <see cref="Visit{V, T}(ref V, T)"/> which accepts
-    /// a distinct visitation handler.
-    /// </summary>
-    public static void Visit<V, T, H>(this ref V visitor, T value, H visitationHandler)
-        where V : struct, IStatefulVisitor<T>
-        where H : IVisitationHandler<T>
-    {
-        var inner = new ExfiltrateStateVisitor<V, T>(ref visitor);
-        inner.Visit(value, visitationHandler);
-    }
-
-    /// <summary>
-    /// A wrapper around a reference to a non-readonly visitor which
-    /// implements the readonly visitor interface by exfiltrating the
-    /// statefulness to the provided reference.
-    /// </summary>
-    public readonly ref struct ExfiltrateStateVisitor<V, T>(ref V visitor) : IVisitor<T>
-        where V : IStatefulVisitor<T>
-    {
-        private readonly ref V visitor = ref visitor;
-
-        public bool ShouldContinue => visitor.ShouldContinue;
-
-        public void AfterVisit(T value)
-        {
-            visitor.AfterVisit(value);
-        }
-
-        public void BeforeVisit(T value)
-        {
-            visitor.BeforeVisit(value);
-        }
-
-        public void OnVisit(T value)
-        {
-            visitor.OnVisit(value);
-        }
-    }
-
-    /// <summary>
-    /// A ref struct visitor which sets the result ref parameter to true
-    /// if visiting a child which passes the provided predicate.
-    /// </summary>
-    public struct ContainsVisitor<T>(Predicate<T> predicate)
-        : IStatefulVisitor<T>
-    {
-        public bool result = false;
-
-        public readonly bool ShouldContinue => !result;
-
-        public readonly void AfterVisit(T value)
-        { }
-
-        public readonly void BeforeVisit(T value)
-        { }
-
-        public void OnVisit(T value)
-        {
-            if (predicate(value))
-                result = true;
-        }
-    }
-
-    /// <summary>
-    /// Determine if the provided visitable ('this' parameter) contains a node
-    /// which passes the provided predicate.
-    /// </summary>
-    public static bool Contains<T>(this T value, Predicate<T> predicate)
-        where T : IVisitable<T>
-    {
-        var visitor = new ContainsVisitor<T>(predicate);
-        visitor.Visit(value);
-
-        return visitor.result;
-    }
-
-    /// <summary>
-    /// A struct visitor which appends to the provided list the first-level
-    /// children of its provided visitable.
-    /// </summary>
-    public struct GetChildrenVisitor<T>(List<T> children) : IStatefulVisitor<T>
-    {
-        private bool isInFirstNode = false;
-        public readonly bool ShouldContinue => !isInFirstNode;
-
-        public readonly void AfterVisit(T value)
-        { }
-
-        public readonly void BeforeVisit(T value)
-        {
-            if (isInFirstNode)
-            {
-                children.Add(value);
-            }
-        }
-
-        public void OnVisit(T value)
-        {
-            isInFirstNode = true;
-        }
-    }
-
-    /// <summary>
-    /// Add to the provided list the first-order children of this visitable.
-    /// </summary>
-    public static void GetChildren<T>(this T value, List<T> children)
-        where T : IVisitable<T>
-    {
-        var visitor = new GetChildrenVisitor<T>(children);
-        visitor.Visit(value);
-    }
-
-    /// <summary>
-    /// Allocate and populate a list of the first-order children of this visitable.
-    /// </summary>
-    public static List<T> GetChildren<T>(this T value)
-        where T : IVisitable<T>
-    {
-        var result = (List<T>)[];
-        value.GetChildren(result);
-
-        return result;
-    }
+    public bool ShouldContinue { get; }
 }

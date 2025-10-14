@@ -1,6 +1,8 @@
 using Antlr4.Runtime.Misc;
 using Re.C.Antlr;
 using Re.C.Definitions;
+using Re.C.Syntax;
+using Re.C.Visitor;
 
 namespace Re.C.Passes;
 
@@ -11,10 +13,19 @@ public class FunctionDefinitionsPass(RecContext ctx) : BasePass(ctx)
         if (context.DefinedFunction is null)
             return default;
 
-        context.BoundStatements = [..
-            from stmt in context.Body._Statements
-            select CTX.Resolvers.Syntax.Visit(stmt)
-        ];
+        CTX.CurrentFunction = context.DefinedFunction;
+        CTX.EnterScope(CTX.CurrentFunction.InnerScope);
+
+        context.BoundBody = CTX.Resolvers.Syntax.Visit(context.Body).UnwrapAs<Block>();
+
+        Console.WriteLine(context.BoundBody is null);
+
+        Console.WriteLine(
+            "success! syntax tree = \n" +
+            context.BoundBody.UnwrapAs<BoundSyntax>().PrettyPrint());
+
+        CTX.ExitScope();
+        CTX.CurrentFunction = null;
 
         return default;
     }

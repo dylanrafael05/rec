@@ -69,7 +69,7 @@ public static class EnumUtils
             var toT = Expression.Lambda<Func<T, string>>(
                 Expression.Block(
                     Expression.Switch(inputT, throwIOE, [.. casesFromT]),
-                    Expression.Label(outputStr)
+                    Expression.Label(outputStr, Expression.Constant(""))
                 ),
                 inputT
             ).Compile();
@@ -77,7 +77,7 @@ public static class EnumUtils
             var fromT = Expression.Lambda<Func<string, T>>(
                 Expression.Block(
                     Expression.Switch(inputStr, throwIOE, [.. casesToT]),
-                    Expression.Label(outputT)
+                    Expression.Label(outputT, Expression.Constant(default(T)))
                 ),
                 inputStr
             ).Compile();

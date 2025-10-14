@@ -6,10 +6,11 @@ namespace Re.C.Types;
 
 public abstract class Type : IEquatable<Type>, IVisitable<Type>
 {
+    public override string ToString()
+        => FullName;
+
     public abstract string Name { get; }
     public abstract string FullName { get; }
-
-    // TODO; how to handle visitation?
 
     public virtual bool IsSigned => false;
     public virtual bool IsInteger => false;

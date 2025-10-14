@@ -19,4 +19,7 @@ public abstract class DefinitionBase : IDefinition
     public Scope? Parent { get; set; }
     public required Identifier Identifier { get; init; }
     public bool IsLinked { get; set; }
+
+    public override string ToString()
+        => $"{GetType().Name} '{Identifier}'";
 }

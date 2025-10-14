@@ -9,13 +9,9 @@ public static class DefinitionUtils
     {
         public void BuildFullName(StringBuilder builder)
         {
-            if (self.Parent is not null)
+            if (self.Parent is not null && self.Parent.Identifier.IsID)
             {
                 self.Parent.BuildFullName(builder);
-
-                if (self.Identifier.IsID)
-                    return;
-
                 builder.Append("::");
             }
 
