@@ -6,7 +6,7 @@ namespace Re.C.Visitor;
 public static partial class Visitors
 {
     public struct PrettyPrintVisitor<T>(StringBuilder output) : IStatefulVisitor<T>
-        where T : IVisitable<T>
+        where T : IVisitable
     {
         public static readonly Type IEnumerableOfT
             = typeof(IEnumerable<>).MakeGenericType(typeof(T));
@@ -59,7 +59,7 @@ public static partial class Visitors
     /// 
     /// </summary>
     public static string PrettyPrint<T>(this T value)
-        where T : IVisitable<T>
+        where T : IVisitable
     {
         var output = new StringBuilder();
         var visitor = new PrettyPrintVisitor<T>(output);

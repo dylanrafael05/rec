@@ -8,6 +8,36 @@ namespace Re.C.Visitor;
 /// </summary>
 public static partial class Visitors
 {
+    public static void DefaultOnVisitUnbound<V, T>(V self, IVisitable value, VisitLabel label)
+        where V : IStatefulVisitor<T>, allows ref struct
+        where T : IVisitable
+    {
+        if (value is not T t)
+            throw new InvalidCastException($"Visitor expected a value of type {typeof(T)}");
+
+        self.OnVisit(t, label);
+    }
+
+    public static void DefaultBeforeVisitUnbound<V, T>(V self, IVisitable value, VisitLabel label)
+        where V : IStatefulVisitor<T>, allows ref struct
+        where T : IVisitable
+    {
+        if (value is not T t)
+            throw new InvalidCastException($"Visitor expected a value of type {typeof(T)}");
+
+        self.BeforeVisit(t, label);
+    }
+    
+    public static void DefaultAfterVisitUnbound<V, T>(V self, IVisitable value, VisitLabel label)
+        where V : IStatefulVisitor<T>, allows ref struct
+        where T : IVisitable
+    {
+        if (value is not T t)
+            throw new InvalidCastException($"Visitor expected a value of type {typeof(T)}");
+
+        self.AfterVisit(t, label);
+    }
+
     /// <summary>
     /// The main interface with which visitors are interacted.
     /// Automatically determines the child's label via CallerArgumentExpression. 
@@ -19,9 +49,15 @@ public static partial class Visitors
     /// </summary>
     public static void DefaultVisit<V, T>(V visitor, T value, string label)
         where V : IVisitor<T>, allows ref struct
-        where T : IVisitable<T>
+        where T : IVisitable
     {
         DefaultVisit(visitor, value, new VisitLabel(label, Option.None));
+    }
+
+    public static void DefaultVisitUnbound<V>(V visitor, IVisitable value, string label)
+        where V : IVisitor, allows ref struct
+    {
+        DefaultVisitUnbound(visitor, value, new VisitLabel(label, Option.None));
     }
 
     /// <summary>
@@ -30,7 +66,27 @@ public static partial class Visitors
     /// </summary>
     public static void DefaultVisit<V, T>(V visitor, T value, VisitLabel label)
         where V : IVisitor<T>, allows ref struct
-        where T : IVisitable<T>
+        where T : IVisitable
+    {
+        if (value is null)
+        {
+            return;
+            throw Panic($"Cannot visit a null value (label was {label}).");
+        }
+
+        visitor.BeforeVisit(value, label);
+
+        if (visitor.ShouldContinue)
+        {
+            visitor.OnVisit(value, label);
+            value.PropogateVisitor(visitor);
+        }
+
+        visitor.AfterVisit(value, label);
+    }
+    
+    public static void DefaultVisitUnbound<V>(V visitor, IVisitable value, VisitLabel label)
+        where V : IVisitor, allows ref struct
     {
         if (value is null)
         {
@@ -52,7 +108,7 @@ public static partial class Visitors
     public static void DefaultVisitMany<V, C, T>(V visitor, C collection, string label)
         where V : IVisitor<T>, allows ref struct
         where C : IEnumerable<T>
-        where T : IVisitable<T>
+        where T : IVisitable
     {
         var i = 0;
 
@@ -65,11 +121,41 @@ public static partial class Visitors
             i++;
         }
     }
-    
+
+    public static void DefaultVisitManyUnbound<V>(V visitor, IEnumerable<IVisitable> collection, string label)
+        where V : IVisitor, allows ref struct
+    {
+        var i = 0;
+
+        foreach (var innerValue in collection)
+        {
+            visitor.Visit(
+                innerValue,
+                new VisitLabel(label, Option.Some(i))
+            );
+            i++;
+        }
+    }
+
     public static void DefaultVisitMany<V, C, I, T>(V visitor, C collection, Func<I, T> mapper, string label)
         where V : IVisitor<T>, allows ref struct
         where C : IEnumerable<I>
-        where T : IVisitable<T>
+        where T : IVisitable
+    {
+        var i = 0;
+
+        foreach (var innerValue in collection)
+        {
+            visitor.Visit(
+                mapper(innerValue),
+                new VisitLabel(label, Option.Some(i))
+            );
+            i++;
+        }
+    }
+
+    public static void DefaultVisitManyUnbound<V, I>(V visitor, IEnumerable<I> collection, Func<I, IVisitable> mapper, string label)
+        where V : IVisitor, allows ref struct
     {
         var i = 0;
 
@@ -84,25 +170,13 @@ public static partial class Visitors
     }
 
     /// <summary>
-    /// Wrap the provided stateful visitor reference into a ref visitor.
-    /// Note that type deduction will not work with this method, and as such
-    /// visit as ref is preferred.
-    /// </summary>
-    public static RefVisitor<V, T> Ref<V, T>(ref V visitor)
-        where V : IStatefulVisitor<T>
-        where T : IVisitable<T>
-    {
-        return new RefVisitor<V, T>(ref visitor);
-    }
-
-    /// <summary>
     /// Visit the provided value using the provided stateful visitor reference.
     /// </summary>
     public static void VisitAsRef<V, T>(ref V visitor, T value, [CallerArgumentExpression(nameof(value))] string label = "")
         where V : IStatefulVisitor<T>
-        where T : IVisitable<T>
+        where T : IVisitable
     {
-        var rv = Ref<V, T>(ref visitor);
+        var rv = new RefVisitor<V, T>(ref visitor);
         rv.Visit(value, label);
     }
 
@@ -112,43 +186,51 @@ public static partial class Visitors
     /// implements the readonly visitor interface by exfiltrating the
     /// statefulness to the provided reference.
     /// </summary>
-    public readonly ref struct RefVisitor<V, T>(ref V visitor) : IVisitor<T>
+    private readonly ref struct RefVisitor<V, T>(ref V visitor) : IVisitor<T>
         where V : IStatefulVisitor<T>
-        where T : IVisitable<T>
+        where T : IVisitable
     {
         private readonly ref V visitor = ref visitor;
 
         public bool ShouldContinue => visitor.ShouldContinue;
 
-        public void AfterVisit(T value, VisitLabel label)
-        {
-            visitor.AfterVisit(value, label);
-        }
+        void IStatefulVisitor<T>.AfterVisit(T value, VisitLabel label)
+            => visitor.AfterVisit(value, label);
+        void IStatefulVisitor.AfterVisit(IVisitable value, VisitLabel label)
+            => DefaultAfterVisitUnbound<RefVisitor<V, T>, T>(this, value, label);
 
-        public void BeforeVisit(T value, VisitLabel label)
-        {
-            visitor.BeforeVisit(value, label);
-        }
+        void IStatefulVisitor<T>.BeforeVisit(T value, VisitLabel label)
+            => visitor.BeforeVisit(value, label);
+        void IStatefulVisitor.BeforeVisit(IVisitable value, VisitLabel label)
+            => DefaultBeforeVisitUnbound<RefVisitor<V, T>, T>(this, value, label);
 
-        public void OnVisit(T value, VisitLabel label)
-        {
-            visitor.OnVisit(value, label);
-        }
+        void IStatefulVisitor<T>.OnVisit(T value, VisitLabel label)
+            => visitor.OnVisit(value, label);
+        void IStatefulVisitor.OnVisit(IVisitable value, VisitLabel label)
+            => DefaultOnVisitUnbound<RefVisitor<V, T>, T>(this, value, label);
 
         public void Visit(T value, string label)
             => DefaultVisit(this, value, label);
-        public void Visit(T value, VisitLabel label)
+        void IVisitor.Visit(IVisitable value, string label)
+            => DefaultVisitUnbound(this, value, label);
+
+        void IVisitor<T>.Visit(T value, VisitLabel label)
             => DefaultVisit(this, value, label);
-        public void VisitMany<C>(
-            C values,
-            [CallerArgumentExpression(nameof(values))] string label = "")
-            where C : IEnumerable<T>
+        void IVisitor.Visit(IVisitable value, VisitLabel label)
+            => DefaultVisitUnbound(this, value, label);
+
+        void IVisitor<T>.VisitMany<C>(
+            C values, string label)
             => DefaultVisitMany<RefVisitor<V, T>, C, T>(this, values, label);
-        
-        public void VisitMany<I>(
-            IEnumerable<I> values,
-            Func<I, T> mapper,
-            [CallerArgumentExpression(nameof(values))] string label = "")
+        void IVisitor.VisitMany(
+            IEnumerable<IVisitable> values, string label)
+            => DefaultVisitManyUnbound(this, values, label);
+
+        void IVisitor<T>.VisitMany<I>(
+            IEnumerable<I> values, Func<I, T> mapper, string label)
             => DefaultVisitMany(this, values, mapper, label);
+        void IVisitor.VisitMany<I>(
+            IEnumerable<I> values, Func<I, IVisitable> mapper, string label)
+            => DefaultVisitManyUnbound(this, values, mapper, label);
     }
 }

@@ -25,9 +25,8 @@ public readonly record struct VisitLabel(string Label, Option<int> Index)
 /// <summary>
 /// An interface for types which can be visited.
 /// </summary>
-public interface IVisitable<out T>
-    where T : IVisitable<T>
+public interface IVisitable
 {
     public void PropogateVisitor<V>(V visitor)
-        where V : IVisitor<T>, allows ref struct;
+        where V : IVisitor, allows ref struct;
 }

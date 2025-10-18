@@ -7,7 +7,7 @@ public static partial class Visitors
     /// children of its provided visitable.
     /// </summary>
     public struct GetChildrenVisitor<T>(List<T> children) : IStatefulVisitor<T>
-        where T : IVisitable<T>
+        where T : IVisitable
     {
         private bool isInFirstNode = false;
         public readonly bool ShouldContinue => !isInFirstNode;
@@ -33,7 +33,7 @@ public static partial class Visitors
     /// Add to the provided list the first-order children of this visitable.
     /// </summary>
     public static void GetChildren<T>(this T value, List<T> children)
-        where T : IVisitable<T>
+        where T : IVisitable
     {
         var visitor = new GetChildrenVisitor<T>(children);
         VisitAsRef(ref visitor, value);
@@ -43,7 +43,7 @@ public static partial class Visitors
     /// Allocate and populate a list of the first-order children of this visitable.
     /// </summary>
     public static List<T> GetChildren<T>(this T value)
-        where T : IVisitable<T>
+        where T : IVisitable
     {
         var result = (List<T>)[];
         value.GetChildren(result);

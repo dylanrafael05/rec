@@ -4,7 +4,7 @@ using Re.C.Visitor;
 
 namespace Re.C.Types;
 
-public abstract class Type : IEquatable<Type>, IVisitable<Type>
+public abstract class Type : IEquatable<Type>, IVisitable
 {
     public override string ToString()
         => FullName;
@@ -45,6 +45,6 @@ public abstract class Type : IEquatable<Type>, IVisitable<Type>
     }
 
     public virtual void PropogateVisitor<V>(V visitor)
-        where V : IVisitor<Type>, allows ref struct
+        where V : IVisitor, allows ref struct
     { }
 }

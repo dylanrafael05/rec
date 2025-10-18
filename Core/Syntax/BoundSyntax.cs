@@ -8,7 +8,7 @@ namespace Re.C.Syntax;
 /// <summary>
 /// The base class of all nodes of the bound syntax tree.
 /// </summary>
-public abstract class BoundSyntax : IVisitable<BoundSyntax>
+public abstract class BoundSyntax : IVisitable
 {
     public required SourceSpan Span { get; init; }
 
@@ -22,6 +22,6 @@ public abstract class BoundSyntax : IVisitable<BoundSyntax>
         => ErrorStatement(tree.CalculateSourceSpan(), ctx);
 
     public virtual void PropogateVisitor<V>(V visitor) 
-        where V : IVisitor<BoundSyntax>, allows ref struct
+        where V : IVisitor, allows ref struct
     {}
 }

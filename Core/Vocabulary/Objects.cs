@@ -21,4 +21,15 @@ public static class Objects
         [CallerArgumentExpression(nameof(self))] string? arg = null)
         where U : class
         => self as U ?? throw Panic(string.Format(message, arg, typeof(U).FullName));
+
+    /// <summary>
+    /// A wrapper around GetType which does not allocate for struct types.
+    /// </summary>
+    public static Type GetType<T>(T? instance)
+    {
+        if (typeof(T).IsValueType)
+            return typeof(T);
+
+        return instance!.GetType();
+    }
 }

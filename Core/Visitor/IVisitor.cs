@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Runtime.CompilerServices;
 using OneOf.Types;
 
@@ -17,8 +18,8 @@ namespace Re.C.Visitor;
 /// as <see cref="Visitors"/> provides a method to use
 /// these stateful visitors.
 /// </summary>
-public interface IVisitor<in T> : IStatefulVisitor<T>
-    where T : IVisitable<T>
+public interface IVisitor<in T> : IStatefulVisitor<T>, IVisitor
+    where T : IVisitable
 {
     public void Visit(T value, [CallerArgumentExpression(nameof(value))] string label = "")
     {
@@ -37,13 +38,41 @@ public interface IVisitor<in T> : IStatefulVisitor<T>
     {
         Visitors.DefaultVisitMany<IVisitor<T>, C, T>(this, values, label);
     }
-    
+
     public void VisitMany<I>(
         IEnumerable<I> values,
         Func<I, T> mapper,
         [CallerArgumentExpression(nameof(values))] string label = "")
     {
         Visitors.DefaultVisitMany(this, values, mapper, label);
+    }
+}
+
+public interface IVisitor : IStatefulVisitor
+{
+    public void Visit(IVisitable value, [CallerArgumentExpression(nameof(value))] string label = "")
+    {
+        Visitors.DefaultVisitUnbound(this, value, label);
+    }
+    
+    public void Visit(IVisitable value, VisitLabel label)
+    {
+        Visitors.DefaultVisitUnbound(this, value, label);
+    }
+
+    public void VisitMany(
+        IEnumerable<IVisitable> values,
+        [CallerArgumentExpression(nameof(values))] string label = "")
+    {
+        Visitors.DefaultVisitManyUnbound(this, values, label);
+    }
+
+    public void VisitMany<I>(
+        IEnumerable<I> values,
+        Func<I, IVisitable> mapper,
+        [CallerArgumentExpression(nameof(values))] string label = "")
+    {
+        Visitors.DefaultVisitManyUnbound(this, values, mapper, label);
     }
 }
 
@@ -54,13 +83,30 @@ public interface IVisitor<in T> : IStatefulVisitor<T>
 /// <see cref="IVisitor{T}"/>. This interface should only
 /// ever be implemented by non-readonly structs.
 /// </summary>
-public interface IStatefulVisitor<in T>
-    where T : IVisitable<T>
+public interface IStatefulVisitor<in T> : IStatefulVisitor
+    where T : IVisitable
 {
     public void OnVisit(T value, VisitLabel label);
 
     public void BeforeVisit(T value, VisitLabel label);
     public void AfterVisit(T value, VisitLabel label);
+
+    void IStatefulVisitor.OnVisit(IVisitable value, VisitLabel label)
+        => Visitors.DefaultOnVisitUnbound<IStatefulVisitor<T>, T>(this, value, label);
+
+    void IStatefulVisitor.BeforeVisit(IVisitable value, VisitLabel label)
+        => Visitors.DefaultBeforeVisitUnbound<IStatefulVisitor<T>, T>(this, value, label);
+    
+    void IStatefulVisitor.AfterVisit(IVisitable value, VisitLabel label)
+        => Visitors.DefaultAfterVisitUnbound<IStatefulVisitor<T>, T>(this, value, label);
+}
+
+public interface IStatefulVisitor
+{
+    public void OnVisit(IVisitable value, VisitLabel label);
+
+    public void BeforeVisit(IVisitable value, VisitLabel label);
+    public void AfterVisit(IVisitable value, VisitLabel label);
 
     public bool ShouldContinue { get; }
 }

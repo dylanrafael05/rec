@@ -7,7 +7,7 @@ public static partial class Visitors
     /// if visiting a child which passes the provided predicate.
     /// </summary>
     public struct ContainsVisitor<T>(Predicate<T> predicate) : IStatefulVisitor<T>
-        where T : IVisitable<T>
+        where T : IVisitable
     {
         public bool result = false;
 
@@ -31,7 +31,7 @@ public static partial class Visitors
     /// which passes the provided predicate.
     /// </summary>
     public static bool Contains<T>(this T value, Predicate<T> predicate)
-        where T : IVisitable<T>
+        where T : IVisitable
     {
         var visitor = new ContainsVisitor<T>(predicate);
         VisitAsRef(ref visitor, value);
