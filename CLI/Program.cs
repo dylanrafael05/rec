@@ -19,3 +19,5 @@ foreach (var diag in compiler.CTX.Diagnostics)
 {
     Console.WriteLine(diag.Format());
 }
+
+Console.WriteLine(compiler.CTX.Module.PrintToString());

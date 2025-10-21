@@ -1,4 +1,5 @@
 ﻿using LLVMSharp.Interop;
+using Re.C.Compilation;
 using Re.C.Definitions;
 using Re.C.Passes;
 using Re.C.Syntax.Resolvers;
@@ -18,7 +19,7 @@ public class RecContext
     /// <summary>
     /// The LLVM context which compilation occurs in.
     /// </summary>
-    public required LLVMContextRef Context { get; init; }
+    public required LLVMContextRef LLVM { get; init; }
     /// <summary>
     /// The LLVM module where all compiled code resides.
     /// </summary>
@@ -106,6 +107,10 @@ public class RecContext
     /// A reference to all the resolvers for this context.
     /// </summary>
     public RecResolvers Resolvers { get; }
+    /// <summary>
+    /// An instance of the syntax compiler.
+    /// </summary>
+    public SyntaxCompiler SyntaxCompiler { get; }
 
     private RecContext()
     {
@@ -115,7 +120,8 @@ public class RecContext
             TypeDeclarations = new(this),
             FunctionDeclarations = new(this),
             TypeDefinitions = new(this),
-            FunctionDefinitions = new(this)
+            FunctionDefinitions = new(this),
+            LLVMGeneration = new(this),
         };
 
         Resolvers = new()
@@ -123,6 +129,8 @@ public class RecContext
             Type = new(this),
             Syntax = new(this)
         };
+
+        SyntaxCompiler = new(this);
     }
 
     /// <summary>
@@ -152,7 +160,7 @@ public class RecContext
         LLVMContextRef llvmContext,
         string moduleName)
     {
-        LLVM.InitializeNativeTarget();
+        LLVMSharp.Interop.LLVM.InitializeNativeTarget();
 
         var target = LLVMTargetRef.GetTargetFromTriple(LLVMTargetRef.DefaultTriple);
         var machine = target.CreateTargetMachine(
@@ -202,13 +210,14 @@ public class RecContext
             LLVMTypeRef.CreateFunction(LLVMTypeRef.Void, [LLVMTypeRef.CreatePointer(LLVMTypeRef.Void, 0)]));
 
         // TODO: this crashes. make it not crash
-        // builder.PositionAtEnd(emptyDestructor.EntryBasicBlock);
-        // builder.BuildRetVoid();
-        // builder.ClearInsertionPosition();
+        emptyDestructor.AppendBasicBlock("entry");
+        builder.PositionAtEnd(emptyDestructor.EntryBasicBlock);
+        builder.BuildRetVoid();
+        builder.ClearInsertionPosition();
 
         return new()
         {
-            Context = llvmContext,
+            LLVM = llvmContext,
             Module = module,
             Builder = builder,
             TargetData = targetData,

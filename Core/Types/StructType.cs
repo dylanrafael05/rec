@@ -22,7 +22,7 @@ public class StructType : NamedType
 
     protected override LLVMTypeRef BuildLLVMType(RecContext ctx)
     {
-        var type = ctx.Context.CreateNamedStruct(FullName); /* TODO: mangling */
+        var type = ctx.LLVM.CreateNamedStruct(FullName); /* TODO: mangling */
         type.StructSetBody([.. from f in Fields select f.Type.GetLLVMType(ctx)], false);
 
         return type;

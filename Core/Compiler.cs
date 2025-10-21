@@ -37,6 +37,7 @@ public class Compiler
         RunASTPass(CTX.Passes.FunctionDeclarations);
         RunASTPass(CTX.Passes.TypeDeclarations);
         RunASTPass(CTX.Passes.FunctionDefinitions);
+        RunASTPass(CTX.Passes.LLVMGeneration);
     }
     
     public void RunASTPass(IRecVisitor<Unit> visitor)

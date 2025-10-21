@@ -67,7 +67,7 @@ public partial class SyntaxResolver
     public override BoundSyntax VisitStringLiteral([NotNull] RecParser.StringLiteralContext context)
     {
         var span = context.CalculateSourceSpan();
-        var raw = context.String().Symbol.Text[1..^1];
+        var raw = context.String().GetText()[1..^1];
 
         var value = new StringBuilder();
         var index = 0;
@@ -103,6 +103,7 @@ public partial class SyntaxResolver
 
                 value.Append(chr);
             }
+            else value.Append(raw[index]);
 
             index++;
         }

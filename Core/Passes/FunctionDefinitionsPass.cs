@@ -10,13 +10,14 @@ public class FunctionDefinitionsPass(RecContext ctx) : BasePass(ctx)
 {
     public override Unit VisitFnDefine([NotNull] RecParser.FnDefineContext context)
     {
-        if (context.DefinedFunction is null)
+        if (context.DefinedFunction is null || context.DefinedFunction.IsExternal)
             return default;
 
         CTX.CurrentFunction = context.DefinedFunction;
         CTX.EnterScope(CTX.CurrentFunction.InnerScope);
 
         context.BoundBody = CTX.Resolvers.Syntax.Visit(context.Body).UnwrapAs<Block>();
+        context.DefinedFunction.Body = Option.Some(context.BoundBody);
 
         Console.WriteLine(context.BoundBody is null);
 

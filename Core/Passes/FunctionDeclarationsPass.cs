@@ -35,8 +35,12 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
             Identifier = context.Name.TextAsIdentifier,
             Type = type,
 
-            InnerScope = new Scope { Identifier = Identifier.None, Parent = CTX.CurrentScope }
+            InnerScope = new Scope { Identifier = Identifier.None, Parent = CTX.CurrentScope },
+
+            IsExternal = context.External() is not null
         };
+
+        // TODO: throw errors on improper usage of 'external'
 
         context.DefinedFunction = CTX.CurrentScope.DefineOrDiagnose(
             CTX, context.CalculateSourceSpan(), function);

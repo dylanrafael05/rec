@@ -55,6 +55,7 @@ False    : 'false';
 Uninit   : 'uninit';
 As       : 'as';
 Cast     : 'cast';
+External : 'external';
 
 Identifier : LETTER+ (DIGIT | LETTER)*;
 
@@ -148,10 +149,10 @@ locals [
     Re.C.Definitions.Function? DefinedFunction = null,
     Re.C.Syntax.Block? BoundBody = null
 ]
-    : templateHeader? Fn Name=Identifier 
+    : templateHeader? External? Fn Name=Identifier 
       '(' (Args+=fnArgumentDefine (',' Args+=fnArgumentDefine)*)? ')'
       Ret=typename?
-      Body=block
+      Body=block?
     ;
 
 aliasDefine

@@ -12,5 +12,5 @@ public class NoneType : NamedType
         => [];
 
     protected override LLVMTypeRef BuildLLVMType(RecContext ctx)
-        => ctx.Context.VoidType;
+        => ctx.LLVM.VoidType;
 }

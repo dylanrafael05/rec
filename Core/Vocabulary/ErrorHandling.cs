@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Re.C.Vocabulary;
 
@@ -42,10 +43,21 @@ public static class ErrorHandling
     /// that the code is not yet completed at this location.
     /// </summary>
     public static Exception Todo => new TodoException();
-    
+
     /// <summary>
     /// Throw the result of this function to signal
     /// that the code is not unimplemented at this location.
     /// </summary>
-    public static Exception Unimplemented => new TodoException();
+    public static Exception Unimplemented => new UnimplementedException();
+    
+    /// <summary>
+    /// Assert at runtime that a condition is true
+    /// </summary>
+    public static void Assert(bool condition, [CallerArgumentExpression(nameof(condition))] string msg = "")
+    {
+        if(!condition)
+        {
+            throw Panic($"assertion failed: {msg}");
+        }
+    }
 }
