@@ -11,9 +11,11 @@ public partial class SyntaxResolver
 {
     public override BoundSyntax VisitIfStatement([NotNull] RecParser.IfStatementContext context)
     {
+        // Visit constituent parts //
         var condition = Visit(context.Cond).UnwrapAs<Expression>();
         var block = Visit(context.Body).UnwrapAs<Block>();
 
+        // Visit tail //
         OneOf<IfStatement, Block, Unit> tail = context.Tail switch
         {
             RecParser.ElseStatementContext @else => Visit(@else.EndBlock).UnwrapAs<Block>(),
@@ -23,6 +25,7 @@ public partial class SyntaxResolver
             _ => throw Unimplemented
         };
 
+        // Error on non-boolean condition //
         if (condition.Type != CTX.BuiltinTypes.Bool)
         {
             CTX.Diagnostics.AddError(

@@ -1,0 +1,5 @@
+fn test_expand() u64
+{
+    let x u32 = 0 cast(u32);
+    return x cast(u64);
+}

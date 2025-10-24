@@ -10,7 +10,7 @@ public class LLVMGenerationPass(RecContext ctx) : BasePass(ctx)
 {
     public override Unit VisitFnDefine([NotNull] RecParser.FnDefineContext context)
     {
-        CTX.SyntaxCompiler.CompileFunction(context.DefinedFunction.UnwrapNull());
+        CTX.SyntaxCompiler.RealizeFunction(context.DefinedFunction.UnwrapNull());
         return default;
     }
 }

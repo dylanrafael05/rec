@@ -6,6 +6,6 @@ namespace Re.C.Compilation;
 
 public partial class SyntaxCompiler
 {
-    public RecValue Compile(FunctionExpression context)
+    private RecValue CompileFunctionRef(FunctionExpression context)
         => context.Function.LLVMFunction.Unwrap();
 }

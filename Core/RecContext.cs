@@ -83,6 +83,12 @@ public class RecContext
             return result;
         }
     }
+    /// <summary>
+    /// Provided a view of the current LLVM function, or panics
+    /// if there is no such function.
+    /// </summary>
+    public LLVMValueRef CurrentLLVMFunction => 
+        CurrentFunction.UnwrapNull().LLVMFunction.Unwrap();
 
     /// <summary>
     /// A stack storing all scopes as they are superceded.
@@ -160,6 +166,7 @@ public class RecContext
         LLVMContextRef llvmContext,
         string moduleName)
     {
+        // TODO: improve organization of this method; exfiltrate segments
         LLVMSharp.Interop.LLVM.InitializeNativeTarget();
 
         var target = LLVMTargetRef.GetTargetFromTriple(LLVMTargetRef.DefaultTriple);
@@ -190,7 +197,7 @@ public class RecContext
             Error = new ErrorType(),
             None = scope.Define(new NoneType { Identifier = Identifier.Name("none") }).UnwrapNull(),
 
-            Bool = MakePrimitive(llvmContext.Int1Type, "bool", PrimitiveType.Class.Other),
+            Bool = MakePrimitive(llvmContext.Int1Type, "bool", PrimitiveType.Class.Bool),
             I8 = MakePrimitive(llvmContext.Int8Type, "i8", PrimitiveType.Class.SignedInt),
             I16 = MakePrimitive(llvmContext.Int16Type, "i16", PrimitiveType.Class.SignedInt),
             I32 = MakePrimitive(llvmContext.Int32Type, "i32", PrimitiveType.Class.SignedInt),
@@ -205,16 +212,6 @@ public class RecContext
             F64 = MakePrimitive(llvmContext.DoubleType, "f64", PrimitiveType.Class.Float),
         };
 
-        var emptyDestructor = module.AddFunction(
-            "__empty_destructor",
-            LLVMTypeRef.CreateFunction(LLVMTypeRef.Void, [LLVMTypeRef.CreatePointer(LLVMTypeRef.Void, 0)]));
-
-        // TODO: this crashes. make it not crash
-        emptyDestructor.AppendBasicBlock("entry");
-        builder.PositionAtEnd(emptyDestructor.EntryBasicBlock);
-        builder.BuildRetVoid();
-        builder.ClearInsertionPosition();
-
         return new()
         {
             LLVM = llvmContext,
@@ -225,8 +222,6 @@ public class RecContext
             GlobalScope = scope,
             CurrentScope = scope,
             BuiltinTypes = types,
-
-            EmptyDestructor = emptyDestructor,
         };
     }
 }

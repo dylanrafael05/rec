@@ -21,8 +21,8 @@ public class PointerType : Type
         => ctx.EmptyDestructor;
     public override FieldDescriptor[] GetFields(RecContext ctx)
         => [];
-    protected override LLVMTypeRef BuildLLVMType(RecContext ctx)
-        => LLVMTypeRef.CreatePointer(Pointee.GetLLVMType(ctx), 0);
+    protected override LLVMTypeRef ImplementCompile(RecContext ctx)
+        => LLVMTypeRef.CreatePointer(Pointee.Compile(ctx), 0);
 
     public override void PropogateVisitor<V>(V visitor)
         => visitor.Visit(Pointee);

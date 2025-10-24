@@ -14,6 +14,9 @@ public partial class SyntaxResolver
         var value = Visit(context.Value).UnwrapAs<Expression>();
         var expectedType = CTX.CurrentFunction.UnwrapNull().Type.Return;
 
+        // TODO: how should definely-returns analysis take place?
+
+        // Error on mismatching return type //
         if (value.Type != expectedType)
         {
             CTX.Diagnostics.AddError(

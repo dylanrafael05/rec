@@ -11,6 +11,11 @@ namespace Re.C.Syntax;
 public abstract class BoundSyntax : IVisitable
 {
     public required SourceSpan Span { get; init; }
+    
+    [FieldOption(PrintLevel.Hidden)] 
+    public virtual bool IsError { get; }
+    [FieldOption(PrintLevel.Hidden)] 
+    public bool ContainsError => this.Contains(static s => s.IsError);
 
     public static ErrorExpression ErrorExpression(SourceSpan span, RecContext ctx)
         => new() { Span = span, Type = ctx.BuiltinTypes.Error };

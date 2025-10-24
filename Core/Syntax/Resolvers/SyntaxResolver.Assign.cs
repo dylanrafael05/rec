@@ -10,10 +10,12 @@ public partial class SyntaxResolver
 {
     public override BoundSyntax VisitAssignStatement([NotNull] RecParser.AssignStatementContext context)
     {
+        // Visit constituent parts //
         var span = context.CalculateSourceSpan();
         var target = Visit(context.Target).UnwrapAs<Expression>();
         var value = Visit(context.Value).UnwrapAs<Expression>();
 
+        // Error on mismatched types or un-assignable target //
         if (target.Type != value.Type)
         {
             CTX.Diagnostics.AddError(

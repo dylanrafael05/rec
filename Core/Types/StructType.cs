@@ -20,10 +20,10 @@ public class StructType : NamedType
         Fields = fields;
     }
 
-    protected override LLVMTypeRef BuildLLVMType(RecContext ctx)
+    protected override LLVMTypeRef ImplementCompile(RecContext ctx)
     {
         var type = ctx.LLVM.CreateNamedStruct(FullName); /* TODO: mangling */
-        type.StructSetBody([.. from f in Fields select f.Type.GetLLVMType(ctx)], false);
+        type.StructSetBody([.. from f in Fields select f.Type.Compile(ctx)], false);
 
         return type;
     }
@@ -35,7 +35,7 @@ public class StructType : NamedType
 
     public override FieldDescriptor[] GetFields(RecContext ctx)
     {
-        var llvm = GetLLVMType(ctx);
+        var llvm = Compile(ctx);
 
         throw Todo;
 

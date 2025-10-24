@@ -9,6 +9,8 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
 {
     public override Unit VisitFnDefine([NotNull] RecParser.FnDefineContext context)
     {
+        var span = context.CalculateSourceSpan();
+
         // Get the type of the function from its signature
         var type = new FunctionType
         {
@@ -22,47 +24,71 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
                 : CTX.Resolvers.Type.Visit(context.Ret)
         };
 
+        var argNames = (Identifier[])[..
+            from arg in context._Args
+            select arg.Identifier().TextAsIdentifier
+        ];
+
+        // Define arguments in an anonymous inner scope
+        var innerScope = new Scope 
+        { 
+            Identifier = Identifier.None, 
+            Parent = CTX.CurrentScope 
+        };
+
+        var argInfo = argNames
+            .Zip(type.Parameters)
+            .Zip(context._Args);
+
+        var argDefs = (Variable?[])[..
+            from info in argInfo
+                let name = info.First.First
+                let argtype = info.First.Second
+                let syntax = info.Second
+                select innerScope.DefineOrDiagnose(CTX, syntax.CalculateSourceSpan(), new Variable
+                {
+                    Type = argtype,
+                    Identifier = name
+                })
+        ];
+
         // Create the function definition object, but do not
         // yet assign its LLVM function reference (this will be done after
         // defining it in the current scope).
         var function = new Function
         {
-            ArgumentNames = [..
-                from arg in context._Args
-                select arg.Identifier().TextAsIdentifier
-            ],
+            ArgumentNames = argNames,
 
             Identifier = context.Name.TextAsIdentifier,
             Type = type,
 
-            InnerScope = new Scope { Identifier = Identifier.None, Parent = CTX.CurrentScope },
+            InnerScope = innerScope,
+            ArgumentDefs = argDefs,
 
             IsExternal = context.External() is not null
         };
 
-        // TODO: throw errors on improper usage of 'external'
-
         context.DefinedFunction = CTX.CurrentScope.DefineOrDiagnose(
-            CTX, context.CalculateSourceSpan(), function);
+            CTX, span, function);
+
+        // Report errors for invalid usage of 'external'
+        if(function.IsExternal && context.Body != null)
+        {
+            CTX.Diagnostics.AddError(
+                span, Errors.BodyForExtern(function.Identifier));
+        }
+        else if(!function.IsExternal && context.Body == null)
+        {
+            CTX.Diagnostics.AddError(
+                span, Errors.NoBodyForNonExtern(function.Identifier));
+        }
 
         // If we have succeeded, create the LLVM function
         if (context.DefinedFunction is not null)
         {
             // TODO: mangle names here?
             function.LLVMFunction = Option.Some(
-                CTX.Module.AddFunction(function.FullName, function.Type.GetLLVMType(CTX)));
-
-            // Define all arguments as variables in the function's inner scope
-            foreach(var ((name, argtype), syntax) in function.ArgumentNames
-                .Zip(function.Type.Parameters)
-                .Zip(context._Args))
-            {
-                function.InnerScope.DefineOrDiagnose(CTX, syntax.CalculateSourceSpan(), new Variable
-                {
-                    Type = argtype,
-                    Identifier = name
-                });
-            }
+                CTX.Module.AddFunction(function.FullName, function.Type.Compile(CTX)));
         }
 
         return default;

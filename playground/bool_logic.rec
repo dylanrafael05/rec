@@ -1,0 +1,14 @@
+fn test_and() bool
+{
+    return true and false;
+}
+
+fn test_or() bool
+{
+    return false or true;
+}
+
+fn my_xor(a bool, b bool) bool
+{
+    return (a and not b) or (b and not a);
+}

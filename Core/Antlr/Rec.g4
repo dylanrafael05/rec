@@ -268,6 +268,7 @@ unaryOperator
     : '+' #PositOperator
     | '-' #NegateOperator
     | '~' #BitNotOperator
+    | Not #LogicNotOperator
     ;
 
 memoryOperator

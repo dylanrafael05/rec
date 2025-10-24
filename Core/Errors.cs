@@ -19,6 +19,11 @@ public static class Errors
     public static string Redefinition(Identifier name, Scope scope)
         => $"Redefinition of '{name}' in '{scope}'";
 
+    public static string NoBodyForNonExtern(Identifier name)
+        => $"Non-external function '{name}' must define a body";
+    public static string BodyForExtern(Identifier name)
+        => $"External function '{name}' cannot define a body";
+
     public static string UnknownEscapeSequence(string escape)
         => $"Unrecognized escape sequence '{escape}'";
 
@@ -35,6 +40,12 @@ public static class Errors
         => $"Unary operator {UnaryOperator.GetRepr(op)} does not accept operand of type {operand}";
     public static string InvalidConditionType(Types.Type condition)
         => $"Control flow conditions must be booleans, not {condition}";
+    public static string InvalidCast(Types.Type to, Types.Type from)
+        => $"Cannot cast from value of type {from} to {to}";
+    public static string InvalidDereference(Types.Type operand)
+        => $"Cannot dereference value of type {operand}";
+    public static string InvalidAddressOf()
+        => $"Cannot take address of this expression";
 
     public static string CallToNonFunctionType(Types.Type type)
         => $"Cannot call a non-function value of type {type}";

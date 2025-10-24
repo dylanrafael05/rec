@@ -7,7 +7,7 @@ namespace Re.C.Compilation;
 
 public partial class SyntaxCompiler
 {
-    public RecValue Compile(CallExpression context)
+    private RecValue CompileCall(CallExpression context)
     {
         // TODO: 'unit' typed arguments?
         var args = (LLVMValueRef[])[..
@@ -19,6 +19,6 @@ public partial class SyntaxCompiler
 
         Assert(fnType is FunctionType);
 
-        return CTX.Builder.BuildCall2(fnType.GetLLVMType(CTX), fnValue, args);
+        return CTX.Builder.BuildCall2(fnType.Compile(CTX), fnValue, args);
     }
 }

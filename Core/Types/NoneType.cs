@@ -11,6 +11,6 @@ public class NoneType : NamedType
     public override FieldDescriptor[] GetFields(RecContext ctx)
         => [];
 
-    protected override LLVMTypeRef BuildLLVMType(RecContext ctx)
+    protected override LLVMTypeRef ImplementCompile(RecContext ctx)
         => ctx.LLVM.VoidType;
 }

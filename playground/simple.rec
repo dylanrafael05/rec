@@ -1,4 +1,5 @@
-external fn puts(str *u16)
+external fn puts(str *u8)
+external fn malloc(sz usize) *none
 
 fn zero() u64
 {

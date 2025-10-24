@@ -21,12 +21,14 @@ public static class ErrorHandling
     private class TodoException : Exception
     {
         public TodoException() : base("todo!") { }
+        public TodoException(string reason) : base($"todo: {reason}") { }
     }
     
     [Serializable]
     private class UnimplementedException : Exception
     {
         public UnimplementedException() : base("unimplemented") { }
+        public UnimplementedException(string reason) : base($"unimplemented: {reason}") { }
     }
 
     /// <summary>
@@ -49,6 +51,13 @@ public static class ErrorHandling
     /// that the code is not unimplemented at this location.
     /// </summary>
     public static Exception Unimplemented => new UnimplementedException();
+    
+    /// <summary>
+    /// Throw the result of this function to signal
+    /// that the code is not unimplemented at this location.
+    /// </summary>
+    public static Exception UnimplementedBecause(string reason) => new UnimplementedException(reason);
+    
     
     /// <summary>
     /// Assert at runtime that a condition is true

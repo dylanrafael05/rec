@@ -6,7 +6,7 @@ namespace Re.C.Compilation;
 
 public partial class SyntaxCompiler
 {
-    public void Compile(Block context)
+    private void Compile(Block context)
     {
         foreach(var stmt in context.Syntax)
         {

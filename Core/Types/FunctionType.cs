@@ -38,10 +38,10 @@ public class FunctionType : Type
         => ctx.EmptyDestructor;
     public override FieldDescriptor[] GetFields(RecContext ctx)
         => [];
-    protected override LLVMTypeRef BuildLLVMType(RecContext ctx)
+    protected override LLVMTypeRef ImplementCompile(RecContext ctx)
         => LLVMTypeRef.CreateFunction(
-            Return?.GetLLVMType(ctx) ?? LLVMTypeRef.Void,
-            [.. from p in Parameters select p.GetLLVMType(ctx)]
+            Return?.Compile(ctx) ?? LLVMTypeRef.Void,
+            [.. from p in Parameters select p.Compile(ctx)]
         );
 
     public override void PropogateVisitor<V>(V visitor)

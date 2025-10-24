@@ -6,16 +6,16 @@ namespace Re.C.Compilation;
 
 public partial class SyntaxCompiler
 {
-    public RecValue Compile(IntLiteral context)
+    private RecValue CompileInt(IntLiteral context)
         => LLVMValueRef.CreateConstIntOfArbitraryPrecision(
-            context.Type.GetLLVMType(CTX),
+            context.Type.Compile(CTX),
             unchecked([(ulong)context.Value, (ulong)(context.Value >> (128 / 2))]));
 
-    public RecValue Compile(FloatLiteral context)
+    private RecValue CompileFloat(FloatLiteral context)
         => LLVMValueRef.CreateConstReal(
-            context.Type.GetLLVMType(CTX),
+            context.Type.Compile(CTX),
             context.Value);
             
-    public RecValue Compile(StringLiteral context)
+    private RecValue CompileString(StringLiteral context)
         => CTX.Builder.BuildGlobalString(context.Value);
 }

@@ -25,8 +25,6 @@ public class Compiler
     public IReadOnlyList<Source> Sources => sources;
     public Dictionary<Source, IParseTree> ParseTrees { get; } = [];
 
-    // TODO: complete definition of compiler class;
-    // add functionality to run all passes in successive order and output
     public void CompileAll()
     {
         foreach (var source in Sources)
@@ -38,6 +36,8 @@ public class Compiler
         RunASTPass(CTX.Passes.TypeDeclarations);
         RunASTPass(CTX.Passes.FunctionDefinitions);
         RunASTPass(CTX.Passes.LLVMGeneration);
+
+        CTX.Module.Verify(LLVMVerifierFailureAction.LLVMAbortProcessAction);
     }
     
     public void RunASTPass(IRecVisitor<Unit> visitor)

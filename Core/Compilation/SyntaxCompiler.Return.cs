@@ -6,7 +6,7 @@ namespace Re.C.Compilation;
 
 public partial class SyntaxCompiler
 {
-    public void Compile(ReturnStatement context)
+    public void CompileReturn(ReturnStatement context)
     {
         var val = Compile(context.Value);
 

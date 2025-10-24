@@ -10,6 +10,7 @@ public partial class SyntaxResolver
 {
     public override BoundSyntax VisitLetStatement([NotNull] RecParser.LetStatementContext context)
     {
+        // Visit constituent parts //
         var span = context.CalculateSourceSpan();
         var expr = Visit(context.Value).UnwrapAs<Expression>();
         var type = context.VarType switch
@@ -18,6 +19,7 @@ public partial class SyntaxResolver
             var nonnull => CTX.Resolvers.Type.Visit(nonnull)
         };
 
+        // Error on type mismatch //
         if (type != expr.Type)
         {
             CTX.Diagnostics.AddError(
@@ -25,6 +27,7 @@ public partial class SyntaxResolver
                 Errors.TypeMismatch(type, expr.Type));
         }
 
+        // Attempt to define associated variable //
         var variable = CTX.CurrentScope.DefineOrDiagnose(
             CTX, span,
             new Variable
@@ -34,6 +37,7 @@ public partial class SyntaxResolver
             }
         );
 
+        // Return appropriate statement wrapper //
         if (variable is null)
         {
             return new ErrorStatement

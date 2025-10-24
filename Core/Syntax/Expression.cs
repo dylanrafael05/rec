@@ -1,3 +1,5 @@
+using Re.C.Visitor;
+
 namespace Re.C.Syntax;
 
 /// <summary>
@@ -7,5 +9,7 @@ namespace Re.C.Syntax;
 public class Expression : BoundSyntax
 {
     public required Types.Type Type { get; init; }
+    
+    [FieldOption(PrintLevel.Hidden)] 
     public virtual bool Assignable => false;
 }

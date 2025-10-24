@@ -19,6 +19,6 @@ public class ErrorType : Type
         => throw new NotSupportedException();
     public override FieldDescriptor[] GetFields(RecContext ctx)
         => throw new NotSupportedException();
-    protected override LLVMTypeRef BuildLLVMType(RecContext ctx)
+    protected override LLVMTypeRef ImplementCompile(RecContext ctx)
         => throw new NotSupportedException();
 }
