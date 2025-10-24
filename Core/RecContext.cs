@@ -54,6 +54,10 @@ public class RecContext
     public required Scope GlobalScope { get; init; }
 
     /// <summary>
+    /// The type currently 'inside' for the purposes of 'as' declarations.
+    /// </summary>
+    public Types.Type? CurrentAssociatedType { get; set; }
+    /// <summary>
     /// The function within which compilation is currently taking place.
     /// </summary>
     public Function? CurrentFunction { get; set; }

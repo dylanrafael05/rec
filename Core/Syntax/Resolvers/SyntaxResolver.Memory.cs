@@ -34,7 +34,7 @@ public partial class SyntaxResolver
         else if(context.Op is RecParser.AddressofOperatorContext)
         {
             // Address of operator //
-            if(!inner.Assignable)
+            if(!inner.HasAddress)
             {
                 CTX.Diagnostics.AddError(
                     span, Errors.InvalidAddressOf());

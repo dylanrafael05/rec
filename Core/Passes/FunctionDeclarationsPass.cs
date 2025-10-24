@@ -7,16 +7,26 @@ namespace Re.C.Passes;
 
 public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
 {
+    public override bool EnterAsBlocks => true;
+
     public override Unit VisitFnDefine([NotNull] RecParser.FnDefineContext context)
     {
         var span = context.CalculateSourceSpan();
+        var selfType = context.fnSelfDefine() switch
+        {
+            RecParser.FnDefineSelfContext => CTX.CurrentAssociatedType.UnwrapNull(),
+            RecParser.FnDefineSelfPtrContext => Types.Type.Pointer(CTX.CurrentAssociatedType.UnwrapNull()),
+            
+            _ => null
+        };
 
         // Get the type of the function from its signature
         var type = new FunctionType
         {
-            Parameters = [..
-                from arg in context._Args
-                select CTX.Resolvers.Type.Visit(arg.typename())
+            Parameters = [
+                ..from arg in context._Args
+                select CTX.Resolvers.Type.Visit(arg.typename()),
+                ..Option.Nonnull(selfType)
             ],
 
             Return = context.Ret is null
@@ -24,9 +34,10 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
                 : CTX.Resolvers.Type.Visit(context.Ret)
         };
 
-        var argNames = (Identifier[])[..
-            from arg in context._Args
-            select arg.Identifier().TextAsIdentifier
+        var argNames = (Identifier[])[
+            ..from arg in context._Args
+            select arg.Identifier().TextAsIdentifier,
+            ..Option.Nonnull(selfType).Map(_ => Identifier.Name("self"))
         ];
 
         // Define arguments in an anonymous inner scope
@@ -65,7 +76,8 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
             InnerScope = innerScope,
             ArgumentDefs = argDefs,
 
-            IsExternal = context.External() is not null
+            IsExternal = context.External() is not null,
+            HasReceiver = selfType is not null
         };
 
         context.DefinedFunction = CTX.CurrentScope.DefineOrDiagnose(

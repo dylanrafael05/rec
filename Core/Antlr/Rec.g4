@@ -14,6 +14,9 @@ options
 {
     public int LoopDepth { get; set; }
     public bool InLoop => LoopDepth > 0;
+
+    public int AsBlockDepth { get; set; }
+    public bool InAsBlock => AsBlockDepth > 0;
 }
 
 // Lexer rules //
@@ -47,6 +50,7 @@ For      : 'for';
 Mod      : 'mod';
 Use      : 'use';
 Auto     : 'auto';
+Self     : 'self';
 And      : 'and';
 Not      : 'not';
 Or       : 'or';
@@ -98,28 +102,34 @@ topLevelStatement
     ;
 
 asStatement
-    : As typename Identifier* 
+locals [
+    Re.C.Types.Type AsType = null
+]
+@init  { AsBlockDepth++; }
+@after { AsBlockDepth--; }
+    : {AsBlockDepth <= 1}? 
+      As typename Identifier* 
         topLevelStatement*
       End As
     ;
 
-simpleScopedIdentifier
-    : (Parts+=Identifier ('.' Parts+=Identifier)*);
+fullIdentifier
+    : ((Parts+=Identifier '::')* Parts+=Identifier);
 
 modStatement
 locals [
-    Re.C.Definitions.Scope? Scope = null
+    Re.C.Definitions.Scope Scope = null
 ]
-    : Mod ModuleIdent=simpleScopedIdentifier
+    : Mod ModuleIdent=fullIdentifier
         Substatements+=topLevelStatement*
       (End Mod)?
     ;
 
 useStatement
 locals [
-    Re.C.Definitions.Scope? ImportedScope = null
+    Re.C.Definitions.Scope ImportedScope = null
 ]
-    : Use Ident=simpleScopedIdentifier
+    : Use Ident=fullIdentifier
     ;
 
 templateHeader
@@ -132,7 +142,7 @@ structFieldDefine
 
 structDefine
 locals [
-    Re.C.Types.StructType? DefinedType = null
+    Re.C.Types.StructType DefinedType = null
 ]
     : templateHeader? Struct Name=Identifier '{' 
         (Fields+=structFieldDefine ',' )*
@@ -144,13 +154,22 @@ fnArgumentDefine
     : Identifier typename
     ;
 
+fnSelfDefine
+    : {InAsBlock}? Self      #FnDefineSelf
+    | {InAsBlock}? '*' Self  #FnDefineSelfPtr
+    ;
+
 fnDefine
 locals [
-    Re.C.Definitions.Function? DefinedFunction = null,
-    Re.C.Syntax.Block? BoundBody = null
+    Re.C.Definitions.Function DefinedFunction = null,
+    Re.C.Syntax.Block BoundBody = null
 ]
-    : templateHeader? External? Fn Name=Identifier 
-      '(' (Args+=fnArgumentDefine (',' Args+=fnArgumentDefine)*)? ')'
+    : templateHeader? 
+      External? Fn Name=Identifier 
+      '('( 
+        (fnSelfDefine ',')? Args+=fnArgumentDefine (',' Args+=fnArgumentDefine)* |
+        fnSelfDefine
+      )?')'
       Ret=typename?
       Body=block?
     ;
@@ -217,7 +236,7 @@ typenameFnArgs
     ;
 
 typename
-    : Ident=simpleScopedIdentifier 
+    : Ident=fullIdentifier 
         #TypenameSingle
     | '(' Inner=typename ')' 
         #TypenameWrapped
@@ -286,14 +305,14 @@ expression
     | Operand=expression Cast '(' TargetType=typename ')' #CastExpression
     | Op=unaryOperator Operand=expression                 #UnaryExpression
     | Operand=expression Op=memoryOperator                #MemoryExpression
-    | Target=expression TemplateInst=templateInstantiation? 
+    | Target=expression MethodMarker=method_call_marker? 
       '(' (Args+=expression (',' Args+=expression)*)? ')' #CallExpression
-    | Base=expression '.' Field=dotComponent              #DotExpression
+    | Base=expression '.' Field=Identifier                #DotExpression
     | term                                                #TermExpression
     ;
 
-templateInstantiation
-    : '\'' args+=typename* '\''
+method_call_marker
+    : '.' MethodName=Identifier
     ;
     
 structExprAssign
@@ -304,14 +323,9 @@ structExpression
     : New StructType=typename '{' Parts+=structExprAssign+ '}'
     ;
 
-dotComponent
-    : Identifier
-    | Identifier As typename
-    ;
-
 variableReference
     : Identifier
-    | Identifier As typename
+    | fullIdentifier
     ;
 
 term

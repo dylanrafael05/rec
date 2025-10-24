@@ -8,6 +8,8 @@ namespace Re.C.Passes;
 
 public class FunctionDefinitionsPass(RecContext ctx) : BasePass(ctx)
 {
+    public override bool EnterAsBlocks => true;
+    
     public override Unit VisitFnDefine([NotNull] RecParser.FnDefineContext context)
     {
         if (context.DefinedFunction is null || context.DefinedFunction.IsExternal)

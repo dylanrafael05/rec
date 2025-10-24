@@ -23,7 +23,7 @@ public partial class SyntaxResolver
                 Errors.TypeMismatch(target.Type, value.Type));
         }
 
-        if (!target.Assignable)
+        if (!target.HasAddress)
         {
             CTX.Diagnostics.AddError(
                 target.Span,

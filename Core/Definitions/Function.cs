@@ -11,6 +11,7 @@ public class Function : DefinitionBase
     public required FunctionType Type { get; init; }
     public required Scope InnerScope { get; init; }
     public required bool IsExternal { get; init; }
+    public required bool HasReceiver { get; init; }
 
     public Option<Block> Body { get; set; }
     public Option<LLVMValueRef> LLVMFunction { get; set; }

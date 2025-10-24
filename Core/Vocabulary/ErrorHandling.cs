@@ -58,6 +58,11 @@ public static class ErrorHandling
     /// </summary>
     public static Exception UnimplementedBecause(string reason) => new UnimplementedException(reason);
     
+    /// <summary>
+    /// Throw the result of this function to signal
+    /// that the code should be reachable at this location.
+    /// </summary>
+    public static Exception Unreachable => new System.Diagnostics.UnreachableException();
     
     /// <summary>
     /// Assert at runtime that a condition is true

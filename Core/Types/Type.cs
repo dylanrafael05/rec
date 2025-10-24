@@ -56,4 +56,10 @@ public abstract class Type : IEquatable<Type>, IVisitable
     public virtual void PropogateVisitor<V>(V visitor)
         where V : IVisitor, allows ref struct
     { }
+
+    /// <summary>
+    /// Create a pointer type wrapping the provided type.
+    /// </summary>
+    public static PointerType Pointer(Type type)
+        => new() { Pointee = type };
 }

@@ -12,9 +12,9 @@ public partial class SyntaxResolver
     {
         var span = context.CalculateSourceSpan();
 
-        var ident = context.Identifier().TextAsIdentifier;
-        var defn = CTX.CurrentScope.SearchOrDiagnose(
-            CTX, span, ident);
+        var defn = context.fullIdentifier() is var fident and not null 
+            ? IdentifierResolution.Resolve(CTX, fident)
+            : CTX.CurrentScope.SearchOrDiagnose(CTX, span, context.Identifier().TextAsIdentifier);
 
         if (defn is null)
         {

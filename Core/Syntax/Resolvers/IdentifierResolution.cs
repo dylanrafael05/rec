@@ -42,7 +42,7 @@ public static class IdentifierResolution
     /// <summary>
     /// Resolve the entirety of a SimpleScopedIdentifier.
     /// </summary>
-    public static IDefinition? Resolve(RecContext ctx, RecParser.SimpleScopedIdentifierContext identifier)
+    public static IDefinition? Resolve(RecContext ctx, RecParser.FullIdentifierContext identifier)
     {
         var def = null as IDefinition;
 

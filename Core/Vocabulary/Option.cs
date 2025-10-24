@@ -20,12 +20,16 @@ public static class Option
 
     public static NoneHelper None => new();
     public static Option<T> NoneOf<T>() => new();
+
+    public static Option<T> Nonnull<T>(T? value)
+        where T : class
+        => value is null ? None : Some(value);
 }
 
 /// <summary>
 /// A vocabulary type that behaves as a OneOf<T, None>
 /// </summary>
-public readonly struct Option<T>
+public readonly struct Option<T> : IEnumerable<T>
 {
     public Option()
     {
@@ -79,4 +83,37 @@ public readonly struct Option<T>
 
         throw new InvalidOperationException(message);
     }
+
+    /// <summary>
+    /// A zero-allocation implementation of an enumerator over an enumerable.
+    /// </summary>
+    public struct Enumerator(Option<T> value) : IEnumerator<T>
+    {
+        private bool atEnd = value.IsNone;
+
+        public readonly T Current => atEnd 
+            ? throw new InvalidOperationException() 
+            : value.Unwrap();
+        readonly object? IEnumerator.Current => Current;
+
+        public readonly void Dispose()
+        {}
+
+        public bool MoveNext()
+            => atEnd = true;
+
+        public void Reset()
+            => atEnd = value.IsNone;
+    }
+
+    /// <summary>
+    /// Get an enumerator of this.
+    /// </summary>
+    public Enumerator GetEnumerator()
+        => new(this);
+
+    IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+        => GetEnumerator();
 }

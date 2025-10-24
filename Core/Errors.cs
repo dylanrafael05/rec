@@ -46,7 +46,9 @@ public static class Errors
         => $"Cannot dereference value of type {operand}";
     public static string InvalidAddressOf()
         => $"Cannot take address of this expression";
-
+    public static string InvalidMethod(IDefinition? def)
+        => $"Invalid method {def}";
+    
     public static string CallToNonFunctionType(Types.Type type)
         => $"Cannot call a non-function value of type {type}";
     public static string InvalidCallToFunction(FunctionType fn, IEnumerable<Types.Type> types)

@@ -14,11 +14,25 @@ public class BasePass(RecContext ctx) : RecBaseVisitor<Unit>
 {
     public RecContext CTX { get; } = ctx;
 
+    public virtual bool EnterAsBlocks => false;
+
     public override Unit VisitModStatement([NotNull] RecParser.ModStatementContext context)
     {
         CTX.EnterScope(context.Scope.UnwrapNull());
         VisitChildren(context);
         CTX.ExitScope();
+
+        return default;
+    }
+
+    public override Unit VisitAsStatement([NotNull] RecParser.AsStatementContext context)
+    {
+        if(EnterAsBlocks)
+        {
+            CTX.CurrentAssociatedType = context.AsType;
+            VisitChildren(context);
+            CTX.CurrentAssociatedType = null;
+        }
 
         return default;
     }
