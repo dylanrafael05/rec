@@ -19,24 +19,24 @@ public class RecContext
     /// <summary>
     /// The LLVM context which compilation occurs in.
     /// </summary>
-    public required LLVMContextRef LLVM { get; init; }
+    public LLVMContextRef LLVM { get; }
     /// <summary>
     /// The LLVM module where all compiled code resides.
     /// </summary>
-    public required LLVMModuleRef Module { get; init; }
+    public LLVMModuleRef Module { get; }
     /// <summary>
     /// The LLVM builder pointing into the compiler's module.
     /// </summary>
-    public required LLVMBuilderRef Builder { get; init; }
+    public LLVMBuilderRef Builder { get; }
     /// <summary>
     /// A reference to the target information used by LLVM.
     /// </summary>
-    public required LLVMTargetDataRef TargetData { get; init; }
+    public LLVMTargetDataRef TargetData { get; }
 
     /// <summary>
     /// A reference to the empty destructor function.
     /// </summary>
-    public LLVMValueRef EmptyDestructor { get; init; }
+    public LLVMValueRef EmptyDestructor { get; }
     /// <summary>
     /// A cache mapping between Rec types and their LLVM-compiled
     /// counterparts.
@@ -46,26 +46,13 @@ public class RecContext
     /// <summary>
     /// A reference to all the builtin types.
     /// </summary>
-    public required BuiltinTypes BuiltinTypes { get; init; }
+    public BuiltinTypes BuiltinTypes { get; }
 
     /// <summary>
     /// The global scope of this compilation.
     /// </summary>
-    public required Scope GlobalScope { get; init; }
+    public Scope GlobalScope { get; }
 
-    /// <summary>
-    /// The type currently 'inside' for the purposes of 'as' declarations.
-    /// </summary>
-    public Types.Type? CurrentAssociatedType { get; set; }
-    /// <summary>
-    /// The function within which compilation is currently taking place.
-    /// </summary>
-    public Function? CurrentFunction { get; set; }
-    /// <summary>
-    /// The current scope at this point in the compilation.
-    /// This will be updated as syntax is resolved and compiled.
-    /// </summary>
-    public required Scope CurrentScope { get; set; }
     /// <summary>
     /// The current source being compiled.
     /// </summary>
@@ -92,12 +79,16 @@ public class RecContext
     /// if there is no such function.
     /// </summary>
     public LLVMValueRef CurrentLLVMFunction => 
-        CurrentFunction.UnwrapNull().LLVMFunction.Unwrap();
+        Functions.Current.UnwrapNull().LLVMFunction.Unwrap();
 
     /// <summary>
     /// A stack storing all scopes as they are superceded.
     /// </summary>
-    public Stack<Scope> ScopeStack { get; } = [];
+    public Scoped<Scope> Scopes { get; }
+    /// <summary>
+    /// A stack storing all functions as they are superceded.
+    /// </summary>
+    public Scoped<Function?> Functions { get; } = new(null);
 
     /// <summary>
     /// The diagnostic bag used for compilation. All diagnostics
@@ -122,55 +113,10 @@ public class RecContext
     /// </summary>
     public SyntaxCompiler SyntaxCompiler { get; }
 
-    private RecContext()
-    {
-        Passes = new()
-        {
-            FileDeclarations = new(this),
-            TypeDeclarations = new(this),
-            FunctionDeclarations = new(this),
-            TypeDefinitions = new(this),
-            FunctionDefinitions = new(this),
-            LLVMGeneration = new(this),
-        };
-
-        Resolvers = new()
-        {
-            Type = new(this),
-            Syntax = new(this)
-        };
-
-        SyntaxCompiler = new(this);
-    }
-
-    /// <summary>
-    /// Change the current scope to the one provided.
-    /// </summary>
-    public void EnterScope(Scope scope)
-    {
-        ScopeStack.Push(CurrentScope);
-        CurrentScope = scope;
-    }
-
-    /// <summary>
-    /// Return the current scope to what it was before the
-    /// matching call to EnterScope().
-    /// </summary>
-    public void ExitScope()
-    {
-        CurrentScope = ScopeStack.Pop();
-    }
-
-    /// <summary>
-    /// Create a new RecContext. Properly assigns all required fields.
-    /// This function should only be called once per compiler instance
-    /// (not once per source compiled).
-    /// </summary>
-    public static RecContext Create(
+    private RecContext(
         LLVMContextRef llvmContext,
         string moduleName)
     {
-        // TODO: improve organization of this method; exfiltrate segments
         LLVMSharp.Interop.LLVM.InitializeNativeTarget();
 
         var target = LLVMTargetRef.GetTargetFromTriple(LLVMTargetRef.DefaultTriple);
@@ -184,8 +130,12 @@ public class RecContext
 
         var targetData = machine.CreateTargetDataLayout();
 
+        // TODO: move this into a constructor
+        // because dealing with the references to 'ctx' is becoming annoying.
+
         var scope = new Scope
         {
+            CTX = this,
             Identifier = Identifier.None,
             Parent = null
         };
@@ -216,16 +166,41 @@ public class RecContext
             F64 = MakePrimitive(llvmContext.DoubleType, "f64", PrimitiveType.Class.Float),
         };
 
-        return new()
+        Passes = new()
         {
-            LLVM = llvmContext,
-            Module = module,
-            Builder = builder,
-            TargetData = targetData,
-
-            GlobalScope = scope,
-            CurrentScope = scope,
-            BuiltinTypes = types,
+            FileDeclarations = new(this),
+            TypeDeclarations = new(this),
+            FunctionDeclarations = new(this),
+            TypeDefinitions = new(this),
+            FunctionDefinitions = new(this),
+            LLVMGeneration = new(this),
         };
+
+        Resolvers = new()
+        {
+            Type = new(this),
+            Syntax = new(this)
+        };
+
+        SyntaxCompiler = new(this);
+
+        LLVM = llvmContext;
+        Module = module;
+        Builder = builder;
+        TargetData = targetData;
+
+        GlobalScope = scope;
+        Scopes = new(scope);
+        BuiltinTypes = types;
     }
+
+    /// <summary>
+    /// Create a new RecContext. Properly assigns all required fields.
+    /// This function should only be called once per compiler instance
+    /// (not once per source compiled).
+    /// </summary>
+    public static RecContext Create(
+        LLVMContextRef llvmContext,
+        string moduleName)
+        => new(llvmContext, moduleName);
 }

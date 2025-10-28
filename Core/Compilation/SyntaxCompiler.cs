@@ -21,8 +21,7 @@ public partial class SyntaxCompiler(RecContext CTX)
         CTX.Builder.PositionAtEnd(fn.FirstBasicBlock);
 
         // Set up the context state //
-        var prevFn = CTX.CurrentFunction;
-        CTX.CurrentFunction = function;
+        CTX.Functions.Enter(function);
 
         // Link all arguments to variables so they may be treated
         // as assignable
@@ -37,7 +36,7 @@ public partial class SyntaxCompiler(RecContext CTX)
         Compile(function.Body.Unwrap());
 
         // Restore the context state //
-        CTX.CurrentFunction = prevFn;
+        CTX.Functions.Exit();
     }
 
     /// <summary>

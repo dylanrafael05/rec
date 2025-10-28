@@ -14,7 +14,7 @@ public class TypeDeclarationsPass(RecContext ctx) : BasePass(ctx)
             Identifier = context.Identifier().TextAsIdentifier
         };
 
-        context.DefinedType = CTX.CurrentScope.DefineOrDiagnose(
+        context.DefinedType = CTX.Scopes.Current.DefineOrDiagnose(
             CTX,
             context.CalculateSourceSpan(),
             type);

@@ -88,29 +88,31 @@ CloseIndex : ']';
 
 // Parser rules
 program
-    : topLevelStatement* EOF
+    : useStatement* 
+      topLevelStatement* 
+      EOF
     ;
 
 topLevelStatement
     : fnDefine
-    | structDefine
-    | aliasDefine
-    | letStatement
-    | modStatement
-    | asStatement
-    | useStatement
+    | { !InAsBlock }? structDefine
+    | { !InAsBlock }? aliasDefine
+    | { !InAsBlock }? letStatement
+    | { !InAsBlock }? modStatement
+    | { !InAsBlock }? asStatement
     ;
 
 asStatement
 locals [
-    Re.C.Types.Type AsType = null
+    Re.C.Types.Type AsType = null,
+    Re.C.Definitions.Scope Scope = null
 ]
 @init  { AsBlockDepth++; }
 @after { AsBlockDepth--; }
     : {AsBlockDepth <= 1}? 
-      As typename Identifier* 
-        topLevelStatement*
-      End As
+      Mod ModuleIdent=fullIdentifier As typename Identifier* 
+        Substatements+=topLevelStatement*
+      (End Mod)?
     ;
 
 fullIdentifier

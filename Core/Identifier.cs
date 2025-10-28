@@ -10,23 +10,15 @@ public readonly record struct Identifier(
 {
     public override string ToString()
         => Value.Match(
-            temp => $"<temp {temp.ID}>",
-            named =>
-            {
-                var result = named.Name;
-
-                if (named.AssociatedType is not null)
-                    result = $"({named.AssociatedType.FullName}) {result}";
-
-                return result;
-            },
-            none => $"<unnamed>"
+            static temp => $"<temp {temp.ID}>",
+            static named => named.Name,
+            static none => $"<unnamed>"
         );
 
     public static Identifier ID(ulong ID)
         => new(new OfID(ID));
-    public static Identifier Name(string name, Types.Type? associatedType = null)
-        => new(new OfName(name, associatedType));
+    public static Identifier Name(string name)
+        => new(new OfName(name));
     public static Identifier None
         => new(new OfNone());
 
@@ -37,7 +29,12 @@ public readonly record struct Identifier(
     public OfID AsID => Value.AsT0;
     public OfName AsName => Value.AsT1;
 
-    public record struct OfName(string Name, Types.Type? AssociatedType = null);
+    public record struct OfName(string Name);
     public record struct OfID(ulong ID);
     public record struct OfNone;
+
+    public static class Builtin
+    {
+        public static Identifier Self => Name("self");
+    }
 }

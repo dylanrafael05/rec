@@ -16,7 +16,7 @@ public static class IdentifierResolution
     /// </summary>
     public static IDefinition? ResolveOne(RecContext ctx, SourceSpan span, Identifier ident, IDefinition? scope = null)
     {
-        var scopeToSearchAsDef = scope ?? ctx.CurrentScope;
+        var scopeToSearchAsDef = scope ?? ctx.Scopes.Current;
         var imports = scope is null ? ctx.CurrentImports : null;
 
         if (scopeToSearchAsDef is not Scope scopeToSearch)

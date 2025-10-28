@@ -19,15 +19,15 @@ public partial class SyntaxResolver
         var scope = new Scope
         {
             Identifier = Identifier.None,
-            Parent = CTX.CurrentScope
+            Parent = CTX.Scopes.Current
         };
 
-        CTX.EnterScope(scope);
+        CTX.Scopes.Enter(scope);
         var syntax = (BoundSyntax[])[..
             from s in context._Statements
             select Visit(s)
         ];
-        CTX.ExitScope();
+        CTX.Scopes.Exit();
 
         return new Block
         {

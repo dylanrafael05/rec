@@ -16,7 +16,7 @@ public class FileDeclarationsPass(RecContext ctx) : BasePass(ctx)
         //
         // Also of note is that the search always begins at the current scope
         // level, and never accounts for imported scopes
-        var scope = CTX.CurrentScope;
+        var scope = CTX.Scopes.Current;
 
         foreach (var partToken in context.ModuleIdent._Parts)
         {
@@ -34,7 +34,7 @@ public class FileDeclarationsPass(RecContext ctx) : BasePass(ctx)
                         partToken.SourceSpan,
                         Errors.Redefinition(part, scope));
 
-                    scope = CTX.CurrentScope;
+                    scope = CTX.Scopes.Current;
                     break;
                 }
             }

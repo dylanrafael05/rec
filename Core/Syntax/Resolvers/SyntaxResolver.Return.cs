@@ -12,7 +12,7 @@ public partial class SyntaxResolver
     public override BoundSyntax VisitReturnStatement([NotNull] RecParser.ReturnStatementContext context)
     {
         var value = Visit(context.Value).UnwrapAs<Expression>();
-        var expectedType = CTX.CurrentFunction.UnwrapNull().Type.Return;
+        var expectedType = CTX.Functions.Current.UnwrapNull().Type.Return;
 
         // TODO: how should definely-returns analysis take place?
 

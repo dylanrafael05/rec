@@ -24,6 +24,11 @@ public static class Option
     public static Option<T> Nonnull<T>(T? value)
         where T : class
         => value is null ? None : Some(value);
+
+    public static Option<T> If<T>(bool condition, T get)
+        => condition ? Some(get) : NoneOf<T>();
+    public static Option<T> If<T>(bool condition, Func<T> get)
+        => condition ? Some(get()) : NoneOf<T>();
 }
 
 /// <summary>
@@ -81,7 +86,18 @@ public readonly struct Option<T> : IEnumerable<T>
         if (IsSome(out var value))
             return value;
 
-        throw new InvalidOperationException(message);
+        throw Panic(message);
+    }
+
+    /// <summary>
+    /// Get the underlying value, or the value provided.
+    /// </summary>
+    public T Or(T @else)
+    {
+        if (IsSome(out var value))
+            return value;
+
+        return @else;
     }
 
     /// <summary>

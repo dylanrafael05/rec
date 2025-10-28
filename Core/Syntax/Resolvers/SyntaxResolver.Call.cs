@@ -24,8 +24,8 @@ public partial class SyntaxResolver
                 identPT.GetText(),
                 targetExpr.Type);
 
-            var fndef = CTX.CurrentScope.SearchOrDiagnose(
-                CTX, identPT.CalculateSourceSpan(), ident, CTX.CurrentImports);
+            var fndef = CTX.Scopes.Current.SearchOrDiagnose(
+                identPT.CalculateSourceSpan(), ident, CTX.CurrentImports);
 
             if(fndef is not Function fn)
             {

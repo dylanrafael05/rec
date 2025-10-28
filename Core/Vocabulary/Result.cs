@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using OneOf;
 
 namespace Re.C.Vocabulary;
@@ -36,7 +37,7 @@ public readonly struct Result<T, E>
 
     public static implicit operator Result<T, E>(ResultOk<T> ok)
         => new(ok.Value);
-    public static implicit operator Result<T, E>(ResultErr<T> err)
+    public static implicit operator Result<T, E>(ResultErr<E> err)
         => new(err.Value);
 
     public bool IsOk(out T value)
@@ -50,6 +51,15 @@ public readonly struct Result<T, E>
             return value;
 
         throw new InvalidOperationException(message);
+    }
+
+    [return: NotNullIfNotNull(nameof(@else))]
+    public T? Or(T? @else)
+    {
+        if (IsOk(out var value))
+            return value;
+
+        return @else;
     }
 }
 

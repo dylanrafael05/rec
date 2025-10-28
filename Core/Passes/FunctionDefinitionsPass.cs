@@ -15,8 +15,8 @@ public class FunctionDefinitionsPass(RecContext ctx) : BasePass(ctx)
         if (context.DefinedFunction is null || context.DefinedFunction.IsExternal)
             return default;
 
-        CTX.CurrentFunction = context.DefinedFunction;
-        CTX.EnterScope(CTX.CurrentFunction.InnerScope);
+        CTX.Functions.Enter(context.DefinedFunction);
+        CTX.Scopes.Enter(CTX.Functions.Current!.InnerScope);
 
         context.BoundBody = CTX.Resolvers.Syntax.Visit(context.Body).UnwrapAs<Block>();
         context.DefinedFunction.Body = Option.Some(context.BoundBody);
@@ -27,8 +27,8 @@ public class FunctionDefinitionsPass(RecContext ctx) : BasePass(ctx)
             "success! syntax tree = \n" +
             context.BoundBody.UnwrapAs<BoundSyntax>().PrettyPrint());
 
-        CTX.ExitScope();
-        CTX.CurrentFunction = null;
+        CTX.Scopes.Exit();
+        CTX.Functions.Exit();
 
         return default;
     }

@@ -14,7 +14,7 @@ public partial class SyntaxResolver
 
         var defn = context.fullIdentifier() is var fident and not null 
             ? IdentifierResolution.Resolve(CTX, fident)
-            : CTX.CurrentScope.SearchOrDiagnose(CTX, span, context.Identifier().TextAsIdentifier);
+            : CTX.Scopes.Current.SearchOrDiagnose(span, context.Identifier().TextAsIdentifier);
 
         if (defn is null)
         {

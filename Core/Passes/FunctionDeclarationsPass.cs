@@ -14,8 +14,8 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
         var span = context.CalculateSourceSpan();
         var selfType = context.fnSelfDefine() switch
         {
-            RecParser.FnDefineSelfContext => CTX.CurrentAssociatedType.UnwrapNull(),
-            RecParser.FnDefineSelfPtrContext => Types.Type.Pointer(CTX.CurrentAssociatedType.UnwrapNull()),
+            RecParser.FnDefineSelfContext => CTX.Scopes.Current.AssociatedType.UnwrapNull(),
+            RecParser.FnDefineSelfPtrContext => Types.Type.Pointer(CTX.Scopes.Current.AssociatedType.UnwrapNull()),
             
             _ => null
         };
@@ -25,7 +25,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
         {
             Parameters = [
                 ..from arg in context._Args
-                select CTX.Resolvers.Type.Visit(arg.typename()),
+                    select CTX.Resolvers.Type.Visit(arg.typename()),
                 ..Option.Nonnull(selfType)
             ],
 
@@ -36,15 +36,15 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
 
         var argNames = (Identifier[])[
             ..from arg in context._Args
-            select arg.Identifier().TextAsIdentifier,
-            ..Option.Nonnull(selfType).Map(_ => Identifier.Name("self"))
+                select arg.Identifier().TextAsIdentifier,
+            ..Option.If(selfType is not null, Identifier.Builtin.Self)
         ];
 
         // Define arguments in an anonymous inner scope
         var innerScope = new Scope 
         { 
             Identifier = Identifier.None, 
-            Parent = CTX.CurrentScope 
+            Parent = CTX.Scopes.Current 
         };
 
         var argInfo = argNames
@@ -80,7 +80,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
             HasReceiver = selfType is not null
         };
 
-        context.DefinedFunction = CTX.CurrentScope.DefineOrDiagnose(
+        context.DefinedFunction = CTX.Scopes.Current.DefineOrDiagnose(
             CTX, span, function);
 
         // Report errors for invalid usage of 'external'

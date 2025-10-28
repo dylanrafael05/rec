@@ -1,12 +1,26 @@
+using OneOf;
+
 namespace Re.C.Definitions;
+
+/// <summary>
+/// A type representing a failure to find a value within
+/// some scope.
+/// </summary>
+[DiscriminatedUnion]
+public partial record struct SearchFailure
+{
+    public static class Cases
+    {
+        public record struct NotFound;
+        public record struct Ambiguous(List<IDefinition> Values);
+    }
+}
 
 public class Scope : DefinitionBase
 {
+    public required RecContext CTX { get; init; }
+    public Types.Type? AssociatedType { get; init; }
     public Dictionary<Identifier, IDefinition> Definitions { get; } = [];
-    private ulong tempCounter = 0;
-
-    public Identifier UniqueID()
-        => Identifier.ID(unchecked(tempCounter++));
 
     /// <summary>
     /// Define the provided definition within this scope,
@@ -32,12 +46,12 @@ public class Scope : DefinitionBase
     /// returning the definition if sucessful and reporting
     /// a diagnostic if unsuccessful.
     /// </summary>
-    public Definition? DefineOrDiagnose<Definition>(RecContext ctx, SourceSpan span, Definition def)
+    public Definition? DefineOrDiagnose<Definition>(SourceSpan span, Definition def)
         where Definition : class, IDefinition
     {
         if (Definitions.ContainsKey(def.Identifier))
         {
-            ctx.Diagnostics.AddError(
+            CTX.Diagnostics.AddError(
                 span, Errors.Redefinition(def.Identifier, this));
 
             return null;
@@ -51,12 +65,12 @@ public class Scope : DefinitionBase
     /// Search within this scope for a definition that matches
     /// the provided identifier.
     /// </summary>
-    public IDefinition? Search(Identifier identifier, IReadOnlyList<Scope>? importedScopes = null)
+    public Result<IDefinition, SearchFailure> Search(Identifier identifier, IReadOnlyList<Scope>? importedScopes = null)
     {
         // Search within this scope
         if (Definitions.TryGetValue(identifier, out var def))
         {
-            return def;
+            return Result.Ok(def);
         }
 
         // Otherwise, check in the parent scope.
@@ -68,33 +82,12 @@ public class Scope : DefinitionBase
             // search imported scopes
             if (importedScopes is not null)
             {
-                def = null;
-
-                foreach (var scope in importedScopes)
-                {
-                    if (def is not null)
-                    {
-                        // NOTE: importedScopes is not propogated
-                        // because we are already iterating the
-                        // imported scopes here.
-                        def = scope.Search(identifier, null);
-                    }
-                    else
-                    {
-                        // TODO: handle ambiguity //
-                        return null;
-                    }
-                }
-
-                if (def is not null)
-                {
-                    return def;
-                }
+                return SearchInMany(importedScopes, identifier);
             }
 
             // Otherwise, we have reached the "end of the line"
             // and the lookup is unsucessful
-            return null;
+            return Result.Err(SearchFailure.NotFound);
         }
 
         // Otherwise, recurse and search in the parent scope.
@@ -105,24 +98,50 @@ public class Scope : DefinitionBase
     /// The same as Search, but emits an error when fails.
     /// </summary>
     public IDefinition? SearchOrDiagnose(
-        RecContext ctx,
         SourceSpan span,
         Identifier identifier,
         IReadOnlyList<Scope>? importedScopes = null)
     {
         var def = Search(identifier, importedScopes);
 
-        if (def is null)
+        if (def.IsErr(out var err) && err.IsNotFound)
         {
-            var msg = (this == ctx.CurrentScope) switch
+            var msg = (this == CTX.Scopes.Current) switch
             {
-                true  => Errors.UndefinedInCurrentScope(identifier),
+                true => Errors.UndefinedInCurrentScope(identifier),
                 false => Errors.UndefinedInGivenScope(identifier, this)
             };
 
-            ctx.Diagnostics.AddError(span, msg);
+            CTX.Diagnostics.AddError(span, msg);
+        }
+        else if (def.IsErr(out err) && err.IsAmbiguous(out var ambiguous))
+        {
+            // TODO: report ambiguity here
         }
 
-        return def;
+        return def.Or(null);
+    }
+
+    /// <summary>
+    /// Search within a list of scopes for a definition
+    /// </summary>
+    public static Result<IDefinition, SearchFailure> SearchInMany<Scopes>(
+        Scopes scopes, Identifier identifier)
+        where Scopes : IEnumerable<Scope>
+    {
+        var results = new List<IDefinition>{};
+        
+        foreach(var scope in scopes)
+        {
+            if(scope.Search(identifier).IsOk(out var value))
+                results.Add(value);
+        }
+
+        return results switch
+        {
+            []              => Result.Err(SearchFailure.NotFound),
+            [var single]    => Result.Ok(single),
+            var rest        => Result.Err(SearchFailure.Ambiguous(rest)),
+        };
     }
 }

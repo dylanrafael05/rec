@@ -18,9 +18,9 @@ public class BasePass(RecContext ctx) : RecBaseVisitor<Unit>
 
     public override Unit VisitModStatement([NotNull] RecParser.ModStatementContext context)
     {
-        CTX.EnterScope(context.Scope.UnwrapNull());
+        CTX.Scopes.Enter(context.Scope.UnwrapNull());
         VisitChildren(context);
-        CTX.ExitScope();
+        CTX.Scopes.Exit();
 
         return default;
     }
@@ -29,9 +29,9 @@ public class BasePass(RecContext ctx) : RecBaseVisitor<Unit>
     {
         if(EnterAsBlocks)
         {
-            CTX.CurrentAssociatedType = context.AsType;
+            CTX.Scopes.Enter(context.Scope.UnwrapNull());
             VisitChildren(context);
-            CTX.CurrentAssociatedType = null;
+            CTX.Scopes.Exit();
         }
 
         return default;
