@@ -21,29 +21,37 @@ public readonly record struct ResultErr<T>(T Value);
 /// A vocabulary type which represents either a
 /// successful result, or an error.
 /// </summary>
-public readonly struct Result<T, E>
+[DiscriminatedUnion]
+public readonly partial record struct Result<T, E>
 {
-    public Result(T value)
+    public static class Cases
     {
-        _value = value;
+        public readonly record struct Ok(T Value);
+        public readonly record struct Err(E Error);
     }
-
-    public Result(E error)
-    {
-        _value = error;
-    }
-
-    private readonly OneOf<T, E> _value;
 
     public static implicit operator Result<T, E>(ResultOk<T> ok)
-        => new(ok.Value);
+        => Ok(ok.Value);
     public static implicit operator Result<T, E>(ResultErr<E> err)
-        => new(err.Value);
+        => Err(err.Value);
 
-    public bool IsOk(out T value)
-        => _value.TryPickT0(out value, out _);
-    public bool IsErr(out E error)
-        => _value.TryPickT1(out error, out _);
+    public Result<X, E> MapOk<X>(Func<T, X> mapper)
+    {
+        if(IsOk(out var value))
+            return Result<X, E>.Ok(mapper(value));
+
+        IsErr(out var err);
+        return Result<X, E>.Err(err);
+    }
+
+    public Result<T, X> MapErr<X>(Func<E, X> mapper)
+    {
+        if(IsErr(out var err))
+            return Result<T, X>.Err(mapper(err));
+
+        IsOk(out var value);
+        return Result<T, X>.Ok(value);
+    }
 
     public T Unwrap(string message = "Attempt to unwrap a 'None'")
     {

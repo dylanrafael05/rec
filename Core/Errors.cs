@@ -14,6 +14,9 @@ public static class Errors
         => $"Could not find a definition of '{name}' in current context";
     public static string UndefinedInGivenScope(Identifier name, IDefinition scope)
         => $"Could not find a definition of '{name}' in '{scope}'";
+    public static string AmbiguousIdentifier(Identifier name, IEnumerable<IDefinition> defs)
+        => $"Ambiguous reference to '{name}' in current context; could be {string.Join(" or ", from d in defs select d.FullName)}";
+    
     public static string InvalidScopeResolutionTarget()
         => $"Cannot use '.' here; target is not a scope";
     public static string Redefinition(Identifier name, Scope scope)

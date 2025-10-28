@@ -32,7 +32,7 @@ namespace {AttributeNamespace}
 
     public static DiagnosticDescriptor NotMeetingSpec => new("DU001", 
         title: "DU must meet spec",
-        messageFormat: "Discriminated union types must be top level partial record struct",
+        messageFormat: "Discriminated union types must be top-level partial record struct",
         category: "DiscriminatedUnion",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -109,12 +109,13 @@ namespace {AttributeNamespace}
             from ty in constituentTypes select ty.ToDisplayString());
 
         var oneOf = $"OneOf.OneOf<{oneOfArgs}>";
+        var genArgs = syntax.TypeParameterList?.GetText()?.ToString() ?? "";
 
         var output = new StringBuilder(@$"
 
 namespace {symbol.ContainingNamespace.ToDisplayString()} 
 {{
-    partial record struct {symbol.Name}({oneOf} Value)
+    partial record struct {symbol.Name}{genArgs}({oneOf} Value)
     {{
 
 ");
@@ -135,19 +136,21 @@ namespace {symbol.ContainingNamespace.ToDisplayString()}
 
             output.Append(@$"
 
+        /// <summary>
         /// Construct a {typename}
-        public static {symbol.Name} {typename}
+        /// </summary>
+        public static {symbol.ToDisplayString()} {typename}
             {IfNotEmpty("(", args)}
             {CSV(from a in args select $"{a.Type.ToDisplayString()} {a.Name}")}
             {IfNotEmpty(")", args)}
-            => new {symbol.Name}(new Cases.{typename}({
+            => new {symbol.ToDisplayString()}(new Cases.{typename}({
                 CSV(from a in args select a.Name)}));
 
         private bool _Is{typename}({CSV(from a in args select $"out {a.Type.ToDisplayString()} {a.Name}")})
         {{
-            if(Value.IsT{index})
+            if(this.Value.IsT{index})
             {{
-                {CSV(from a in args select $"{a.Name} = Value.AsT{index}.{a.Name};")}
+                {CSV(from a in args select $"{a.Name} = this.Value.AsT{index}.{a.Name};")}
                 return true;
             }}
 
@@ -155,14 +158,45 @@ namespace {symbol.ContainingNamespace.ToDisplayString()}
             return false;
         }}
 
+        /// <summary>
         /// Check if this represents a {typename}
+        /// </summary>
         public bool Is{typename} 
             {IfNotEmpty("(", args)} 
             {CSV(from a in args select $"out {a.Type.ToDisplayString()} {a.Name}")}
             {IfNotEmpty(")", args)}
             => _Is{typename}({CSV(from a in args select $"out {a.Name}")});
 
+        /// <summary>
+        /// Unwrap this as a {typename}, throwing if not a {typename} instance
+        /// </summary>
+        public {symbol.ToDisplayString()}.Cases.{typename} UnwrapAs{typename}(string msg = ""Expected a {typename} value"")
+        {{
+            if(!this.Value.IsT{index})
+                throw new InvalidOperationException(msg);
+
+            return this.Value.AsT{index};
+        }}
+
 ");
+
+            if(args.Length > 0)
+            {
+                output.Append(@$"
+        
+        /// <summary>
+        /// Unwrap this as a {typename}, throwing if not a {typename} instance
+        /// </summary>
+        public void UnwrapAs{typename}(
+            {string.Join("", from a in args select $"out {a.Type.ToDisplayString()} {a.Name}, ")}
+            string msg = ""Expected a {typename} value"")
+        {{
+            if(!_Is{typename}({CSV(from a in args select $"out {a.Name}")}))
+                throw new InvalidOperationException(msg);
+        }}
+
+");
+            }
 
             index++;
         }
@@ -174,6 +208,6 @@ namespace {symbol.ContainingNamespace.ToDisplayString()}
 
 ");
 
-        ctx.AddSource($"{symbol.ToDisplayString()}.g.cs", output.ToString());
+        ctx.AddSource($"{symbol.ToDisplayString().Replace("<", "_").Replace(">", "_")}.g.cs", output.ToString());
     }
 }

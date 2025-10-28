@@ -1,5 +1,3 @@
-using OneOf;
-
 namespace Re.C.Definitions;
 
 /// <summary>

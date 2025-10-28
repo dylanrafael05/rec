@@ -12,7 +12,7 @@ public partial class SyntaxResolver
     private void GetCallTarget(
         RecParser.CallExpressionContext context, 
         out Expression targetExpr,
-        out OneOf<CallExpression.DirectTarget, CallExpression.MethodTarget> target,
+        out Expression callTargetExpr,
         out FunctionType? functionType)
     {
         targetExpr = Visit(context.Target).UnwrapAs<Expression>();
@@ -21,29 +21,37 @@ public partial class SyntaxResolver
         {
             var identPT = context.MethodMarker.Identifier();
             var ident = Identifier.Name(
-                identPT.GetText(),
-                targetExpr.Type);
+                identPT.GetText());
 
-            var fndef = CTX.Scopes.Current.SearchOrDiagnose(
-                identPT.CalculateSourceSpan(), ident, CTX.CurrentImports);
+            var fndef = CTX.TypeAssociations.SearchOrDiagnose(
+                identPT.CalculateSourceSpan(),
+                targetExpr.Type,
+                ident,
+                CTX.CurrentImports);
 
             if(fndef is not Function fn)
             {
                 CTX.Diagnostics.AddError(
                     context.CalculateSourceSpan(), Errors.InvalidMethod(fndef));
                 
-                target = default;
+                callTargetExpr = BoundSyntax.ErrorExpression(identPT, CTX);
                 functionType = default;
             }
             else 
             {
-                target = new CallExpression.MethodTarget(targetExpr, fn);
+                callTargetExpr = new FunctionExpression
+                {
+                    Span = identPT.CalculateSourceSpan(),
+                    Type = fn.Type,
+                    Function = fn
+                };
+
                 functionType = fn.Type;
             }
         }
         else
         {
-            target = new CallExpression.DirectTarget(targetExpr);
+            callTargetExpr = targetExpr;
             functionType = targetExpr.Type switch
             {
                 FunctionType x => x,
@@ -56,7 +64,7 @@ public partial class SyntaxResolver
     public override BoundSyntax VisitCallExpression([NotNull] RecParser.CallExpressionContext context)
     {
         // Bind the function and check that it *is* a function
-        GetCallTarget(context, out var targetExpr, out var target, out var fnType);
+        GetCallTarget(context, out var targetExpr, out var callTarget, out var fnType);
 
         if(fnType is null)
         {
@@ -69,20 +77,17 @@ public partial class SyntaxResolver
 
         // Bind arguments and check that they match the function's signature
         var args = (Expression[])[
+            ..Option.If(!ReferenceEquals(targetExpr, callTarget), targetExpr),
             ..from arg in context._Args
             select Visit(arg).UnwrapAs<Expression>()
         ];
-
-        // TODO: 
-        // pickup from here; revert to call expression with single format
-        // insert 'self' into parameter types when checked.
 
         var argTypes = from a in args select a.Type;
 
         if (!argTypes.SequenceEqual(fnType.Parameters))
         {
             CTX.Diagnostics.AddError(
-                target.Span,
+                callTarget.Span,
                 Errors.InvalidCallToFunction(fnType, argTypes));
 
             return BoundSyntax.ErrorExpression(context, CTX);
@@ -92,7 +97,7 @@ public partial class SyntaxResolver
         {
             Span = context.CalculateSourceSpan(),
             Type = fnType.Return,
-            Target = target,
+            Function = callTarget,
             Args = args
         };
     }

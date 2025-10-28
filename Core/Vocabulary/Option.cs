@@ -16,10 +16,10 @@ public static class Option
     public record struct NoneHelper();
 
     public static Option<T> Some<T>(T value)
-        => new(value);
+        => Option<T>.Some(value);
 
     public static NoneHelper None => new();
-    public static Option<T> NoneOf<T>() => new();
+    public static Option<T> NoneOf<T>() => Option<T>.None;
 
     public static Option<T> Nonnull<T>(T? value)
         where T : class
@@ -34,34 +34,17 @@ public static class Option
 /// <summary>
 /// A vocabulary type that behaves as a OneOf<T, None>
 /// </summary>
-public readonly struct Option<T> : IEnumerable<T>
+[DiscriminatedUnion]
+public readonly partial record struct Option<T> : IEnumerable<T>
 {
-    public Option()
+    public static class Cases
     {
-        _value = new Option.NoneHelper();
-    }
-
-    public Option(T value)
-    {
-        _value = value;
+        public readonly record struct None;
+        public readonly record struct Some(T Value);
     }
 
     public static implicit operator Option<T>(Option.NoneHelper _)
         => new();
-
-    private readonly OneOf<Option.NoneHelper, T> _value;
-
-    /// <summary>
-    /// Test if this instance is 'None'
-    /// </summary>
-    public bool IsNone => _value.IsT0;
-    /// <summary>
-    /// Test if this instance contains a value,
-    /// and unwrap the value into the provided
-    /// variable if it does.
-    /// </summary>
-    public bool IsSome(out T value)
-        => _value.TryPickT1(out value, out _);
 
     /// <summary>
     /// Produce a new option by calling a function

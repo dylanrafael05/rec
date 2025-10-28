@@ -89,6 +89,10 @@ public class RecContext
     /// A stack storing all functions as they are superceded.
     /// </summary>
     public Scoped<Function?> Functions { get; } = new(null);
+    /// <summary>
+    /// The object which tracks the associations between types and methods.
+    /// </summary>
+    public TypeAssociations TypeAssociations { get; } = new();
 
     /// <summary>
     /// The diagnostic bag used for compilation. All diagnostics
@@ -129,9 +133,6 @@ public class RecContext
             LLVMCodeModel.LLVMCodeModelDefault);
 
         var targetData = machine.CreateTargetDataLayout();
-
-        // TODO: move this into a constructor
-        // because dealing with the references to 'ctx' is becoming annoying.
 
         var scope = new Scope
         {
