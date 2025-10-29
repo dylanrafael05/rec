@@ -13,8 +13,11 @@ public partial class SyntaxResolver
         var span = context.CalculateSourceSpan();
 
         var defn = context.fullIdentifier() is var fident and not null 
-            ? IdentifierResolution.Resolve(CTX, fident)
-            : CTX.Scopes.Current.SearchOrDiagnose(span, context.Identifier().TextAsIdentifier);
+            ? CTX.Scopes.Current.DeepSearchOrDiagnose(
+                [..from p in fident._Parts select p.SourceSpan], 
+                [..from p in fident._Parts select p.TextAsIdentifier])
+            : CTX.Scopes.Current.SearchOrDiagnose(
+                span, context.Identifier().TextAsIdentifier);
 
         if (defn is null)
         {

@@ -29,7 +29,7 @@ public partial class SyntaxResolver
 
         // Attempt to define associated variable //
         var variable = CTX.Scopes.Current.DefineOrDiagnose(
-            CTX, span,
+            span,
             new Variable
             {
                 Identifier = context.Target.TextAsIdentifier,

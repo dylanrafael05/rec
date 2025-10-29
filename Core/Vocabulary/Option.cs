@@ -99,7 +99,10 @@ public readonly partial record struct Option<T> : IEnumerable<T>
         {}
 
         public bool MoveNext()
-            => atEnd = true;
+        {
+            atEnd = true;
+            return false;
+        }
 
         public void Reset()
             => atEnd = value.IsNone;

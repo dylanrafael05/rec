@@ -15,7 +15,6 @@ public class TypeDeclarationsPass(RecContext ctx) : BasePass(ctx)
         };
 
         context.DefinedType = CTX.Scopes.Current.DefineOrDiagnose(
-            CTX,
             context.CalculateSourceSpan(),
             type);
 

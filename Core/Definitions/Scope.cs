@@ -1,19 +1,5 @@
 namespace Re.C.Definitions;
 
-/// <summary>
-/// A type representing a failure to find a value within
-/// some scope.
-/// </summary>
-[DiscriminatedUnion]
-public partial record struct SearchFailure
-{
-    public static class Cases
-    {
-        public record struct NotFound;
-        public record struct Ambiguous(List<IDefinition> Values);
-    }
-}
-
 public class Scope : DefinitionBase
 {
     public required RecContext CTX { get; init; }
@@ -47,7 +33,9 @@ public class Scope : DefinitionBase
     public Definition? DefineOrDiagnose<Definition>(SourceSpan span, Definition def)
         where Definition : class, IDefinition
     {
-        if (Definitions.ContainsKey(def.Identifier))
+        var result = Define(def);
+
+        if (result is null)
         {
             CTX.Diagnostics.AddError(
                 span, Errors.Redefinition(def.Identifier, this));
@@ -55,8 +43,7 @@ public class Scope : DefinitionBase
             return null;
         }
 
-        Definitions[def.Identifier] = def;
-        return def;
+        return result;
     }
 
     /// <summary>
@@ -93,16 +80,11 @@ public class Scope : DefinitionBase
     }
 
     /// <summary>
-    /// The same as Search, but emits an error when fails.
+    /// Emit a diagnostic for the given SearchFailure
     /// </summary>
-    public IDefinition? SearchOrDiagnose(
-        SourceSpan span,
-        Identifier identifier,
-        IReadOnlyList<Scope>? importedScopes = null)
+    private void Diagnose(SourceSpan span, Identifier identifier, SearchFailure err)
     {
-        var def = Search(identifier, importedScopes);
-
-        if (def.IsErr(out var err) && err.IsNotFound)
+        if (err.IsNotFound)
         {
             var msg = (this == CTX.Scopes.Current) switch
             {
@@ -112,12 +94,79 @@ public class Scope : DefinitionBase
 
             CTX.Diagnostics.AddError(span, msg);
         }
-        else if (def.IsErr(out err) && err.IsAmbiguous(out var ambiguous))
+        else if (err.IsAmbiguous(out var ambiguous))
         {
-            // TODO: report ambiguity here
+            CTX.Diagnostics.AddError(
+                span, Errors.AmbiguousIdentifier(identifier, ambiguous));
         }
+        else throw Unreachable;
+    }
+
+    /// <summary>
+    /// The same as Search, but emits an error when fails.
+    /// </summary>
+    public IDefinition? SearchOrDiagnose(
+        SourceSpan span,
+        Identifier identifier,
+        IReadOnlyList<Scope>? importedScopes = null)
+    {
+        var def = Search(identifier, importedScopes);
+
+        if (def.IsErr(out var err))
+            Diagnose(span, identifier, err);
 
         return def.Or(null);
+    }
+    
+    /// <summary>
+    /// Search deep within this scope; looking through subdefinitions recursively
+    /// </summary>
+    public Result<IDefinition, DeepSearchFailure> DeepSearch(IReadOnlyList<Identifier> parts)
+    {
+        var result = this as IDefinition;
+        var imports = CTX.CurrentImports;
+
+        foreach(var (part, index) in parts.Indexed)
+        {
+            if(result is not Scope scope)
+                return Result.Err(DeepSearchFailure.NotAScope(result, index));
+
+            var subresult = scope.Search(part, imports);
+            if(subresult.IsErr(out var err))
+                return Result.Err(DeepSearchFailure.Search(err, index));
+
+            subresult.UnwrapAsOk(out result);
+            imports = null;
+        }
+
+        return Result.Ok(result);
+    }
+
+    /// <summary>
+    /// Search deep within this scope; looking through subdefinitions recursively,
+    /// emitting a diagnostic and returning null on failure
+    /// </summary>
+    public IDefinition? DeepSearchOrDiagnose(IReadOnlyList<SourceSpan> partSpans, IReadOnlyList<Identifier> parts)
+    {
+        var result = DeepSearch(parts);
+
+        if(result.IsErr(out var err))
+        {
+            if(err.IsNotAScope(out _, out var index))
+            {
+                CTX.Diagnostics.AddError(
+                    partSpans[index], Errors.InvalidScopeResolutionTarget());
+            }
+            else if(err.IsSearch(out var inner, out index))
+            {
+                Diagnose(partSpans[index], parts[index], inner);
+            }
+            else throw Unreachable;
+
+            return null;
+        }
+
+        return result.UnwrapAsOk().Value;
     }
 
     /// <summary>

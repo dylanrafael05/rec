@@ -33,7 +33,7 @@ public class Compiler
         RunASTPass(CTX.Passes.FileDeclarations);
         RunASTPass(CTX.Passes.TypeDeclarations);
         RunASTPass(CTX.Passes.FunctionDeclarations);
-        RunASTPass(CTX.Passes.TypeDeclarations);
+        RunASTPass(CTX.Passes.TypeDefinitions);
         RunASTPass(CTX.Passes.FunctionDefinitions);
         RunASTPass(CTX.Passes.LLVMGeneration);
 

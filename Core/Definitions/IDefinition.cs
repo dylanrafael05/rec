@@ -21,5 +21,5 @@ public abstract class DefinitionBase : IDefinition
     public bool IsLinked { get; set; }
 
     public override string ToString()
-        => $"{GetType().Name} '{Identifier}'";
+        => $"{GetType().Name} '{this.FullName}'";
 }

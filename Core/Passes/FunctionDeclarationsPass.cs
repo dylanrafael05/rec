@@ -44,7 +44,8 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
         var innerScope = new Scope 
         { 
             Identifier = Identifier.None, 
-            Parent = CTX.Scopes.Current 
+            Parent = CTX.Scopes.Current,
+            CTX = CTX
         };
 
         var argInfo = argNames
@@ -56,7 +57,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
                 let name = info.First.First
                 let argtype = info.First.Second
                 let syntax = info.Second
-                select innerScope.DefineOrDiagnose(CTX, syntax.CalculateSourceSpan(), new Variable
+                select innerScope.DefineOrDiagnose(syntax.CalculateSourceSpan(), new Variable
                 {
                     Type = argtype,
                     Identifier = name
@@ -81,7 +82,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
         };
 
         context.DefinedFunction = CTX.Scopes.Current.DefineOrDiagnose(
-            CTX, span, function);
+            span, function);
 
         // Report errors for invalid usage of 'external'
         if(function.IsExternal && context.Body != null)
@@ -93,14 +94,6 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
         {
             CTX.Diagnostics.AddError(
                 span, Errors.NoBodyForNonExtern(function.Identifier));
-        }
-
-        // If we have succeeded, create the LLVM function
-        if (context.DefinedFunction is not null)
-        {
-            // TODO: mangle names here?
-            function.LLVMFunction = Option.Some(
-                CTX.Module.AddFunction(function.FullName, function.Type.Compile(CTX)));
         }
 
         return default;

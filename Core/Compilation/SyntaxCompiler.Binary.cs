@@ -235,6 +235,7 @@ public partial class SyntaxCompiler
         // Otherwise, compute rhs
         CTX.Builder.PositionAtEnd(onTrue);
         var rhs = Compile(context.RHS).Unwrap();
+        onTrue = CTX.Builder.InsertBlock;
         CTX.Builder.BuildBr(final);
 
         // Return a phi instruction
@@ -260,6 +261,7 @@ public partial class SyntaxCompiler
         // Otherwise, compute rhs
         CTX.Builder.PositionAtEnd(onFalse);
         var rhs = Compile(context.RHS).Unwrap();
+        onFalse = CTX.Builder.InsertBlock;
         CTX.Builder.BuildBr(final);
 
         // Return a phi instruction

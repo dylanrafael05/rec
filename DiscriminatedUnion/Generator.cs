@@ -68,6 +68,8 @@ namespace {AttributeNamespace}
     public static string CSV<T>(IEnumerable<T> values)
         => string.Join(", ", values);
 
+    public static string Join<T>(IEnumerable<T> values)
+        => string.Join("", values);
     public static string IfNotEmpty<T>(string value, T[] array)
         => array.Length == 0 ? "" : value;
 
@@ -150,11 +152,11 @@ namespace {symbol.ContainingNamespace.ToDisplayString()}
         {{
             if(this.Value.IsT{index})
             {{
-                {CSV(from a in args select $"{a.Name} = this.Value.AsT{index}.{a.Name};")}
+                {Join(from a in args select $"{a.Name} = this.Value.AsT{index}.{a.Name};")}
                 return true;
             }}
 
-            {CSV(from a in args select $"{a.Name} = default;")}
+            {Join(from a in args select $"{a.Name} = default;")}
             return false;
         }}
 
@@ -188,7 +190,7 @@ namespace {symbol.ContainingNamespace.ToDisplayString()}
         /// Unwrap this as a {typename}, throwing if not a {typename} instance
         /// </summary>
         public void UnwrapAs{typename}(
-            {string.Join("", from a in args select $"out {a.Type.ToDisplayString()} {a.Name}, ")}
+            {Join(from a in args select $"out {a.Type.ToDisplayString()} {a.Name}, ")}
             string msg = ""Expected a {typename} value"")
         {{
             if(!_Is{typename}({CSV(from a in args select $"out {a.Name}")}))

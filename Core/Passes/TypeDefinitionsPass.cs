@@ -10,10 +10,11 @@ public class TypeDefinitionsPass(RecContext ctx) : BasePass(ctx)
     public override Unit VisitStructDefine([NotNull] RecParser.StructDefineContext context)
     {
         context.DefinedType.UnwrapNull().SetBody([..
-            from field in context._Fields
+            from field in context._Fields.Indexed
             select new StructType.Field(
-                field.Name.Text, 
-                CTX.Resolvers.Type.Visit(field.FieldType))
+                field.value.Name.TextAsIdentifier, 
+                CTX.Resolvers.Type.Visit(field.value.FieldType),
+                field.index)
         ]);
 
         return default;

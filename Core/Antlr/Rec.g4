@@ -299,17 +299,17 @@ memoryOperator
 
 // Main expression format //
 expression
-    : LHS=expression logicalOperator RHS=expression       #BinaryExpression
+    : Base=expression '.' Field=Identifier                #DotExpression
+    | Target=expression MethodMarker=method_call_marker? 
+      '(' (Args+=expression (',' Args+=expression)*)? ')' #CallExpression
+    | Op=unaryOperator Operand=expression                 #UnaryExpression
+    | Operand=expression Op=memoryOperator                #MemoryExpression
+    | LHS=expression logicalOperator RHS=expression       #BinaryExpression
     | LHS=expression compOperator    RHS=expression       #BinaryExpression
     | LHS=expression bitwiseOperator RHS=expression       #BinaryExpression
     | LHS=expression muldivOperator  RHS=expression       #BinaryExpression
     | LHS=expression addsubOperator  RHS=expression       #BinaryExpression
     | Operand=expression Cast '(' TargetType=typename ')' #CastExpression
-    | Op=unaryOperator Operand=expression                 #UnaryExpression
-    | Operand=expression Op=memoryOperator                #MemoryExpression
-    | Target=expression MethodMarker=method_call_marker? 
-      '(' (Args+=expression (',' Args+=expression)*)? ')' #CallExpression
-    | Base=expression '.' Field=Identifier                #DotExpression
     | term                                                #TermExpression
     ;
 
@@ -322,7 +322,7 @@ structExprAssign
     ;
 
 structExpression
-    : New StructType=typename '{' Parts+=structExprAssign+ '}'
+    : New StructType=typename '{' (Parts+=structExprAssign ',')+ (Parts+=structExprAssign)? '}'
     ;
 
 variableReference

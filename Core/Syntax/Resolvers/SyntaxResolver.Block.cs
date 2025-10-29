@@ -19,7 +19,8 @@ public partial class SyntaxResolver
         var scope = new Scope
         {
             Identifier = Identifier.None,
-            Parent = CTX.Scopes.Current
+            Parent = CTX.Scopes.Current,
+            CTX = CTX
         };
 
         CTX.Scopes.Enter(scope);

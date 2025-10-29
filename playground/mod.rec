@@ -1,0 +1,19 @@
+mod example
+    struct Type
+    {
+        x isize
+    }
+
+    fn make_type() Type
+    {
+        return new Type
+        {
+            x = 0 cast(isize),
+        };
+    }
+end mod
+
+fn use_type() example::Type
+{
+    return example::make_type();
+}

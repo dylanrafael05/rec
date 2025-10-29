@@ -1,9 +1,4 @@
-using LLVMSharp.Interop;
 using Re.C.Syntax;
-using Re.C.Types;
-using Re.C.Visitor;
-
-using Type = Re.C.Types.Type;
 
 namespace Re.C.Compilation;
 

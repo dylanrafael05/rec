@@ -27,7 +27,7 @@ public static class DiagnosticOutput
         var endIndex = fromStart.IndexOfAny('\n', '\r');
         var trimIndex = fromStart.IndexOfAnyExcept(' ', '\t');
 
-        var highlightedSegment = fromStart[trimIndex..endIndex];
+        var highlightedSegment = fromStart[trimIndex..(endIndex == -1 ? ^0 : endIndex)];
 
         builder
             .Append($"{"Error".Pastel(ConsoleColor.Red)} at {diagnostic.Span.Format()}: ")

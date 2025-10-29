@@ -1,5 +1,6 @@
 using Re.C.Types;
 using Antlr4.Runtime.Misc;
+using Re.C.Antlr;
 
 namespace Re.C.Syntax.Resolvers;
 
@@ -15,7 +16,9 @@ public class TypeResolver(RecContext ctx) : RecBaseVisitor<Types.Type>
 {
     public override Types.Type VisitTypenameSingle(RecParser.TypenameSingleContext single)
     {
-        var def = IdentifierResolution.Resolve(ctx, single.Ident);
+        var def = ctx.Scopes.Current.DeepSearchOrDiagnose(
+            [..from p in single.Ident._Parts select p.SourceSpan], 
+            [..from p in single.Ident._Parts select p.TextAsIdentifier]);
         return (def as NamedType) ?? ctx.BuiltinTypes.Error;
     }
 

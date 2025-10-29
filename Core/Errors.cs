@@ -13,10 +13,11 @@ public static class Errors
     public static string UndefinedInCurrentScope(Identifier name)
         => $"Could not find a definition of '{name}' in current context";
     public static string UndefinedInGivenScope(Identifier name, IDefinition scope)
-        => $"Could not find a definition of '{name}' in '{scope}'";
+        => $"Could not find a definition of '{name}' in '{scope.FullName}'";
     public static string AmbiguousIdentifier(Identifier name, IEnumerable<IDefinition> defs)
         => $"Ambiguous reference to '{name}' in current context; could be {string.Join(" or ", from d in defs select d.FullName)}";
-    
+    public static string UndefinedStructField(Types.Type operand, Identifier ident)
+        => $"No such field {ident} on type {operand}";
     public static string InvalidScopeResolutionTarget()
         => $"Cannot use '.' here; target is not a scope";
     public static string Redefinition(Identifier name, Scope scope)
@@ -32,6 +33,12 @@ public static class Errors
 
     public static string TypeMismatch(Types.Type expected, Types.Type real)
         => $"Expected a value of type {expected} but got {real}";
+    public static string StructFieldTypeMismatch(Types.Type structType, Identifier ident, Types.Type fieldType, Types.Type realType)
+        => $"Incompatible field type for {structType}.{ident}, expected {fieldType} but got {realType}";
+    public static string StructMissingFields(Types.Type structType, IReadOnlyList<Identifier> missing)
+        => $"Incomplete construction of {structType}; missing {string.Join(", ", missing)}";
+    
+    
     public static string InvalidAssignmentTarget()
         => $"Cannot assign to this expression";
 
@@ -49,6 +56,10 @@ public static class Errors
         => $"Cannot dereference value of type {operand}";
     public static string InvalidAddressOf()
         => $"Cannot take address of this expression";
+    public static string InvalidDotTarget(Types.Type operand)
+        => $"Cannot access fields of non-struct type {operand}";
+    public static string InvalidStructExprTarget(Types.Type operand)
+        => $"Cannot construct non-struct type {operand}";
     public static string InvalidMethod(IDefinition? def)
         => $"Invalid method {def}";
     

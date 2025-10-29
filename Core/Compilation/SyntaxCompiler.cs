@@ -94,6 +94,8 @@ public partial class SyntaxCompiler(RecContext CTX)
             CastExpression x => CompileCast(x),
             DerefExpression x => CompileDeref(x),
             AddressOfExpression x => CompileAddrOf(x),
+            DotExpression x => CompileDot(x),
+            StructExpression x => CompileStruct(x),
 
             _ => throw UnimplementedBecause($"context type {context.GetType()}")
         };
@@ -109,6 +111,7 @@ public partial class SyntaxCompiler(RecContext CTX)
         {
             VariableExpression x => CompileVariableAsLHS(x),
             DerefExpression x => CompileDerefAsLHS(x),
+            DotExpression x => CompileDot(x),
 
             _ => throw UnimplementedBecause($"context type {context.GetType()}")
         };
