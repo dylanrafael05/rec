@@ -302,7 +302,11 @@ expression
     : Base=expression '.' Field=Identifier                #DotExpression
     | Target=expression MethodMarker=method_call_marker? 
       '(' (Args+=expression (',' Args+=expression)*)? ')' #CallExpression
+
+        // TODO; reimplement this as a 'rewrite' of the parse tree,
+        // since dot and member call have the same precedence but ANTLR
         // will always choose dot over member call
+
     | Op=unaryOperator Operand=expression                 #UnaryExpression
     | Operand=expression Op=memoryOperator                #MemoryExpression
     | LHS=expression logicalOperator RHS=expression       #BinaryExpression
