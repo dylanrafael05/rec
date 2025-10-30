@@ -1,0 +1,11 @@
+use math
+
+fn main()
+{
+    // NOTE: definitely returns analysis is required to ensure
+    // void functions return.
+
+    let x = Vector2::make(0 cast(f32), 0 cast(f32));
+    let y = x.get_x().x;
+    return;
+}

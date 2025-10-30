@@ -2,31 +2,40 @@ namespace Re.C.Definitions;
 
 public class TypeAssociations
 {
-    private readonly MultiDictionary<Types.Type, Scope> values = [];
+    private readonly MultiDictionary<Types.Type, Scope> namedAssociations = [];
+    private readonly MultiDictionary<Types.Type, Scope> unnamedAssociations = [];
 
     public void Add(Types.Type type, Scope scope)
     {
-        values.Add(type, scope);
+        namedAssociations.Add(type, scope);
     }
 
-    public IEnumerable<Scope> GetAllInScope(Types.Type type, IReadOnlyList<Scope> imports)
+    public void AddUnnamed(Types.Type type, Scope scope)
     {
-        return from scope in values[type] 
-            where imports.Contains(scope)
-            select scope;
+        unnamedAssociations.Add(type, scope);
+    }
+
+    public IEnumerable<Scope> GetAllInScope(Types.Type type, IReadOnlyCollection<Scope> imports)
+    {
+        return Enumerable.Concat(
+            from scope in namedAssociations.GetValueOrDefault(type) ?? []
+                where imports.Contains(scope)
+                select scope,
+            unnamedAssociations.GetValueOrDefault(type) ?? []
+        );
     }
 
     public Result<Function, SearchFailure> Search(
-        Types.Type type, Identifier ident, IReadOnlyList<Scope> imports)
+        Types.Type type, Identifier ident, IReadOnlyCollection<Scope> imports)
     {
         return Scope.SearchInMany(GetAllInScope(type, imports), ident)
             .MapOk(static x => x.UnwrapAs<Function>());
     }
 
     public Function? SearchOrDiagnose(
-        SourceSpan span, Types.Type type, Identifier ident, IReadOnlyList<Scope> imports)
+        SourceSpan span, Types.Type type, Identifier ident, IReadOnlyCollection<Scope> imports)
     {
-        var ctx = imports[0].CTX;
+        var ctx = imports.First().CTX;
         var lookup = Search(type, ident, imports);
 
         if(lookup.IsOk(out var result))

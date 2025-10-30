@@ -27,6 +27,11 @@ public static class Errors
         => $"Non-external function '{name}' must define a body";
     public static string BodyForExtern(Identifier name)
         => $"External function '{name}' cannot define a body";
+        
+    public static string InvalidAsBlockTarget(Types.Type type)
+        => $"Cannot create an 'as' block for non-named type {type}";
+    public static string UnnamedAsBlockInDifferentFile()
+        => $"Unnamed 'as' blocks must be placed in the same file as the type they are associated with";
 
     public static string UnknownEscapeSequence(string escape)
         => $"Unrecognized escape sequence '{escape}'";

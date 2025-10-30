@@ -110,7 +110,7 @@ locals [
 @init  { AsBlockDepth++; }
 @after { AsBlockDepth--; }
     : {AsBlockDepth <= 1}? 
-      Mod ModuleIdent=fullIdentifier As typename Identifier* 
+      Mod ModuleIdent=Identifier? As typename
         Substatements+=topLevelStatement*
       (End Mod)?
     ;
@@ -205,7 +205,7 @@ breakStatement
     : {InLoop}? Break;
 
 returnStatement
-    : Return Value=expression;
+    : Return Value=expression?;
 
 deferStatement
     : Defer block;
@@ -302,6 +302,7 @@ expression
     : Base=expression '.' Field=Identifier                #DotExpression
     | Target=expression MethodMarker=method_call_marker? 
       '(' (Args+=expression (',' Args+=expression)*)? ')' #CallExpression
+        // will always choose dot over member call
     | Op=unaryOperator Operand=expression                 #UnaryExpression
     | Operand=expression Op=memoryOperator                #MemoryExpression
     | LHS=expression logicalOperator RHS=expression       #BinaryExpression

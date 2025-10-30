@@ -9,6 +9,65 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
 {
     public override bool EnterAsBlocks => true;
 
+    public override Unit VisitAsStatement([NotNull] RecParser.AsStatementContext context)
+    {
+        var span = context.CalculateSourceSpan();
+        var typespan = context.typename().CalculateSourceSpan();
+        var anytype = CTX.Resolvers.Type.Visit(context.typename());
+
+        if(anytype is not NamedType type)
+        {
+            CTX.Diagnostics.AddError(
+                typespan, Errors.InvalidAsBlockTarget(anytype));
+            
+            return Unit();
+        }
+
+        Scope scope;
+
+        if(context.ModuleIdent is null)
+        {
+            if(CTX.CurrentSource != type.DefinitionLocation.Map(static x => x.Source))
+            {
+                CTX.Diagnostics.AddError(
+                    typespan, Errors.UnnamedAsBlockInDifferentFile());
+                
+                return Unit();
+            }
+
+            scope = new Scope
+            {
+                Parent = CTX.Scopes.Current,
+                Identifier = Identifier.None,
+                CTX = CTX,
+
+                AssociatedType = type  
+            };
+
+            CTX.TypeAssociations.AddUnnamed(type, scope);
+        }
+        else
+        {
+            scope = CTX.Scopes.Current.DefineOrDiagnose(
+                context.ModuleIdent.SourceSpan,
+                new Scope
+                {
+                    Identifier = context.ModuleIdent.TextAsIdentifier,
+                    CTX = CTX,
+                    AssociatedType = type  
+                })!;
+
+            if(scope is null)
+                return Unit();
+            
+            CTX.TypeAssociations.Add(type, scope);
+        }
+
+        context.Scope = scope;
+
+        return base.VisitAsStatement(context);
+    }
+
     public override Unit VisitFnDefine([NotNull] RecParser.FnDefineContext context)
     {
         var span = context.CalculateSourceSpan();

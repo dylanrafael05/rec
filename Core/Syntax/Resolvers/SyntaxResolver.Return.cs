@@ -11,17 +11,22 @@ public partial class SyntaxResolver
 {
     public override BoundSyntax VisitReturnStatement([NotNull] RecParser.ReturnStatementContext context)
     {
-        var value = Visit(context.Value).UnwrapAs<Expression>();
+        var span = context.CalculateSourceSpan();
+
+        // TODO: swap this to an option instead of a nullable
+        var value = (context.Value is null ? null : Visit(context.Value))
+            .UnwrapAsOrNull<Expression>();
+
+        var type = value?.Type ?? CTX.BuiltinTypes.None;
         var expectedType = CTX.Functions.Current.UnwrapNull().Type.Return;
 
         // TODO: how should definely-returns analysis take place?
 
         // Error on mismatching return type //
-        if (value.Type != expectedType)
+        if (type != expectedType)
         {
             CTX.Diagnostics.AddError(
-                value.Span,
-                Errors.TypeMismatch(expectedType, value.Type));
+                span, Errors.TypeMismatch(expectedType, type));
         }
 
         return new ReturnStatement

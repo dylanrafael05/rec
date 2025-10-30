@@ -61,19 +61,8 @@ public class RecContext
     /// A reference to the list of all imported scopes for the
     /// currently active source.
     /// </summary>
-    public List<Scope> CurrentImports
-    {
-        get
-        {
-            if (!ImportsBySource.TryGetValue(CurrentSource.UnwrapNull(), out var result))
-            {
-                result = [];
-                ImportsBySource.Add(CurrentSource!, result);
-            }
+    public IReadOnlyCollection<Scope> CurrentImports => ImportsBySource.GetValueOrDefault(CurrentSource!) ?? [];
 
-            return result;
-        }
-    }
     /// <summary>
     /// Provided a view of the current LLVM function, or panics
     /// if there is no such function.
@@ -102,7 +91,7 @@ public class RecContext
     /// <summary>
     /// A mapping of sources to the scopes that they import.
     /// </summary>
-    public Dictionary<Source, List<Scope>> ImportsBySource { get; } = [];
+    public MultiDictionary<Source, Scope> ImportsBySource { get; } = [];
 
     /// <summary>
     /// A reference to all passes for this context.
@@ -145,12 +134,16 @@ public class RecContext
         var builder = llvmContext.CreateBuilder();
 
         Types.Type MakePrimitive(LLVMTypeRef type, string name, PrimitiveType.Class cls)
-            => scope.Define(new PrimitiveType(type, cls) { Identifier = Identifier.Name(name) }).UnwrapNull();
+            => scope.Define(new PrimitiveType(type, cls) { 
+                Identifier = Identifier.Name(name), 
+                DefinitionLocation = Option.None }).UnwrapNull();
 
         var types = new BuiltinTypes
         {
             Error = new ErrorType(),
-            None = scope.Define(new NoneType { Identifier = Identifier.Name("none") }).UnwrapNull(),
+            None = scope.Define(new NoneType { 
+                Identifier = Identifier.Name("none"), 
+                DefinitionLocation = Option.None }).UnwrapNull(),
 
             Bool = MakePrimitive(llvmContext.Int1Type, "bool", PrimitiveType.Class.Bool),
             I8 = MakePrimitive(llvmContext.Int8Type, "i8", PrimitiveType.Class.SignedInt),
@@ -170,6 +163,7 @@ public class RecContext
         Passes = new()
         {
             FileDeclarations = new(this),
+            FileUsages = new(this),
             TypeDeclarations = new(this),
             FunctionDeclarations = new(this),
             TypeDefinitions = new(this),

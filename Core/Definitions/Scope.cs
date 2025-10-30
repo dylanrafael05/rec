@@ -1,3 +1,5 @@
+using Re.C.Types;
+
 namespace Re.C.Definitions;
 
 public class Scope : DefinitionBase
@@ -50,7 +52,7 @@ public class Scope : DefinitionBase
     /// Search within this scope for a definition that matches
     /// the provided identifier.
     /// </summary>
-    public Result<IDefinition, SearchFailure> Search(Identifier identifier, IReadOnlyList<Scope>? importedScopes = null)
+    public Result<IDefinition, SearchFailure> Search(Identifier identifier, IReadOnlyCollection<Scope>? importedScopes = null)
     {
         // Search within this scope
         if (Definitions.TryGetValue(identifier, out var def))
@@ -65,7 +67,7 @@ public class Scope : DefinitionBase
         {
             // If we are performing internal lookup,
             // search imported scopes
-            if (importedScopes is not null)
+            if (importedScopes is not null && importedScopes.Count != 0)
             {
                 return SearchInMany(importedScopes, identifier);
             }
@@ -108,7 +110,7 @@ public class Scope : DefinitionBase
     public IDefinition? SearchOrDiagnose(
         SourceSpan span,
         Identifier identifier,
-        IReadOnlyList<Scope>? importedScopes = null)
+        IReadOnlyCollection<Scope>? importedScopes = null)
     {
         var def = Search(identifier, importedScopes);
 
@@ -128,10 +130,19 @@ public class Scope : DefinitionBase
 
         foreach(var (part, index) in parts.Indexed)
         {
-            if(result is not Scope scope)
-                return Result.Err(DeepSearchFailure.NotAScope(result, index));
+            Result<IDefinition, SearchFailure> subresult;
+            if(result is Scope scope)
+            {
+                subresult = scope.Search(part, imports);
+            }
+            else if(result is NamedType type)
+            {
+                subresult = SearchInMany(
+                    CTX.TypeAssociations.GetAllInScope(type, CTX.CurrentImports),
+                    part);
+            }
+            else return Result.Err(DeepSearchFailure.NotAScope(result, index));
 
-            var subresult = scope.Search(part, imports);
             if(subresult.IsErr(out var err))
                 return Result.Err(DeepSearchFailure.Search(err, index));
 

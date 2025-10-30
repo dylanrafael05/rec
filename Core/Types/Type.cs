@@ -41,6 +41,7 @@ public abstract class Type : IEquatable<Type>, IVisitable
     protected abstract LLVMTypeRef ImplementCompile(RecContext ctx);
     public abstract LLVMValueRef BuildDestructor(RecContext ctx);
     public abstract FieldDescriptor[] GetFields(RecContext ctx);
+    public virtual Option<SourceSpan> GetDefinitionLocation() => Option.None;
 
     public LLVMTypeRef Compile(RecContext ctx)
     {

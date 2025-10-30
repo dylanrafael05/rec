@@ -46,6 +46,15 @@ public readonly partial record struct Option<T> : IEnumerable<T>
     public static implicit operator Option<T>(Option.NoneHelper _)
         => new();
 
+    public static bool operator==(T? lhs, Option<T> rhs)
+        => rhs.IsSome(out var x) && object.Equals(lhs, x);
+    public static bool operator!=(T? lhs, Option<T> rhs)
+        => !(lhs == rhs);
+    public static bool operator==(Option<T> lhs, T? rhs)
+        => lhs.IsSome(out var x) && object.Equals(x, rhs);
+    public static bool operator!=(Option<T> lhs, T? rhs)
+        => !(lhs == rhs);
+
     /// <summary>
     /// Produce a new option by calling a function
     /// on this instance's contained value, or 

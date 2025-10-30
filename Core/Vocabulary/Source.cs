@@ -4,8 +4,11 @@ namespace Re.C.Vocabulary;
 /// An object which represents a single unit of compilable
 /// code, given a name (typically the file the code is from).
 /// </summary>
-public record Source(string Name, string Content)
+public class Source(string name, string content)
 {
+    public string Name { get; } = name;
+    public string Content { get; } = content;
+
     public override string ToString()
         => $"Source '{Name}'";
 }

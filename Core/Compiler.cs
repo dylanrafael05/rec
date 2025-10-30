@@ -31,6 +31,7 @@ public class Compiler
             LexAndParse(source);
 
         RunASTPass(CTX.Passes.FileDeclarations);
+        RunASTPass(CTX.Passes.FileUsages);
         RunASTPass(CTX.Passes.TypeDeclarations);
         RunASTPass(CTX.Passes.FunctionDeclarations);
         RunASTPass(CTX.Passes.TypeDefinitions);

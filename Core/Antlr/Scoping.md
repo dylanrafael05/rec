@@ -1,4 +1,4 @@
-Associated functions can be bound to any type (or specializations thereof)
+Associated functions can be bound to any named type (or specializations thereof)
 
 ```rs
 mod float_utils as float
