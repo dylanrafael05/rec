@@ -1,7 +1,9 @@
 using System.Collections;
+using System.Data;
 using OneOf;
 
 namespace Re.C.Vocabulary;
+
 
 /// <summary>
 /// A helper class containing generic functions
@@ -67,6 +69,20 @@ public readonly partial record struct Option<T> : IEnumerable<T>
 
         return new();
     }
+    
+    /// <summary>
+    /// Produce a new option by calling a function
+    /// on this instance's contained value, or 
+    /// forwarding 'None' if there is no such value.
+    /// </summary>
+    public Option<V> Map<V, CTX>(CTX context, Func<CTX, T, V> func)
+        where CTX: allows ref struct
+    {
+        if (IsSome(out var value))
+            return Option.Some(func(context, value));
+
+        return new();
+    }
 
     /// <summary>
     /// Get the underlying value, throwing an
@@ -97,6 +113,7 @@ public readonly partial record struct Option<T> : IEnumerable<T>
     /// </summary>
     public struct Enumerator(Option<T> value) : IEnumerator<T>
     {
+        private bool movedOnce = false;
         private bool atEnd = value.IsNone;
 
         public readonly T Current => atEnd 
@@ -108,13 +125,22 @@ public readonly partial record struct Option<T> : IEnumerable<T>
         {}
 
         public bool MoveNext()
-        {
-            atEnd = true;
-            return false;
+        {            
+            if(movedOnce)
+            {
+                atEnd = true;
+            }
+            else atEnd = value.IsNone;
+            
+            movedOnce = true;
+
+            return !atEnd;
         }
 
         public void Reset()
-            => atEnd = value.IsNone;
+        {
+            movedOnce = false;
+        }
     }
 
     /// <summary>

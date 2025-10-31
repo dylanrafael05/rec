@@ -36,18 +36,19 @@ public class Compiler
         RunASTPass(CTX.Passes.FunctionDeclarations);
         RunASTPass(CTX.Passes.TypeDefinitions);
         RunASTPass(CTX.Passes.FunctionDefinitions);
-        RunASTPass(CTX.Passes.LLVMGeneration);
+
+        RunASTPass(CTX.Passes.LLVMGeneration, refuseOnErrors: true);
 
         CTX.Module.Verify(LLVMVerifierFailureAction.LLVMAbortProcessAction);
     }
     
-    public void RunASTPass(IRecVisitor<Unit> visitor)
+    public void RunASTPass(IRecVisitor<Unit> visitor, bool refuseOnErrors = false)
     {
         foreach(var source in Sources)
         {
             CTX.CurrentSource = source;
 
-            if (CTX.Diagnostics.HasErrors(source))
+            if (refuseOnErrors && CTX.Diagnostics.HasErrors(source))
                 continue;
 
             var tree = ParseTrees[source];

@@ -17,7 +17,7 @@ public partial class SyntaxResolver
                 [..from p in fident._Parts select p.SourceSpan], 
                 [..from p in fident._Parts select p.TextAsIdentifier])
             : CTX.Scopes.Current.SearchOrDiagnose(
-                span, context.Identifier().TextAsIdentifier);
+                span, Identifier.Name(context.GetText()));
 
         if (defn is null)
         {

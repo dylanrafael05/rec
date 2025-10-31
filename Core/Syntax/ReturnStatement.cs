@@ -2,11 +2,11 @@ namespace Re.C.Syntax;
 
 public class ReturnStatement : BoundSyntax
 {
-    public required Expression? Value { get; init; }
+    public required Option<Expression> Value { get; init; }
 
     public override void PropogateVisitor<V>(V visitor)
     {
-        if(Value is not null)
-            visitor.Visit(Value);
+        if(Value.IsSome(out var value))
+            visitor.Visit(value);
     }
 }

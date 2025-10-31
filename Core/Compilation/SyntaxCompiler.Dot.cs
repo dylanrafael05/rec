@@ -8,10 +8,8 @@ public partial class SyntaxCompiler
 {
     public RecValue CompileDot(DotExpression context)
     {
-        // TODO; rework this to use 'extractvalue'
-        // non-addressable lhs's.
-        var ptr = CompileDotAsLHS(context);
-        return CTX.Builder.BuildLoad2(context.Type.Compile(CTX), ptr.Unwrap());
+        var value = Compile(context.Inner);
+        return CTX.Builder.BuildExtractValue(value.Unwrap(), (uint)context.FieldIndex);
     }
 
     public RecValue CompileDotAsLHS(DotExpression context)

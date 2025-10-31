@@ -2,6 +2,7 @@ using Antlr4.Runtime.Misc;
 using Re.C.Types;
 using Re.C.Antlr;
 using Re.C.Definitions;
+using Antlr4.Runtime.Tree;
 
 namespace Re.C.Passes;
 
@@ -99,6 +100,11 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
             ..Option.If(selfType is not null, Identifier.Builtin.Self)
         ];
 
+        var argSyntaxes = (IParseTree[])[
+            ..context._Args,
+            ..Option.Nonnull(context.fnSelfDefine())
+        ];
+
         // Define arguments in an anonymous inner scope
         var innerScope = new Scope 
         { 
@@ -109,7 +115,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
 
         var argInfo = argNames
             .Zip(type.Parameters)
-            .Zip(context._Args);
+            .Zip(argSyntaxes);
 
         var argDefs = (Variable?[])[..
             from info in argInfo

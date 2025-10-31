@@ -11,6 +11,19 @@ public partial class SyntaxCompiler
 {
     private RecValue CompileAddrOf(AddressOfExpression context)
         => CompileAsLHS(context.Inner);
+        
+    private RecValue CompileTempAddrOf(TempAddressOfExpression context)
+    {
+        if(context.Inner.HasAddress)
+            return CompileAsLHS(context.Inner);
+
+        var ptrtype = context.Type.UnwrapAs<PointerType>();
+        var ptr = CTX.Builder.BuildAlloca(ptrtype.Pointee.Compile(CTX));
+        var val = Compile(context.Inner).Unwrap();
+        CTX.Builder.BuildStore(val, ptr);
+        
+        return ptr;
+    }
 
     private RecValue CompileDeref(DerefExpression context)
     {

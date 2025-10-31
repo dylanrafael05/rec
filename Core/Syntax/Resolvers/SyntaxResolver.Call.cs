@@ -19,12 +19,11 @@ public partial class SyntaxResolver
 
         if(context.MethodMarker is not null)
         {
-            var identPT = context.MethodMarker.Identifier();
-            var ident = Identifier.Name(
-                identPT.GetText());
+            var identPT = context.MethodMarker;
+            var ident = identPT.TextAsIdentifier;
 
             var fndef = CTX.TypeAssociations.SearchOrDiagnose(
-                identPT.CalculateSourceSpan(),
+                identPT.SourceSpan,
                 targetExpr.Type,
                 ident,
                 CTX.CurrentImports);
@@ -34,14 +33,14 @@ public partial class SyntaxResolver
                 CTX.Diagnostics.AddError(
                     context.CalculateSourceSpan(), Errors.InvalidMethod(fndef));
                 
-                callTargetExpr = BoundSyntax.ErrorExpression(identPT, CTX);
+                callTargetExpr = BoundSyntax.ErrorExpression(identPT.SourceSpan, CTX);
                 functionType = default;
             }
             else 
             {
                 callTargetExpr = new FunctionExpression
                 {
-                    Span = identPT.CalculateSourceSpan(),
+                    Span = identPT.SourceSpan,
                     Type = fn.Type,
                     Function = fn
                 };
@@ -65,6 +64,7 @@ public partial class SyntaxResolver
     {
         // Bind the function and check that it *is* a function
         GetCallTarget(context, out var targetExpr, out var callTarget, out var fnType);
+        var hasReceiver = !ReferenceEquals(targetExpr, callTarget);
 
         if(fnType is null)
         {
@@ -77,11 +77,26 @@ public partial class SyntaxResolver
 
         // Bind arguments and check that they match the function's signature
         var args = (Expression[])[
-            ..Option.If(!ReferenceEquals(targetExpr, callTarget), targetExpr),
+            ..Option.If(hasReceiver, targetExpr),
             ..from arg in context._Args
             select Visit(arg).UnwrapAs<Expression>()
         ];
 
+        // Allocate a temporary (or use actual reference when available)
+        // if declared receiver type is pointer to actual receiver type
+        if(hasReceiver 
+        && fnType.Parameters[0] is var pointer and PointerType { Pointee: var pointee }
+        && pointee == args[0].Type)
+        {
+            args[0] = new TempAddressOfExpression
+            {
+                Span = args[0].Span,
+                Type = pointer,
+                Inner = args[0]
+            };
+        }
+
+        // Check for type mismatches
         var argTypes = from a in args select a.Type;
 
         if (!argTypes.SequenceEqual(fnType.Parameters))

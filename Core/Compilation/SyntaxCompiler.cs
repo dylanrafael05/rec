@@ -94,6 +94,7 @@ public partial class SyntaxCompiler(RecContext CTX)
             CastExpression x => CompileCast(x),
             DerefExpression x => CompileDeref(x),
             AddressOfExpression x => CompileAddrOf(x),
+            TempAddressOfExpression x => CompileTempAddrOf(x),
             DotExpression x => CompileDot(x),
             StructExpression x => CompileStruct(x),
 

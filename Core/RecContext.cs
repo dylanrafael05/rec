@@ -115,10 +115,10 @@ public class RecContext
         var target = LLVMTargetRef.GetTargetFromTriple(LLVMTargetRef.DefaultTriple);
         var machine = target.CreateTargetMachine(
             LLVMTargetRef.DefaultTriple,
-            "",
+            "generic",
             "",
             LLVMCodeGenOptLevel.LLVMCodeGenLevelDefault,
-            LLVMRelocMode.LLVMRelocDefault,
+            LLVMRelocMode.LLVMRelocPIC,
             LLVMCodeModel.LLVMCodeModelDefault);
 
         var targetData = machine.CreateTargetDataLayout();

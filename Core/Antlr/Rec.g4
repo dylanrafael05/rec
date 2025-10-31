@@ -157,8 +157,8 @@ fnArgumentDefine
     ;
 
 fnSelfDefine
-    : {InAsBlock}? Self      #FnDefineSelf
-    | {InAsBlock}? '*' Self  #FnDefineSelfPtr
+    : { InAsBlock }? Self      #FnDefineSelf
+    | { InAsBlock }? '*' Self  #FnDefineSelfPtr
     ;
 
 fnDefine
@@ -169,8 +169,8 @@ locals [
     : templateHeader? 
       External? Fn Name=Identifier 
       '('( 
-        (fnSelfDefine ',')? Args+=fnArgumentDefine (',' Args+=fnArgumentDefine)* |
-        fnSelfDefine
+        ((fnSelfDefine ',')? Args+=fnArgumentDefine (',' Args+=fnArgumentDefine)*) 
+        | fnSelfDefine
       )?')'
       Ret=typename?
       Body=block?
@@ -299,16 +299,15 @@ memoryOperator
 
 // Main expression format //
 expression
-    : Base=expression '.' Field=Identifier                #DotExpression
-    | Target=expression MethodMarker=method_call_marker? 
-      '(' (Args+=expression (',' Args+=expression)*)? ')' #CallExpression
-
-        // TODO; reimplement this as a 'rewrite' of the parse tree,
-        // since dot and member call have the same precedence but ANTLR
-        // will always choose dot over member call
-
-    | Op=unaryOperator Operand=expression                 #UnaryExpression
+    : Base=expression 
+        {TokenStream.LT(3).Text != "("}? 
+        // NOTE: this ^^ is a somewhat hacky fix to ensure
+        //       that method calls are appropriately parsed
+        '.' Field=Identifier                              #DotExpression
     | Operand=expression Op=memoryOperator                #MemoryExpression
+    | Target=expression ('.' MethodMarker=Identifier)? 
+      '(' (Args+=expression (',' Args+=expression)*)? ')' #CallExpression
+    | Op=unaryOperator Operand=expression                 #UnaryExpression
     | LHS=expression logicalOperator RHS=expression       #BinaryExpression
     | LHS=expression compOperator    RHS=expression       #BinaryExpression
     | LHS=expression bitwiseOperator RHS=expression       #BinaryExpression
@@ -316,10 +315,6 @@ expression
     | LHS=expression addsubOperator  RHS=expression       #BinaryExpression
     | Operand=expression Cast '(' TargetType=typename ')' #CastExpression
     | term                                                #TermExpression
-    ;
-
-method_call_marker
-    : '.' MethodName=Identifier
     ;
     
 structExprAssign
@@ -333,10 +328,11 @@ structExpression
 variableReference
     : Identifier
     | fullIdentifier
+    | {InAsBlock}? Self
     ;
 
 term
-    : literal                
+    : literal         
     | variableReference
     | '(' expression ')'     
     | structExpression      

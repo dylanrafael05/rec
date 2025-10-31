@@ -9,11 +9,7 @@ public partial class SyntaxCompiler
 {
     public void CompileReturn(ReturnStatement context)
     {
-        var val = context.Value switch 
-        {
-            null => RecValue.None,
-            var x => Compile(x)
-        };
+        var val = context.Value.Map(Compile).Or(RecValue.None);
 
         if (val.Value.IsSome(out var value))
         {

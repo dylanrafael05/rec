@@ -13,11 +13,11 @@ public partial class SyntaxResolver
     {
         var span = context.CalculateSourceSpan();
 
-        // TODO: swap this to an option instead of a nullable
-        var value = (context.Value is null ? null : Visit(context.Value))
-            .UnwrapAsOrNull<Expression>();
+        var value = Option.Nonnull(context.Value)
+            .Map(Visit)
+            .Map(x => x.UnwrapAs<Expression>());
 
-        var type = value?.Type ?? CTX.BuiltinTypes.None;
+        var type = value.Map(x => x.Type).Or(CTX.BuiltinTypes.None);
         var expectedType = CTX.Functions.Current.UnwrapNull().Type.Return;
 
         // TODO: how should definely-returns analysis take place?
