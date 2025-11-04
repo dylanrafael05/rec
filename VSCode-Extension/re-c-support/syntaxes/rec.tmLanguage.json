@@ -1,0 +1,54 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Re:C",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#expressions"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.rec",
+					"match": "\\b(var|let|end|if|else|while|fn|continue|break|defer|type|struct|template|new|return|for|mod|use|auto|self|and|not|or|true|false|as|cast|external)\\b"
+				},
+				{
+					"name": "entity.name.type.rec",
+					"match": "\\b(none|bool|i8|i16|i32|i64|isize|u8|u16|u32|u64|usize|f32|f64)\\b"
+				},
+				{
+					"name": "entity.name.class.rec",
+					"match": "\\b[A-Z]([A-Z]|[a-z]|[0-9]|_)*"
+				}
+			]
+		},
+		"expressions": {
+			"patterns": [
+				{
+					"name": "string.quoted.double.rec",
+					"begin": "\"",
+					"end": "\"",
+					"patterns": [
+						{
+							"name": "constant.character.escape.rec",
+							"match": "\\\\."
+						}
+					]
+				},
+				{
+					"name": "constant.numeric.rec",
+					"match": "[0-9]+(\\.[0-9]+)?"
+				},
+				{
+					"name": "entity.name.rec",
+					"match": "\\b([a-z]|_)([A-Z]|[a-z]|[0-9]|_)*"
+				}
+			]
+		}
+	},
+	"scopeName": "source.re.c"
+}

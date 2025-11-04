@@ -32,6 +32,10 @@ public class RecContext
     /// A reference to the target information used by LLVM.
     /// </summary>
     public LLVMTargetDataRef TargetData { get; }
+    /// <summary>
+    /// A reference to the target machine information used by LLVM.
+    /// </summary>
+    public LLVMTargetMachineRef TargetMachine { get; }
 
     /// <summary>
     /// A reference to the empty destructor function.

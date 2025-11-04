@@ -1,0 +1,25 @@
+{
+  "name": "re-c-support",
+  "displayName": "Re:C Support",
+  "description": "Language support for Re:C",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.105.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "rec",
+      "aliases": ["Re:C", "rec"],
+      "extensions": [".rec"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "rec",
+      "scopeName": "source.re.c",
+      "path": "./syntaxes/rec.tmLanguage.json"
+    }]
+  }
+}
