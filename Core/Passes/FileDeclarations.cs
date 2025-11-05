@@ -40,7 +40,11 @@ public class FileDeclarationsPass(RecContext ctx) : BasePass(ctx)
             }
             else
             {
-                scope = scope.Define(new Scope { Identifier = part, CTX = CTX })!;
+                scope = scope.Define(new Scope { 
+                    Identifier = part, 
+                    CTX = CTX, 
+                    DefinitionLocation = Option.Some(partToken.SourceSpan)
+                })!;
             }
         }
 

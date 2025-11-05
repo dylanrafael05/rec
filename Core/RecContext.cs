@@ -1,6 +1,7 @@
 ﻿using LLVMSharp.Interop;
 using Re.C.Compilation;
 using Re.C.Definitions;
+using Re.C.IR;
 using Re.C.Passes;
 using Re.C.Syntax.Resolvers;
 using Re.C.Types;
@@ -107,8 +108,13 @@ public class RecContext
     public RecResolvers Resolvers { get; }
     /// <summary>
     /// An instance of the syntax compiler.
+    /// TODO: relocate all LLVM related code to its own csproj
     /// </summary>
     public SyntaxCompiler SyntaxCompiler { get; }
+    /// <summary>
+    /// An instance of the ir generator.
+    /// </summary>
+    public IRGenerator IRGenerator { get; }
 
     private RecContext(
         LLVMContextRef llvmContext,
@@ -131,7 +137,8 @@ public class RecContext
         {
             CTX = this,
             Identifier = Identifier.None,
-            Parent = null
+            Parent = null,
+            DefinitionLocation = Option.None
         };
 
         var module = llvmContext.CreateModuleWithName(moduleName);
@@ -172,6 +179,10 @@ public class RecContext
             FunctionDeclarations = new(this),
             TypeDefinitions = new(this),
             FunctionDefinitions = new(this),
+
+            IRGeneration = new(this),
+
+            LLVMDefinitions = new(this),
             LLVMGeneration = new(this),
         };
 
@@ -182,6 +193,7 @@ public class RecContext
         };
 
         SyntaxCompiler = new(this);
+        IRGenerator = new(this);
 
         LLVM = llvmContext;
         Module = module;

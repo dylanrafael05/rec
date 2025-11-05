@@ -5,9 +5,14 @@ fn main()
     // NOTE: definitely returns analysis is required to ensure
     // void functions return.
 
-    let x = Vector2::make(0 cast(f32), 0 cast(f32));
+    let x = Vector2::make(0.51 cast(f32), 0 cast(f32));
     let y = x.get_x().x;
     
-    let z = Vector2::make(0 cast(f32), 0 cast(f32)).get_x().x;
+    // TODO; lower precedence of 'cast'
+    if y == (0 cast(f32))
+    {
+        let z = Vector2::make(0 cast(f32), 0 cast(f32)).get_x().x;
+    }
+
     return;
 }

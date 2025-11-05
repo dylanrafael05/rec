@@ -21,6 +21,14 @@ public static class Objects
         [CallerArgumentExpression(nameof(self))] string? arg = null)
         where U : class
         => self as U ?? throw Panic(string.Format(message, arg, typeof(U).FullName));
+
+    public static Option<U> As<U>(
+        this object? self,
+        string message = "Expected {0} to be of type {1}.",
+        [CallerArgumentExpression(nameof(self))] string? arg = null)
+        where U : class
+        => Option.Nonnull(self as U);
+
     
     
     public static U? UnwrapAsOrNull<U>(

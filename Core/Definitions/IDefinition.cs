@@ -12,12 +12,15 @@ public interface IDefinition
     /// for functions.
     /// </summary>
     public bool IsLinked { get; set; }
+    
+    public Option<SourceSpan> DefinitionLocation { get; }
 }
 
 public abstract class DefinitionBase : IDefinition
 {
     public Scope? Parent { get; set; }
     public required Identifier Identifier { get; init; }
+    public required Option<SourceSpan> DefinitionLocation { get; init; }
     public bool IsLinked { get; set; }
 
     public override string ToString()

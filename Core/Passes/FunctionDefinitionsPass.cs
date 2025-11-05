@@ -12,15 +12,6 @@ public class FunctionDefinitionsPass(RecContext ctx) : BasePass(ctx)
     
     public override Unit VisitFnDefine([NotNull] RecParser.FnDefineContext context)
     {
-        if (context.DefinedFunction is not null)
-        {
-            // TODO: mangle names here?
-            context.DefinedFunction.LLVMFunction = Option.Some(
-                CTX.Module.AddFunction(
-                    context.DefinedFunction.FullName, 
-                    context.DefinedFunction.Type.Compile(CTX)));
-        }
-
         if (context.DefinedFunction is null || context.DefinedFunction.IsExternal)
             return default;
 

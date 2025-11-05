@@ -36,7 +36,10 @@ public class Compiler
         RunASTPass(CTX.Passes.FunctionDeclarations);
         RunASTPass(CTX.Passes.TypeDefinitions);
         RunASTPass(CTX.Passes.FunctionDefinitions);
+        
+        RunASTPass(CTX.Passes.IRGeneration);
 
+        RunASTPass(CTX.Passes.LLVMDefinitions, refuseOnErrors: true);
         RunASTPass(CTX.Passes.LLVMGeneration, refuseOnErrors: true);
 
         CTX.Module.Verify(LLVMVerifierFailureAction.LLVMAbortProcessAction);

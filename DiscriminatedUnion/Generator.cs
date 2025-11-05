@@ -23,7 +23,7 @@ public class Generator : IIncrementalGenerator
 
 namespace {AttributeNamespace}
 {{
-    [System.AttributeUsage(System.AttributeTargets.Struct, Inherited = false, AllowMultiple = false)]
+    [System.AttributeUsage(System.AttributeTargets.Struct | System.AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     internal sealed class {Attribute} : System.Attribute
     {{}}
 }}
@@ -32,7 +32,7 @@ namespace {AttributeNamespace}
 
     public static DiagnosticDescriptor NotMeetingSpec => new("DU001", 
         title: "DU must meet spec",
-        messageFormat: "Discriminated union types must be top-level partial record struct",
+        messageFormat: "Discriminated union types must be top-level partial record",
         category: "DiscriminatedUnion",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -79,8 +79,7 @@ namespace {AttributeNamespace}
 
         var attributeLoc = symbol.Locations.FirstOrDefault() ?? Location.None;
 
-        if(!symbol.IsRecord 
-        || !symbol.IsValueType 
+        if(!symbol.IsRecord
         || !syntax.Modifiers.Any(SyntaxKind.PartialKeyword) 
         || symbol.ContainingType is not null)
         {
@@ -117,7 +116,7 @@ namespace {AttributeNamespace}
 
 namespace {symbol.ContainingNamespace.ToDisplayString()} 
 {{
-    partial record struct {symbol.Name}{genArgs}({oneOf} Value)
+    partial record {(symbol.IsValueType ? "struct" : "")} {symbol.Name}{genArgs}({oneOf} Value)
     {{
 
 ");

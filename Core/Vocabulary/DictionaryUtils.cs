@@ -15,4 +15,10 @@ public static class DictionaryUtils
         value = new(ref CollectionsMarshal.GetValueRefOrAddDefault(self, key, out var exists)!);
         return exists;
     }
+
+    public static void Add<K, V>(this Dictionary<K, V> self, (K, V) tuple)
+        where K : notnull
+    {
+        self.Add(tuple.Item1, tuple.Item2);
+    }
 }

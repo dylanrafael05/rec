@@ -41,6 +41,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
                 Parent = CTX.Scopes.Current,
                 Identifier = Identifier.None,
                 CTX = CTX,
+                DefinitionLocation = Option.Some(context.CalculateSourceSpan()),
 
                 AssociatedType = type  
             };
@@ -55,7 +56,8 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
                 {
                     Identifier = context.ModuleIdent.TextAsIdentifier,
                     CTX = CTX,
-                    AssociatedType = type  
+                    AssociatedType = type,
+                    DefinitionLocation = Option.Some(context.CalculateSourceSpan()),
                 })!;
 
             if(scope is null)
@@ -110,6 +112,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
         { 
             Identifier = Identifier.None, 
             Parent = CTX.Scopes.Current,
+            DefinitionLocation = Option.None,
             CTX = CTX
         };
 
@@ -125,7 +128,8 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
                 select innerScope.DefineOrDiagnose(syntax.CalculateSourceSpan(), new Variable
                 {
                     Type = argtype,
-                    Identifier = name
+                    Identifier = name,
+                    DefinitionLocation = Option.Some(syntax.CalculateSourceSpan())
                 })
         ];
 
@@ -143,7 +147,9 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
             ArgumentDefs = argDefs,
 
             IsExternal = context.External() is not null,
-            HasReceiver = selfType is not null
+            HasReceiver = selfType is not null,
+            
+            DefinitionLocation = Option.Some(context.CalculateSourceSpan()),
         };
 
         context.DefinedFunction = CTX.Scopes.Current.DefineOrDiagnose(

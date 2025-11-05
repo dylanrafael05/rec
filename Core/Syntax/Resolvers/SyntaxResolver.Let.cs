@@ -33,7 +33,8 @@ public partial class SyntaxResolver
             new Variable
             {
                 Identifier = context.Target.TextAsIdentifier,
-                Type = type.UnwrapNull()
+                Type = type.UnwrapNull(),
+                DefinitionLocation = Option.Some(span)
             }
         );
 

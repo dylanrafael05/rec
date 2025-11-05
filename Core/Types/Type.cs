@@ -27,6 +27,8 @@ public abstract class Type : IEquatable<Type>, IVisitable
     public bool IsArithmetic => IsInteger || IsFloat;
     [FieldOption(PrintLevel.Hidden)] 
     public bool ContainsError => this.Contains(static t => t is ErrorType);
+    [FieldOption(PrintLevel.Verbose)] 
+    public bool IsNone => this is NoneType;
 
     public abstract bool Equals(Type? other);
     public sealed override bool Equals(object? other)
