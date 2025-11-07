@@ -6,13 +6,12 @@ namespace Re.C.IR;
 
 public partial class IRGenerator(RecContext CTX)
 {
-    public Dictionary<Variable, ValueID> VariableLinks { get; } = [];
-    public IRBuilder Builder { get; } = new(CTX);
+    public IRBuilder Builder => CTX.IRBuilder;
     public IRFunction Function => CTX.Functions.Current.UnwrapNull().IRFunction.Unwrap();
 
     public void LinkVariable(Variable var, ValueID id)
     {
-        VariableLinks.Add(var, Builder.BuildInst(
+        Function.BindVariable(var, Builder.BuildInst(
             new PointerType { Pointee = var.Type }, 
             var.DefinitionLocation.Unwrap(), 
             new InstructionKind.Local(id)));
@@ -27,7 +26,7 @@ public partial class IRGenerator(RecContext CTX)
         // Set up the builder position //
         var fn = new IRFunction(function);
         function.IRFunction = Option.Some(fn);
-        var block = fn.NewBlock("entry");
+        var block = fn.NewBlock();
 
         Builder.PositionAtEnd(block);
 
@@ -49,6 +48,7 @@ public partial class IRGenerator(RecContext CTX)
 
         // Compile the function's body //
         Generate(function.Body.Unwrap());
+        fn.SetFinalBlock(Builder.CurrentBlock.UnwrapNull());
 
         // TODO: real logging //
         Console.WriteLine(Function.ToIRString());

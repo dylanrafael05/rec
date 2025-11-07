@@ -31,10 +31,15 @@ public record struct SourceLocation(int Line, int Column, int Index)
 /// A span of locations within a source, as well as a reference
 /// to the source the span is a part of.
 /// </summary>
-public record struct SourceSpan(Source Source, SourceLocation Start, SourceLocation End)
+public record struct SourceSpan(Source? Source, SourceLocation Start, SourceLocation End)
 {
+    public static SourceSpan Generated(Source? source) 
+        => new(source, new(-1, -1, -1), default);
+
     public override readonly string ToString()
-        => $"({Source}) {Start} to {End}";
+        => Start.Column == -1 
+        ? $"({Source?.Name ?? "<null>"}) <generated>" 
+        : $"({Source?.Name ?? "<null>"}) {Start} to {End}";
     
     public static SourceSpan Combine(params ReadOnlySpan<SourceSpan> spans)
     {

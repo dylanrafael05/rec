@@ -106,15 +106,22 @@ public class RecContext
     /// A reference to all the resolvers for this context.
     /// </summary>
     public RecResolvers Resolvers { get; }
+
     /// <summary>
     /// An instance of the syntax compiler.
     /// TODO: relocate all LLVM related code to its own csproj
     /// </summary>
     public SyntaxCompiler SyntaxCompiler { get; }
+
     /// <summary>
     /// An instance of the ir generator.
     /// </summary>
     public IRGenerator IRGenerator { get; }
+    /// <summary>
+    /// An instance of the ir builder; a helper class to interface with
+    /// instruction blocks.
+    /// </summary>
+    public IRBuilder IRBuilder { get; }
 
     private RecContext(
         LLVMContextRef llvmContext,
@@ -181,6 +188,9 @@ public class RecContext
             FunctionDefinitions = new(this),
 
             IRGeneration = new(this),
+            IRPasses = [
+                new ReturnsAnalysis(this)
+            ],
 
             LLVMDefinitions = new(this),
             LLVMGeneration = new(this),
@@ -194,6 +204,7 @@ public class RecContext
 
         SyntaxCompiler = new(this);
         IRGenerator = new(this);
+        IRBuilder = new(this);
 
         LLVM = llvmContext;
         Module = module;

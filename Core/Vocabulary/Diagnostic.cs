@@ -43,7 +43,7 @@ public class DiagnosticBag : IReadOnlyCollection<Diagnostic>
         diagnostics.Add(diagnostic);
 
         if(diagnostic.Kind is DiagnosticKind.Error)
-            sourcesWithError.Add(diagnostic.Span.Source);
+            sourcesWithError.Add(diagnostic.Span.Source.UnwrapNull());
     }
 
     public void AddInfo(SourceSpan span, string message)

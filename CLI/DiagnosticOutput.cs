@@ -9,7 +9,7 @@ namespace Re.C.CLI;
 public static class DiagnosticOutput
 {
     public static string Format(this SourceSpan span)
-        => $"[{span.Source.Name}:{span.Start.Line}:{span.Start.Column+1} to {span.End.Line}:{span.End.Column+1}]";
+        => $"[{span.Source?.Name}:{span.Start.Line}:{span.Start.Column+1} to {span.End.Line}:{span.End.Column+1}]";
 
     public static string Format(this Diagnostic diagnostic)
     {
@@ -21,7 +21,7 @@ public static class DiagnosticOutput
         var lineStartIndex = startIndex - startColumn;
         var indexLength = diagnostic.Span.End.Index - startIndex;
 
-        var content = source.Content.AsSpan();
+        var content = source.UnwrapNull().Content.AsSpan();
         var fromStart = content[lineStartIndex..];
 
         var endIndex = fromStart.IndexOfAny('\n', '\r');

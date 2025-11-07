@@ -5,6 +5,9 @@ namespace Re.C.IR;
 
 public abstract record InstructionKind
 {
+    public virtual void GetJumpBlocks(IList<InstructionBlock> blocks)
+    {}
+
     public record NoneLiteral : InstructionKind
     {
         public override string ToString()
@@ -16,13 +19,11 @@ public abstract record InstructionKind
         public override string ToString()
             => $"float {Value}";
     }
-
     public record IntLiteral(UInt128 Value) : InstructionKind
     {
         public override string ToString()
             => $"int {Value}";
     }
-
     public record StringLiteral(string Value) : InstructionKind
     {
         public override string ToString()
@@ -105,6 +106,12 @@ public abstract record InstructionKind
     {
         public override string ToString()
             => $"goto {Target.Name}";
+
+
+        public override void GetJumpBlocks(IList<InstructionBlock> blocks)
+        {
+            blocks.Add(Target);
+        }
     }
     public record Return(ValueID Value) : InstructionKind
     {
@@ -115,6 +122,12 @@ public abstract record InstructionKind
     {
         public override string ToString()
             => $"if {Cond} then {WhenTrue.Name} else {WhenFalse.Name}";
+        
+        public override void GetJumpBlocks(IList<InstructionBlock> blocks)
+        {
+            blocks.Add(WhenTrue);
+            blocks.Add(WhenFalse);
+        }
     }
     
     public record Error : InstructionKind

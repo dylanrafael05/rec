@@ -27,6 +27,8 @@ public static class Errors
         => $"Non-external function '{name}' must define a body";
     public static string BodyForExtern(Identifier name)
         => $"External function '{name}' cannot define a body";
+    public static string MustReturn()
+        => $"Function with non-none return type must always return";
         
     public static string InvalidAsBlockTarget(Types.Type type)
         => $"Cannot create an 'as' block for non-named type {type}";

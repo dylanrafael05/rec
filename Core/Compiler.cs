@@ -3,6 +3,7 @@ using Antlr4.Runtime.Tree;
 using LLVMSharp;
 using LLVMSharp.Interop;
 using Re.C.Antlr;
+using Re.C.IR;
 using Re.C.Passes;
 
 namespace Re.C;
@@ -38,6 +39,9 @@ public class Compiler
         RunASTPass(CTX.Passes.FunctionDefinitions);
         
         RunASTPass(CTX.Passes.IRGeneration);
+
+        foreach(var pass in CTX.Passes.IRPasses)
+            RunASTPass(pass);
 
         RunASTPass(CTX.Passes.LLVMDefinitions, refuseOnErrors: true);
         RunASTPass(CTX.Passes.LLVMGeneration, refuseOnErrors: true);

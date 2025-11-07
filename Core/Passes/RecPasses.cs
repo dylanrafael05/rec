@@ -14,6 +14,7 @@ public readonly struct RecPasses
     public required FunctionDefinitionsPass FunctionDefinitions { get; init; }
 
     public required IRGenerationPass IRGeneration { get; init; }
+    public required IRPass[] IRPasses { get; init; }
 
     public required LLVMDefinitionsPass LLVMDefinitions { get; init; }
     public required LLVMGenerationPass LLVMGeneration { get; init; }

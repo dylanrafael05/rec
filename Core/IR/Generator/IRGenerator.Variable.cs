@@ -8,12 +8,12 @@ public partial class IRGenerator
 {
     private ValueID GenerateVariable(VariableExpression context)
     {
-        var ptr = VariableLinks[context.Variable];
+        var ptr = Function.VariableMappings[context.Variable];
         return Builder.BuildInst(context, new InstructionKind.Load(ptr));
     }
 
     private ValueID GenerateVariableAsLHS(VariableExpression context)
     {
-        return VariableLinks[context.Variable];
+        return Function.VariableMappings[context.Variable];
     }
 }

@@ -20,8 +20,13 @@ public abstract class DefinitionBase : IDefinition
 {
     public Scope? Parent { get; set; }
     public required Identifier Identifier { get; init; }
+
+    // TODO: remove 'option' here in favor of some kind of 'builtin' source
     public required Option<SourceSpan> DefinitionLocation { get; init; }
     public bool IsLinked { get; set; }
+
+    public Source? DefinitionSource => DefinitionLocation
+        .Map(x => x.Source).Or(null!);
 
     public override string ToString()
         => $"{GetType().Name} '{this.FullName}'";
