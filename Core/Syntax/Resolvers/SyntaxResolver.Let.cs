@@ -34,7 +34,7 @@ public partial class SyntaxResolver
             {
                 Identifier = context.Target.TextAsIdentifier,
                 Type = type.UnwrapNull(),
-                DefinitionLocation = Option.Some(span)
+                DefinitionLocation = span
             }
         );
 

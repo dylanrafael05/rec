@@ -86,7 +86,7 @@ public class RecContext
     /// <summary>
     /// The object which tracks the associations between types and methods.
     /// </summary>
-    public TypeAssociations TypeAssociations { get; } = new();
+    public TypeAssociations TypeAssociations { get; }
 
     /// <summary>
     /// The diagnostic bag used for compilation. All diagnostics
@@ -145,7 +145,7 @@ public class RecContext
             CTX = this,
             Identifier = Identifier.None,
             Parent = null,
-            DefinitionLocation = Option.None
+            DefinitionLocation = SourceSpan.Builtin
         };
 
         var module = llvmContext.CreateModuleWithName(moduleName);
@@ -154,14 +154,14 @@ public class RecContext
         Types.Type MakePrimitive(LLVMTypeRef type, string name, PrimitiveType.Class cls)
             => scope.Define(new PrimitiveType(type, cls) { 
                 Identifier = Identifier.Name(name), 
-                DefinitionLocation = Option.None }).UnwrapNull();
+                DefinitionLocation = SourceSpan.Builtin }).UnwrapNull();
 
         var types = new BuiltinTypes
         {
             Error = new ErrorType(),
             None = scope.Define(new NoneType { 
                 Identifier = Identifier.Name("none"), 
-                DefinitionLocation = Option.None }).UnwrapNull(),
+                DefinitionLocation = SourceSpan.Builtin }).UnwrapNull(),
 
             Bool = MakePrimitive(llvmContext.Int1Type, "bool", PrimitiveType.Class.Bool),
             I8 = MakePrimitive(llvmContext.Int8Type, "i8", PrimitiveType.Class.SignedInt),
@@ -189,7 +189,8 @@ public class RecContext
 
             IRGeneration = new(this),
             IRPasses = [
-                new ReturnsAnalysis(this)
+                new ReturnsAnalysis(this),
+                new DropAnalysis(this),
             ],
 
             LLVMDefinitions = new(this),
@@ -214,6 +215,7 @@ public class RecContext
         GlobalScope = scope;
         Scopes = new(scope);
         BuiltinTypes = types;
+        TypeAssociations = new(this);
     }
 
     /// <summary>

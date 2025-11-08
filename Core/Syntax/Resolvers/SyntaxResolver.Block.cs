@@ -20,7 +20,7 @@ public partial class SyntaxResolver
         {
             Identifier = Identifier.None,
             Parent = CTX.Scopes.Current,
-            DefinitionLocation = Option.Some(context.CalculateSourceSpan()),
+            DefinitionLocation = context.CalculateSourceSpan(),
             CTX = CTX,
         };
 

@@ -13,7 +13,7 @@ public interface IDefinition
     /// </summary>
     public bool IsLinked { get; set; }
     
-    public Option<SourceSpan> DefinitionLocation { get; }
+    public SourceSpan DefinitionLocation { get; }
 }
 
 public abstract class DefinitionBase : IDefinition
@@ -21,12 +21,10 @@ public abstract class DefinitionBase : IDefinition
     public Scope? Parent { get; set; }
     public required Identifier Identifier { get; init; }
 
-    // TODO: remove 'option' here in favor of some kind of 'builtin' source
-    public required Option<SourceSpan> DefinitionLocation { get; init; }
+    public required SourceSpan DefinitionLocation { get; init; }
     public bool IsLinked { get; set; }
 
-    public Source? DefinitionSource => DefinitionLocation
-        .Map(x => x.Source).Or(null!);
+    public Source DefinitionSource => DefinitionLocation.Source;
 
     public override string ToString()
         => $"{GetType().Name} '{this.FullName}'";

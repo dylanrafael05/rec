@@ -13,7 +13,7 @@ public partial class IRGenerator(RecContext CTX)
     {
         Function.BindVariable(var, Builder.BuildInst(
             new PointerType { Pointee = var.Type }, 
-            var.DefinitionLocation.Unwrap(), 
+            var.DefinitionLocation, 
             new InstructionKind.Local(id)));
     }
 
@@ -39,7 +39,7 @@ public partial class IRGenerator(RecContext CTX)
         {
             var arg = Builder.BuildInst(
                 function.Type.Parameters[i],
-                function.ArgumentDefs[i].UnwrapNull().DefinitionLocation.Unwrap(),
+                function.ArgumentDefs[i].UnwrapNull().DefinitionLocation,
                 new InstructionKind.Argument(i)
             );
 

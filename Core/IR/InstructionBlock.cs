@@ -4,12 +4,28 @@ using Re.C.Visitor;
 
 namespace Re.C.IR;
 
+[DiscriminatedUnion]
+public partial record struct DroppableValue
+{
+    public static class Cases
+    {
+        public record struct ViaPointer(ValueID Ptr);
+        public record struct ViaDirect(ValueID Value);
+    }
+}
+
 public class InstructionBlock(IRFunction function, string name) : IVisitable
 {
     public IRFunction Function { get; } = function;
     public string Name { get; } = name;
 
     public Option<bool> Returns { get; set; }
+
+    public bool VisitedByDropComputer { get; set; } = false;
+    public List<DroppableValue> DropAtEnd { get; } = [];
+    public List<(Instruction, DroppableValue)> DropBeforeInstruction { get; } = [];
+    public Dictionary<ValueID, SourceSpan> MovedNamedValues { get; } = [];
+
     public bool IsFinalBlock => Function.FinalBlock == this;
     public bool IsEntryBlock => Function.EntryBlock == this;
 

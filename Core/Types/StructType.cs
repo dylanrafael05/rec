@@ -11,6 +11,7 @@ public class StructType : NamedType
     public record struct Field(Identifier Name, Type Type, int Index);
 
     public Field[]? Fields { get; private set; }
+    public override bool TriviallyCopyable => false;
 
     /// <summary>
     /// Find the field associated with the provided name.

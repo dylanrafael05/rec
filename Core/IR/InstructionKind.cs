@@ -7,6 +7,8 @@ public abstract record InstructionKind
 {
     public virtual void GetJumpBlocks(IList<InstructionBlock> blocks)
     {}
+    public virtual void GetArguments(IList<ValueID> values)
+    {}
 
     public record NoneLiteral : InstructionKind
     {
@@ -38,6 +40,11 @@ public abstract record InstructionKind
     {
         public override string ToString()
             => $"struct [{string.Join(", ", Fields)}]";
+        public override void GetArguments(IList<ValueID> values)
+        {
+            foreach(var f in Fields)
+                values.Add(f);
+        }
     }
 
     public record Argument(int Index) : InstructionKind
@@ -50,56 +57,103 @@ public abstract record InstructionKind
     {
         public override string ToString()
             => $"{LHS} {BinaryOperator.GetRepr(Operator)} {RHS}";
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(LHS);
+            values.Add(RHS);
+        }
     }
     public record Unary(ValueID Op, UnaryOperator Operator) : InstructionKind
     {
         public override string ToString()
             => $"{UnaryOperator.GetRepr(Operator)} {Op}";
+            
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(Op);
+        }
     }
     
     public record Local(ValueID Value) : InstructionKind
     {
         public override string ToString()
             => $"new local, init {Value}";
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(Value);
+        }
     }
 
     public record FieldPtr(ValueID Ptr, int Index) : InstructionKind
     {
         public override string ToString()
             => $"fieldptr {Ptr} field {Index}";
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(Ptr);
+        }
     }
     public record FieldCopy(ValueID Value, int Index) : InstructionKind
     {
         public override string ToString()
             => $"fieldcp {Value} field {Index}";
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(Value);
+        }
     }
 
     public record Load(ValueID Ptr) : InstructionKind
     {
         public override string ToString()
             => $"load {Ptr}";
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(Ptr);
+        }
     }
     public record Store(ValueID Ptr, ValueID Value) : InstructionKind
     {
         public override string ToString()
             => $"store {Ptr} <- {Value}";
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(Ptr);
+            values.Add(Value);
+        }
     }
 
     public record Call(ValueID Ptr, ValueID[] Arguments) : InstructionKind
     {
         public override string ToString()
             => $"call {Ptr} with {string.Join(", ", Arguments)}";
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(Ptr);
+            foreach(var f in Arguments)
+                values.Add(f);
+        }
     }
     public record BuiltinCast(ValueID Ptr) : InstructionKind
     {
         public override string ToString()
             => $"cast {Ptr}";
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(Ptr);
+        }
     }
 
     public record Phi(Dictionary<InstructionBlock, ValueID> Incoming) : InstructionKind
     {
         public override string ToString()
             => $"phi {string.Join(", ", from kvp in Incoming select $"{kvp.Key.Name}: {kvp.Value}")}";
+        
+        public override void GetArguments(IList<ValueID> values)
+        {
+            foreach(var i in Incoming.Values)
+                values.Add(i);
+        }
     }
 
     public record Goto(InstructionBlock Target) : InstructionKind
@@ -117,6 +171,10 @@ public abstract record InstructionKind
     {
         public override string ToString()
             => $"return {Value}";
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(Value);
+        }
     }
     public record Branch(ValueID Cond, InstructionBlock WhenTrue, InstructionBlock WhenFalse) : InstructionKind
     {
@@ -127,6 +185,10 @@ public abstract record InstructionKind
         {
             blocks.Add(WhenTrue);
             blocks.Add(WhenFalse);
+        }
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(Cond);
         }
     }
     

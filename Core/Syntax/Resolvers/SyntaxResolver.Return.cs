@@ -20,8 +20,6 @@ public partial class SyntaxResolver
         var type = value.Map(x => x.Type).Or(CTX.BuiltinTypes.None);
         var expectedType = CTX.Functions.Current.UnwrapNull().Type.Return;
 
-        // TODO: how should definely-returns analysis take place?
-
         // Error on mismatching return type //
         if (type != expectedType)
         {

@@ -9,13 +9,13 @@ public class IRFunction(Function function)
     public Function Function { get; } = function;
 
     private readonly List<InstructionBlock> blocks = [];
-    private readonly Dictionary<Variable, ValueID> variables = [];
+    private readonly Bimapping<Variable, ValueID> variables = [];
     private InstructionBlock? finalBlock;
 
     public InstructionBlock EntryBlock => blocks[0];
     public InstructionBlock FinalBlock => finalBlock.UnwrapNull();
     public IReadOnlyList<InstructionBlock> Blocks => blocks;
-    public IReadOnlyDictionary<Variable, ValueID> VariableMappings => variables;
+    public IReadOnlyBimapping<Variable, ValueID> VariableMappings => variables;
     
     private long maxValueID = 0;
 

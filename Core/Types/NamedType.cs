@@ -7,7 +7,7 @@ public abstract class NamedType : Type, IDefinition
 {
     public Scope? Parent { get; set; }
     public required Identifier Identifier { get; init; }
-    public required Option<SourceSpan> DefinitionLocation { get; init; }
+    public required SourceSpan DefinitionLocation { get; init; }
     public bool IsLinked { get; set; }
 
     public override bool Equals(Type? other)
@@ -20,6 +20,6 @@ public abstract class NamedType : Type, IDefinition
     public override string Name => Identifier.ToString();
     public override string FullName => (this as IDefinition).FullName;
 
-    public override Option<SourceSpan> GetDefinitionLocation()
+    public override SourceSpan GetDefinitionLocation()
         => DefinitionLocation;
 }

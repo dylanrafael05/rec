@@ -28,7 +28,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
 
         if(context.ModuleIdent is null)
         {
-            if(CTX.CurrentSource != type.DefinitionLocation.Map(static x => x.Source))
+            if(CTX.CurrentSource != type.DefinitionLocation.Source)
             {
                 CTX.Diagnostics.AddError(
                     typespan, Errors.UnnamedAsBlockInDifferentFile());
@@ -41,7 +41,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
                 Parent = CTX.Scopes.Current,
                 Identifier = Identifier.None,
                 CTX = CTX,
-                DefinitionLocation = Option.Some(context.CalculateSourceSpan()),
+                DefinitionLocation = context.CalculateSourceSpan(),
 
                 AssociatedType = type  
             };
@@ -57,7 +57,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
                     Identifier = context.ModuleIdent.TextAsIdentifier,
                     CTX = CTX,
                     AssociatedType = type,
-                    DefinitionLocation = Option.Some(context.CalculateSourceSpan()),
+                    DefinitionLocation = context.CalculateSourceSpan(),
                 })!;
 
             if(scope is null)
@@ -112,7 +112,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
         { 
             Identifier = Identifier.None, 
             Parent = CTX.Scopes.Current,
-            DefinitionLocation = Option.None,
+            DefinitionLocation = SourceSpan.Generated(CTX.CurrentSource.UnwrapNull()),
             CTX = CTX
         };
 
@@ -129,7 +129,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
                 {
                     Type = argtype,
                     Identifier = name,
-                    DefinitionLocation = Option.Some(syntax.CalculateSourceSpan())
+                    DefinitionLocation = syntax.CalculateSourceSpan()
                 })
         ];
 
@@ -149,7 +149,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
             IsExternal = context.External() is not null,
             HasReceiver = selfType is not null,
             
-            DefinitionLocation = Option.Some(context.CalculateSourceSpan()),
+            DefinitionLocation = context.CalculateSourceSpan(),
         };
 
         context.DefinedFunction = CTX.Scopes.Current.DefineOrDiagnose(

@@ -30,6 +30,9 @@ public abstract class Type : IEquatable<Type>, IVisitable
     [FieldOption(PrintLevel.Verbose)] 
     public bool IsNone => this is NoneType;
 
+    [FieldOption(PrintLevel.Verbose)] 
+    public virtual bool TriviallyCopyable => true;
+
     public abstract bool Equals(Type? other);
     public sealed override bool Equals(object? other)
         => (other is Type t) && Equals(t);
@@ -43,7 +46,7 @@ public abstract class Type : IEquatable<Type>, IVisitable
     protected abstract LLVMTypeRef ImplementCompile(RecContext ctx);
     public abstract LLVMValueRef BuildDestructor(RecContext ctx);
     public abstract FieldDescriptor[] GetFields(RecContext ctx);
-    public virtual Option<SourceSpan> GetDefinitionLocation() => Option.None;
+    public virtual SourceSpan GetDefinitionLocation() => SourceSpan.Builtin;
 
     public LLVMTypeRef Compile(RecContext ctx)
     {

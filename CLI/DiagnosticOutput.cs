@@ -29,9 +29,18 @@ public static class DiagnosticOutput
 
         var highlightedSegment = fromStart[trimIndex..(endIndex == -1 ? ^0 : endIndex)];
 
+        var (diagKind, diagColor) = diagnostic.Kind switch
+        {
+            DiagnosticKind.Error => ("Error", ConsoleColor.Red),
+            DiagnosticKind.Warning => ("Warning", ConsoleColor.Yellow),
+            DiagnosticKind.Info => ("Info", ConsoleColor.DarkCyan),
+
+            _ => throw ErrorHandling.Unreachable
+        };
+
         builder
-            .Append($"{"Error".Pastel(ConsoleColor.Red)} at {diagnostic.Span.Format()}: ")
-            .Append($"{diagnostic.Message.Pastel(ConsoleColor.Red)}").AppendLine()
+            .Append($"{diagKind.Pastel(diagColor)} at {diagnostic.Span.Format()}: ")
+            .Append($"{diagnostic.Message.Pastel(diagColor)}").AppendLine()
             .Append("  |  ").Append(highlightedSegment.Pastel(ConsoleColor.DarkGray)).AppendLine()
             .Append("     ");
 

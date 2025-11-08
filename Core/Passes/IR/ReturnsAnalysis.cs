@@ -17,7 +17,7 @@ public class ReturnsAnalysis(RecContext ctx) : IRPass(ctx)
             if(!fn.Function.Type.Return.IsNone)
             {
                 CTX.Diagnostics.AddError(
-                    fn.Function.DefinitionLocation.Unwrap(),
+                    fn.Function.DefinitionLocation,
                     Errors.MustReturn());
             }
             else

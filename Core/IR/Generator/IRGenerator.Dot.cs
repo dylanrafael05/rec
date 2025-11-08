@@ -8,6 +8,13 @@ public partial class IRGenerator
 {
     public ValueID GenerateDot(DotExpression context)
     {
+        if(context.Inner.HasAddress)
+        {
+            var ptr = GenerateDotAsLHS(context);
+            return Builder.BuildInst(context, 
+                new InstructionKind.Load(ptr));
+        }
+
         var value = Generate(context.Inner);
         return Builder.BuildInst(context, 
             new InstructionKind.FieldCopy(value, context.FieldIndex));

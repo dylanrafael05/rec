@@ -1,7 +1,8 @@
 namespace Re.C.Definitions;
 
-public class TypeAssociations
+public class TypeAssociations(RecContext ctx)
 {
+    public RecContext CTX { get; } = ctx;
     private readonly MultiDictionary<Types.Type, Scope> namedAssociations = [];
     private readonly MultiDictionary<Types.Type, Scope> unnamedAssociations = [];
 
@@ -35,7 +36,6 @@ public class TypeAssociations
     public Function? SearchOrDiagnose(
         SourceSpan span, Types.Type type, Identifier ident, IReadOnlyCollection<Scope> imports)
     {
-        var ctx = imports.First().CTX;
         var lookup = Search(type, ident, imports);
 
         if(lookup.IsOk(out var result))
@@ -45,13 +45,13 @@ public class TypeAssociations
 
         if(err.IsNotFound)
         {
-            ctx.Diagnostics.AddError(
+            CTX.Diagnostics.AddError(
                 span, Errors.UndefinedInCurrentScope(ident));
         }
         else
         {
             err.UnwrapAsAmbiguous(out var values);
-            ctx.Diagnostics.AddError(
+            CTX.Diagnostics.AddError(
                 span, Errors.AmbiguousIdentifier(ident, values));
         }
 

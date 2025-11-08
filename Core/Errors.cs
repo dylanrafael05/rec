@@ -29,6 +29,10 @@ public static class Errors
         => $"External function '{name}' cannot define a body";
     public static string MustReturn()
         => $"Function with non-none return type must always return";
+    public static string UseAfterMove()
+        => $"Use of a non-copyable value after being moved";
+    public static string MoveOutOfReference()
+        => $"Cannot move a non-copyable type out of a reference";
         
     public static string InvalidAsBlockTarget(Types.Type type)
         => $"Cannot create an 'as' block for non-named type {type}";
