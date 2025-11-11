@@ -1,6 +1,8 @@
+using Re.C.Types;
+
 namespace Re.C.IR;
 
-public record Instruction(Types.Type Type, SourceSpan Span, InstructionKind Kind)
+public record Instruction(RecType Type, SourceSpan Span, InstructionKind Kind)
 {
     public Option<ValueID> ValueID { get; set; }
 

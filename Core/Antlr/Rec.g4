@@ -104,7 +104,7 @@ topLevelStatement
 
 asStatement
 locals [
-    Re.C.Types.Type AsType = null,
+    Re.C.Types.RecType AsType = null,
     Re.C.Definitions.Scope Scope = null
 ]
 @init  { AsBlockDepth++; }

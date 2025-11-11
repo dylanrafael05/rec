@@ -16,7 +16,7 @@ public static class Errors
         => $"Could not find a definition of '{name}' in '{scope.FullName}'";
     public static string AmbiguousIdentifier(Identifier name, IEnumerable<IDefinition> defs)
         => $"Ambiguous reference to '{name}' in current context; could be {string.Join(" or ", from d in defs select d.FullName)}";
-    public static string UndefinedStructField(Types.Type operand, Identifier ident)
+    public static string UndefinedStructField(RecType operand, Identifier ident)
         => $"No such field {ident} on type {operand}";
     public static string InvalidScopeResolutionTarget()
         => $"Cannot use '.' here; target is not a scope";
@@ -34,7 +34,7 @@ public static class Errors
     public static string MoveOutOfReference()
         => $"Cannot move a non-copyable type out of a reference";
         
-    public static string InvalidAsBlockTarget(Types.Type type)
+    public static string InvalidAsBlockTarget(RecType type)
         => $"Cannot create an 'as' block for non-named type {type}";
     public static string UnnamedAsBlockInDifferentFile()
         => $"Unnamed 'as' blocks must be placed in the same file as the type they are associated with";
@@ -42,40 +42,40 @@ public static class Errors
     public static string UnknownEscapeSequence(string escape)
         => $"Unrecognized escape sequence '{escape}'";
 
-    public static string TypeMismatch(Types.Type expected, Types.Type real)
+    public static string TypeMismatch(RecType expected, RecType real)
         => $"Expected a value of type {expected} but got {real}";
-    public static string StructFieldTypeMismatch(Types.Type structType, Identifier ident, Types.Type fieldType, Types.Type realType)
+    public static string StructFieldTypeMismatch(RecType structType, Identifier ident, RecType fieldType, RecType realType)
         => $"Incompatible field type for {structType}.{ident}, expected {fieldType} but got {realType}";
-    public static string StructMissingFields(Types.Type structType, IReadOnlyList<Identifier> missing)
+    public static string StructMissingFields(RecType structType, IReadOnlyList<Identifier> missing)
         => $"Incomplete construction of {structType}; missing {string.Join(", ", missing)}";
     
     
     public static string InvalidAssignmentTarget()
         => $"Cannot assign to this expression";
 
-    public static string MathOnNonArithmeticType(Types.Type type)
+    public static string MathOnNonArithmeticType(RecType type)
         => $"Cannot perform arithmetic on non-arithmetic type {type}";
-    public static string InvalidBinaryTypes(BinaryOperator op, Types.Type lhs, Types.Type rhs)
+    public static string InvalidBinaryTypes(BinaryOperator op, RecType lhs, RecType rhs)
         => $"Binary operator {BinaryOperator.GetRepr(op)} does not accept operands of {lhs} and {rhs}";
-    public static string InvalidUnaryType(UnaryOperator op, Types.Type operand)
+    public static string InvalidUnaryType(UnaryOperator op, RecType operand)
         => $"Unary operator {UnaryOperator.GetRepr(op)} does not accept operand of type {operand}";
-    public static string InvalidConditionType(Types.Type condition)
+    public static string InvalidConditionType(RecType condition)
         => $"Control flow conditions must be booleans, not {condition}";
-    public static string InvalidCast(Types.Type to, Types.Type from)
+    public static string InvalidCast(RecType to, RecType from)
         => $"Cannot cast from value of type {from} to {to}";
-    public static string InvalidDereference(Types.Type operand)
+    public static string InvalidDereference(RecType operand)
         => $"Cannot dereference value of type {operand}";
     public static string InvalidAddressOf()
         => $"Cannot take address of this expression";
-    public static string InvalidDotTarget(Types.Type operand)
+    public static string InvalidDotTarget(RecType operand)
         => $"Cannot access fields of non-struct type {operand}";
-    public static string InvalidStructExprTarget(Types.Type operand)
+    public static string InvalidStructExprTarget(RecType operand)
         => $"Cannot construct non-struct type {operand}";
     public static string InvalidMethod(IDefinition? def)
         => $"Invalid method {def}";
     
-    public static string CallToNonFunctionType(Types.Type type)
+    public static string CallToNonFunctionType(RecType type)
         => $"Cannot call a non-function value of type {type}";
-    public static string InvalidCallToFunction(FunctionType fn, IEnumerable<Types.Type> types)
+    public static string InvalidCallToFunction(FunctionType fn, IEnumerable<RecType> types)
         => $"Invalid call; expected ({string.Join(", ", fn.Parameters)}), got ({string.Join(", ", types)})";
 }

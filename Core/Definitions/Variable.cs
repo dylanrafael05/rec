@@ -1,9 +1,8 @@
-using LLVMSharp.Interop;
+using Re.C.Types;
 
 namespace Re.C.Definitions;
 
 public class Variable : DefinitionBase
 {
-    public required Types.Type Type { get; init; }
-    public Option<LLVMValueRef> LLVMPointerValue { get; set; }
+    public required RecType Type { get; init; }
 }

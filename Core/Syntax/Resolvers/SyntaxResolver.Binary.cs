@@ -1,6 +1,4 @@
 using Antlr4.Runtime.Misc;
-using Re.C.Antlr;
-using Re.C.Definitions;
 using Re.C.Types;
 
 using static Re.C.Syntax.BinaryOperator;
@@ -12,9 +10,9 @@ public partial class SyntaxResolver
     private delegate bool BinaryTypeResolver(
         RecContext ctx,
         BinaryOperator op,
-        Types.Type lhs,
-        Types.Type rhs,
-        ref Types.Type result,
+        RecType lhs,
+        RecType rhs,
+        ref RecType result,
         ref string error);
 
     private Expression HandleBinary(

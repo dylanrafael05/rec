@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using OneOf;
 
 namespace Re.C.Vocabulary;
 

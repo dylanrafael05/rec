@@ -11,8 +11,8 @@ public partial class SyntaxResolver
     private delegate bool UnaryTypeResolver(
         RecContext ctx,
         UnaryOperator op,
-        Types.Type operand,
-        ref Types.Type result,
+        RecType operand,
+        ref RecType result,
         ref string error);
 
     private Expression HandleUnary(

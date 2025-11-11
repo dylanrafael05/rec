@@ -77,7 +77,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
         var selfType = context.fnSelfDefine() switch
         {
             RecParser.FnDefineSelfContext => CTX.Scopes.Current.AssociatedType.UnwrapNull(),
-            RecParser.FnDefineSelfPtrContext => Types.Type.Pointer(CTX.Scopes.Current.AssociatedType.UnwrapNull()),
+            RecParser.FnDefineSelfPtrContext => RecType.Pointer(CTX.Scopes.Current.AssociatedType.UnwrapNull()),
             
             _ => null
         };

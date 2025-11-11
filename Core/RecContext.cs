@@ -1,15 +1,13 @@
-﻿using LLVMSharp.Interop;
-using Re.C.Compilation;
+﻿using Antlr4.Runtime;
+using Antlr4.Runtime.Tree;
+using Re.C.Antlr;
 using Re.C.Definitions;
 using Re.C.IR;
 using Re.C.Passes;
 using Re.C.Syntax.Resolvers;
 using Re.C.Types;
-using Re.C.Vocabulary;
 
 namespace Re.C;
-
-// TODO: split this into smaller parts?
 
 /// <summary>
 /// The context of a Rec compilation. Includes all LLVM references,
@@ -17,36 +15,20 @@ namespace Re.C;
 /// </summary>
 public class RecContext
 {
-    /// <summary>
-    /// The LLVM context which compilation occurs in.
-    /// </summary>
-    public LLVMContextRef LLVM { get; }
-    /// <summary>
-    /// The LLVM module where all compiled code resides.
-    /// </summary>
-    public LLVMModuleRef Module { get; }
-    /// <summary>
-    /// The LLVM builder pointing into the compiler's module.
-    /// </summary>
-    public LLVMBuilderRef Builder { get; }
-    /// <summary>
-    /// A reference to the target information used by LLVM.
-    /// </summary>
-    public LLVMTargetDataRef TargetData { get; }
-    /// <summary>
-    /// A reference to the target machine information used by LLVM.
-    /// </summary>
-    public LLVMTargetMachineRef TargetMachine { get; }
+    #region // Private Members //
+    private readonly List<Source> sources = [];
+    private readonly Dictionary<Source, IParseTree> parseTrees = [];
+    #endregion
 
+    #region // Public Members //
     /// <summary>
-    /// A reference to the empty destructor function.
+    /// A list containing all sources added to this context.
     /// </summary>
-    public LLVMValueRef EmptyDestructor { get; }
+    public IReadOnlyList<Source> Sources => sources;
     /// <summary>
-    /// A cache mapping between Rec types and their LLVM-compiled
-    /// counterparts.
+    /// A mapping from source to parse tree.
     /// </summary>
-    public Dictionary<Types.Type, LLVMTypeRef> TypeCache { get; } = [];
+    public IReadOnlyDictionary<Source, IParseTree> ParseTrees => parseTrees;
 
     /// <summary>
     /// A reference to all the builtin types.
@@ -67,13 +49,6 @@ public class RecContext
     /// currently active source.
     /// </summary>
     public IReadOnlyCollection<Scope> CurrentImports => ImportsBySource.GetValueOrDefault(CurrentSource!) ?? [];
-
-    /// <summary>
-    /// Provided a view of the current LLVM function, or panics
-    /// if there is no such function.
-    /// </summary>
-    public LLVMValueRef CurrentLLVMFunction => 
-        Functions.Current.UnwrapNull().LLVMFunction.Unwrap();
 
     /// <summary>
     /// A stack storing all scopes as they are superceded.
@@ -101,17 +76,11 @@ public class RecContext
     /// <summary>
     /// A reference to all passes for this context.
     /// </summary>
-    public RecPasses Passes { get; }
+    public PassList DefaultPasses { get; }
     /// <summary>
     /// A reference to all the resolvers for this context.
     /// </summary>
     public RecResolvers Resolvers { get; }
-
-    /// <summary>
-    /// An instance of the syntax compiler.
-    /// TODO: relocate all LLVM related code to its own csproj
-    /// </summary>
-    public SyntaxCompiler SyntaxCompiler { get; }
 
     /// <summary>
     /// An instance of the ir generator.
@@ -122,24 +91,11 @@ public class RecContext
     /// instruction blocks.
     /// </summary>
     public IRBuilder IRBuilder { get; }
+    #endregion
 
-    private RecContext(
-        LLVMContextRef llvmContext,
-        string moduleName)
+    #region // Functionality //
+    private RecContext()
     {
-        LLVMSharp.Interop.LLVM.InitializeNativeTarget();
-
-        var target = LLVMTargetRef.GetTargetFromTriple(LLVMTargetRef.DefaultTriple);
-        var machine = target.CreateTargetMachine(
-            LLVMTargetRef.DefaultTriple,
-            "generic",
-            "",
-            LLVMCodeGenOptLevel.LLVMCodeGenLevelDefault,
-            LLVMRelocMode.LLVMRelocPIC,
-            LLVMCodeModel.LLVMCodeModelDefault);
-
-        var targetData = machine.CreateTargetDataLayout();
-
         var scope = new Scope
         {
             CTX = this,
@@ -148,11 +104,8 @@ public class RecContext
             DefinitionLocation = SourceSpan.Builtin
         };
 
-        var module = llvmContext.CreateModuleWithName(moduleName);
-        var builder = llvmContext.CreateBuilder();
-
-        Types.Type MakePrimitive(LLVMTypeRef type, string name, PrimitiveType.Class cls)
-            => scope.Define(new PrimitiveType(type, cls) { 
+        RecType MakePrimitive(string name, PrimitiveType.Class cls)
+            => scope.Define(new PrimitiveType(cls) { 
                 Identifier = Identifier.Name(name), 
                 DefinitionLocation = SourceSpan.Builtin }).UnwrapNull();
 
@@ -163,39 +116,33 @@ public class RecContext
                 Identifier = Identifier.Name("none"), 
                 DefinitionLocation = SourceSpan.Builtin }).UnwrapNull(),
 
-            Bool = MakePrimitive(llvmContext.Int1Type, "bool", PrimitiveType.Class.Bool),
-            I8 = MakePrimitive(llvmContext.Int8Type, "i8", PrimitiveType.Class.SignedInt),
-            I16 = MakePrimitive(llvmContext.Int16Type, "i16", PrimitiveType.Class.SignedInt),
-            I32 = MakePrimitive(llvmContext.Int32Type, "i32", PrimitiveType.Class.SignedInt),
-            I64 = MakePrimitive(llvmContext.Int64Type, "i64", PrimitiveType.Class.SignedInt),
-            ISize = MakePrimitive(llvmContext.GetIntPtrType(targetData), "isize", PrimitiveType.Class.SignedInt),
-            U8 = MakePrimitive(llvmContext.Int8Type, "u8", PrimitiveType.Class.UnsignedInt),
-            U16 = MakePrimitive(llvmContext.Int16Type, "u16", PrimitiveType.Class.UnsignedInt),
-            U32 = MakePrimitive(llvmContext.Int32Type, "u32", PrimitiveType.Class.UnsignedInt),
-            U64 = MakePrimitive(llvmContext.Int64Type, "u64", PrimitiveType.Class.UnsignedInt),
-            USize = MakePrimitive(llvmContext.GetIntPtrType(targetData), "usize", PrimitiveType.Class.UnsignedInt),
-            F32 = MakePrimitive(llvmContext.FloatType, "f32", PrimitiveType.Class.Float),
-            F64 = MakePrimitive(llvmContext.DoubleType, "f64", PrimitiveType.Class.Float),
+            Bool  = MakePrimitive("bool",  PrimitiveType.Class.Bool),
+            I8    = MakePrimitive("i8",    PrimitiveType.Class.SignedInt),
+            I16   = MakePrimitive("i16",   PrimitiveType.Class.SignedInt),
+            I32   = MakePrimitive("i32",   PrimitiveType.Class.SignedInt),
+            I64   = MakePrimitive("i64",   PrimitiveType.Class.SignedInt),
+            ISize = MakePrimitive("isize", PrimitiveType.Class.SignedInt),
+            U8    = MakePrimitive("u8",    PrimitiveType.Class.UnsignedInt),
+            U16   = MakePrimitive("u16",   PrimitiveType.Class.UnsignedInt),
+            U32   = MakePrimitive("u32",   PrimitiveType.Class.UnsignedInt),
+            U64   = MakePrimitive("u64",   PrimitiveType.Class.UnsignedInt),
+            USize = MakePrimitive("usize", PrimitiveType.Class.UnsignedInt),
+            F32   = MakePrimitive("f32",   PrimitiveType.Class.Float),
+            F64   = MakePrimitive("f64",   PrimitiveType.Class.Float),
         };
 
-        Passes = new()
-        {
-            FileDeclarations = new(this),
-            FileUsages = new(this),
-            TypeDeclarations = new(this),
-            FunctionDeclarations = new(this),
-            TypeDefinitions = new(this),
-            FunctionDefinitions = new(this),
+        DefaultPasses = new([
+            new FileDeclarationsPass(this),
+            new FileUsagesPass(this),
+            new TypeDeclarationsPass(this),
+            new FunctionDeclarationsPass(this),
+            new TypeDefinitionsPass(this),
+            new FunctionDefinitionsPass(this),
 
-            IRGeneration = new(this),
-            IRPasses = [
-                new ReturnsAnalysis(this),
-                new DropAnalysis(this),
-            ],
-
-            LLVMDefinitions = new(this),
-            LLVMGeneration = new(this),
-        };
+            new IRGenerationPass(this),
+            new ReturnsAnalysis(this),
+            new DropAnalysis(this),
+        ]);
 
         Resolvers = new()
         {
@@ -203,14 +150,8 @@ public class RecContext
             Syntax = new(this)
         };
 
-        SyntaxCompiler = new(this);
         IRGenerator = new(this);
         IRBuilder = new(this);
-
-        LLVM = llvmContext;
-        Module = module;
-        Builder = builder;
-        TargetData = targetData;
 
         GlobalScope = scope;
         Scopes = new(scope);
@@ -223,8 +164,70 @@ public class RecContext
     /// This function should only be called once per compiler instance
     /// (not once per source compiled).
     /// </summary>
-    public static RecContext Create(
-        LLVMContextRef llvmContext,
-        string moduleName)
-        => new(llvmContext, moduleName);
+    public static RecContext Create()
+        => new();
+        
+    /// <summary>
+    /// Add a new source to this compilation.
+    /// </summary>
+    public void AddSource(Source source)
+    {
+        sources.Add(source);
+    }
+
+    /// <summary>
+    /// Run the lexer and parser for the provided source.
+    /// </summary>
+    public void LexAndParse(Source source)
+    {
+        var charStream = CharStreams.fromString(source.Content);
+
+        var lexer = new RecLexer(charStream) { Source = source };
+        lexer.RemoveErrorListeners();
+        lexer.AddErrorListener(new DiagnosticLexerListener(this));
+
+        var parser = new RecParser(new CommonTokenStream(lexer));
+        parser.RemoveErrorListeners();
+        parser.AddErrorListener(new DiagnosticParserListener(this));
+
+        var tree = parser.program();
+        parseTrees.Add(source, tree);
+    }
+
+    /// <summary>
+    /// Run the provided pass on all sources.
+    /// </summary>
+    public void ExecutePass(IRecVisitor<Unit> visitor)
+    {
+        foreach(var source in Sources)
+        {
+            CurrentSource = source;
+
+            var tree = ParseTrees[source];
+            visitor.Visit(tree);
+            
+            CurrentSource = null;
+        }
+    }
+
+    /// <summary>
+    /// Run all provided passes on all sources.
+    /// </summary>
+    public void ExecutePasses(PassList passes)
+    {
+        foreach(var pass in passes.All)
+            ExecutePass(pass);
+    }
+    
+    /// <summary>
+    /// Perform all lexing, parsing, and analysis on all sources.
+    /// </summary>
+    public void AnalyzeAll()
+    {
+        foreach (var source in Sources)
+            LexAndParse(source);
+
+        ExecutePasses(DefaultPasses);
+    }
+    #endregion
 }

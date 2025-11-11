@@ -1,0 +1,97 @@
+﻿using LLVMSharp.Interop;
+using Re.C.LLVM.Codegen;
+using Re.C.LLVM.Passes;
+using Re.C.Passes;
+
+namespace Re.C.LLVM;
+
+public class LLVMContext
+{
+    /// <summary>
+    /// The LLVM context which compilation occurs in.
+    /// </summary>
+    public LLVMContextRef LLVM { get; }
+    /// <summary>
+    /// The LLVM module where all compiled code resides.
+    /// </summary>
+    public LLVMModuleRef Module { get; }
+    /// <summary>
+    /// The LLVM builder pointing into the compiler's module.
+    /// </summary>
+    public LLVMBuilderRef Builder { get; }
+    /// <summary>
+    /// A reference to the target information used by LLVM.
+    /// </summary>
+    public LLVMTargetDataRef TargetData { get; }
+    /// <summary>
+    /// A reference to the target machine information used by LLVM.
+    /// </summary>
+    public LLVMTargetMachineRef TargetMachine { get; }
+
+    /// <summary>
+    /// The list of all LLVM-related passes
+    /// </summary>
+    public PassList DefaultPasses { get; }
+
+    /// <summary>
+    /// A reference to the type compiler
+    /// </summary>
+    public TypeCompiler TypeCompiler { get; }
+    /// <summary>
+    /// A reference to the code generator
+    /// </summary>
+    public CodeGenerator CodeGenerator { get; }
+
+    /// <summary>
+    /// A reference to the containing ReC context
+    /// </summary>
+    public RecContext ReC { get; }
+
+    private LLVMContext(
+        string moduleName,
+        RecContext rec)
+    {
+        LLVM = LLVMContextRef.Create();
+
+        LLVMSharp.Interop.LLVM.InitializeNativeTarget();
+
+        var target = LLVMTargetRef.GetTargetFromTriple(LLVMTargetRef.DefaultTriple);
+        TargetMachine = target.CreateTargetMachine(
+            LLVMTargetRef.DefaultTriple,
+            "generic",
+            "",
+            LLVMCodeGenOptLevel.LLVMCodeGenLevelDefault,
+            LLVMRelocMode.LLVMRelocPIC,
+            LLVMCodeModel.LLVMCodeModelDefault);
+
+        TargetData = TargetMachine.CreateTargetDataLayout();
+
+        Module = LLVM.CreateModuleWithName(moduleName);
+        Builder = LLVM.CreateBuilder();
+
+        ReC = rec;
+
+        TypeCompiler = new(this);
+        CodeGenerator = new(this);
+
+        DefaultPasses = new([
+            new DeclarationsPass(this),
+            new DefinitionsPass(this),
+        ]);
+    }
+
+    public static LLVMContext Create(RecContext ctx, string moduleName = "<default module>")
+        => new(moduleName, ctx);
+
+    public void CompileAll()
+    {
+        ReC.AnalyzeAll();
+
+        if(ReC.Diagnostics.AnyErrors)
+        {
+            ReC.ExecutePasses(DefaultPasses);
+        }
+
+        Module.Verify(LLVMVerifierFailureAction.LLVMPrintMessageAction);
+    }
+}

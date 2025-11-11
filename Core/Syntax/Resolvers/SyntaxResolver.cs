@@ -1,6 +1,3 @@
-using Antlr4.Runtime.Misc;
-using Antlr4.Runtime.Tree;
-
 namespace Re.C.Syntax.Resolvers;
 
 public partial class SyntaxResolver(RecContext CTX) : RecBaseVisitor<BoundSyntax>

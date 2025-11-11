@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text;
 using Re.C.Definitions;
 
@@ -11,6 +10,7 @@ public class IRFunction(Function function)
     private readonly List<InstructionBlock> blocks = [];
     private readonly Bimapping<Variable, ValueID> variables = [];
     private InstructionBlock? finalBlock;
+    private readonly Dictionary<ValueID, Instruction> valueToInstruction = [];
 
     public InstructionBlock EntryBlock => blocks[0];
     public InstructionBlock FinalBlock => finalBlock.UnwrapNull();
@@ -18,6 +18,11 @@ public class IRFunction(Function function)
     public IReadOnlyBimapping<Variable, ValueID> VariableMappings => variables;
     
     private long maxValueID = 0;
+
+    public Instruction InstructionByValue(ValueID value)
+        => valueToInstruction[value];
+    public void MapValueToInstruction(ValueID value, Instruction inst)
+        => valueToInstruction.Add(value, inst);
 
     public ValueID NextValueID()
         => new(this, maxValueID++);

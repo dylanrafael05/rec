@@ -1,10 +1,8 @@
-using LLVMSharp.Interop;
-using Re.C.Types.Descriptors;
 using Re.C.Visitor;
 
 namespace Re.C.Types;
 
-public abstract class Type : IEquatable<Type>, IVisitable
+public abstract class RecType : IEquatable<RecType>, IVisitable
 {
     public override string ToString()
         => FullName;
@@ -33,31 +31,17 @@ public abstract class Type : IEquatable<Type>, IVisitable
     [FieldOption(PrintLevel.Verbose)] 
     public virtual bool TriviallyCopyable => true;
 
-    public abstract bool Equals(Type? other);
+    public abstract bool Equals(RecType? other);
     public sealed override bool Equals(object? other)
-        => (other is Type t) && Equals(t);
+        => (other is RecType t) && Equals(t);
     public abstract override int GetHashCode();
 
-    public static bool operator ==(Type? a, Type? b)
+    public static bool operator ==(RecType? a, RecType? b)
         => object.Equals(a, b);
-    public static bool operator !=(Type? a, Type? b)
+    public static bool operator !=(RecType? a, RecType? b)
         => !(a == b);
 
-    protected abstract LLVMTypeRef ImplementCompile(RecContext ctx);
-    public abstract LLVMValueRef BuildDestructor(RecContext ctx);
-    public abstract FieldDescriptor[] GetFields(RecContext ctx);
     public virtual SourceSpan GetDefinitionLocation() => SourceSpan.Builtin;
-
-    public LLVMTypeRef Compile(RecContext ctx)
-    {
-        if (ctx.TypeCache.TryGetValue(this, out var result))
-            return result;
-
-        result = ImplementCompile(ctx);
-        ctx.TypeCache[this] = result;
-
-        return result;
-    }
 
     public virtual void PropogateVisitor<V>(V visitor)
         where V : IVisitor, allows ref struct
@@ -66,6 +50,6 @@ public abstract class Type : IEquatable<Type>, IVisitable
     /// <summary>
     /// Create a pointer type wrapping the provided type.
     /// </summary>
-    public static PointerType Pointer(Type type)
+    public static PointerType Pointer(RecType type)
         => new() { Pointee = type };
 }

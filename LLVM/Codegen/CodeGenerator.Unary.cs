@@ -1,16 +1,18 @@
+using LLVMSharp.Interop;
+using Re.C.IR;
 using Re.C.Syntax;
 
-namespace Re.C.Compilation;
+namespace Re.C.LLVM.Codegen;
 
-public partial class SyntaxCompiler
+public partial class CodeGenerator
 {
-    private RecValue CompileUnary(UnaryExpression context)
+    private Option<LLVMValueRef> GenerateUnary(InstructionKind.Unary un, Instruction inst)
     {
-        var op = Compile(context.Operand).Unwrap();
-        var t = context.Operand.Type;
+        var op = ValueOf(un.Op);
+        var t = CurrentFunction.InstructionByValue(un.Op).Type;
         var b = CTX.Builder;
 
-        return context.Operator switch
+        return Option.Some(un.Operator switch
         {
             UnaryOperator.BitNot or UnaryOperator.LogicNot => t switch 
             {
@@ -34,6 +36,6 @@ public partial class SyntaxCompiler
             UnaryOperator.Posit => op,
 
             _ => throw Unimplemented
-        };
+        });
     }
 }

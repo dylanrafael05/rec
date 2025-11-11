@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Data;
-using OneOf;
 
 namespace Re.C.Vocabulary;
 
@@ -95,6 +93,17 @@ public readonly partial record struct Option<T> : IEnumerable<T>
             return value;
 
         throw Panic(message);
+    }
+
+    /// <summary>
+    /// Return either this or None depending on 'cond'
+    /// </summary>
+    public Option<T> If(bool cond)
+    {
+        if(cond)
+            return this;
+
+        return Option.None;
     }
 
     /// <summary>

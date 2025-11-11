@@ -7,7 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CLI", "CLI\CLI.csproj", "{B52E865A-2E8D-45CB-9239-2FF2C518CCC0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DU", "DiscriminatedUnion\DiscriminatedUnion.csproj", "{6676B98A-4D0B-4BC6-81B1-9B4E688E980F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscriminatedUnion", "DiscriminatedUnion\DiscriminatedUnion.csproj", "{6676B98A-4D0B-4BC6-81B1-9B4E688E980F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLVM", "LLVM\LLVM.csproj", "{FFC03F58-BF11-4BF7-AF26-61F8F59056BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,18 @@ Global
 		{6676B98A-4D0B-4BC6-81B1-9B4E688E980F}.Release|x64.Build.0 = Release|Any CPU
 		{6676B98A-4D0B-4BC6-81B1-9B4E688E980F}.Release|x86.ActiveCfg = Release|Any CPU
 		{6676B98A-4D0B-4BC6-81B1-9B4E688E980F}.Release|x86.Build.0 = Release|Any CPU
+		{FFC03F58-BF11-4BF7-AF26-61F8F59056BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFC03F58-BF11-4BF7-AF26-61F8F59056BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFC03F58-BF11-4BF7-AF26-61F8F59056BF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FFC03F58-BF11-4BF7-AF26-61F8F59056BF}.Debug|x64.Build.0 = Debug|Any CPU
+		{FFC03F58-BF11-4BF7-AF26-61F8F59056BF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FFC03F58-BF11-4BF7-AF26-61F8F59056BF}.Debug|x86.Build.0 = Debug|Any CPU
+		{FFC03F58-BF11-4BF7-AF26-61F8F59056BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFC03F58-BF11-4BF7-AF26-61F8F59056BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFC03F58-BF11-4BF7-AF26-61F8F59056BF}.Release|x64.ActiveCfg = Release|Any CPU
+		{FFC03F58-BF11-4BF7-AF26-61F8F59056BF}.Release|x64.Build.0 = Release|Any CPU
+		{FFC03F58-BF11-4BF7-AF26-61F8F59056BF}.Release|x86.ActiveCfg = Release|Any CPU
+		{FFC03F58-BF11-4BF7-AF26-61F8F59056BF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

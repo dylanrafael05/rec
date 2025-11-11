@@ -5,7 +5,7 @@ namespace Re.C.Definitions;
 public class Scope : DefinitionBase
 {
     public required RecContext CTX { get; init; }
-    public Types.Type? AssociatedType { get; init; }
+    public RecType? AssociatedType { get; init; }
     public Dictionary<Identifier, IDefinition> Definitions { get; } = [];
 
     /// <summary>

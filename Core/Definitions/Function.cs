@@ -1,4 +1,3 @@
-using LLVMSharp.Interop;
 using Re.C.IR;
 using Re.C.Syntax;
 using Re.C.Types;
@@ -16,7 +15,6 @@ public class Function : DefinitionBase
 
     public Option<Block> Body { get; set; }
     public Option<IRFunction> IRFunction { get; set; }
-    public Option<LLVMValueRef> LLVMFunction { get; set; }
 
     public int ArgumentCount => ArgumentNames.Length;
 }

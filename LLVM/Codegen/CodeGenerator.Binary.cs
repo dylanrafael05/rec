@@ -1,30 +1,22 @@
 using LLVMSharp.Interop;
+using Re.C.IR;
 using Re.C.Syntax;
 using Re.C.Types;
-using Re.C.Visitor;
 
-using Type = Re.C.Types.Type;
+namespace Re.C.LLVM.Codegen;
 
-namespace Re.C.Compilation;
-
-public partial class SyntaxCompiler
+public partial class CodeGenerator
 {
-    private RecValue CompileBinary(BinaryExpression context)
+    private Option<LLVMValueRef> GenerateBinary(InstructionKind.Binary bin, Instruction inst)
     {
-        if(context.Operator is BinaryOperator.LogicAnd)
-            return CompileAnd(context);
+        var lhs = ValueOf(bin.LHS);
+        var rhs = ValueOf(bin.RHS);
 
-        if(context.Operator is BinaryOperator.LogicOr)
-            return CompileOr(context);
-
-        var lhs = Compile(context.LHS).Unwrap();
-        var rhs = Compile(context.RHS).Unwrap();
-
-        var t1 = context.LHS.Type;
-        var t2 = context.RHS.Type;
+        var t1 = CurrentFunction.InstructionByValue(bin.LHS).Type;
+        var t2 = CurrentFunction.InstructionByValue(bin.RHS).Type;
         var b = CTX.Builder;
 
-        return context.Operator switch
+        return Option.Some(bin.Operator switch
         {
             // Arithmetic operators //
             BinaryOperator.Add => (t1, t2) switch 
@@ -36,7 +28,7 @@ public partial class SyntaxCompiler
                     => b.BuildFAdd(lhs, rhs),
                 
                 (PointerType { Pointee: var p }, { IsInteger: true })
-                    => b.BuildGEP2(p.Compile(CTX), lhs, [rhs]),
+                    => b.BuildGEP2(CTX.TypeCompiler.Compile(p), lhs, [rhs]),
 
                 _ => throw Unimplemented,
             },
@@ -50,7 +42,7 @@ public partial class SyntaxCompiler
                     => b.BuildFSub(lhs, rhs),
                 
                 (PointerType { Pointee: var p }, { IsInteger: true, IsSigned: true })
-                    => b.BuildGEP2(p.Compile(CTX), lhs, [b.BuildNeg(rhs)]),
+                    => b.BuildGEP2(CTX.TypeCompiler.Compile(p), lhs, [b.BuildNeg(rhs)]),
 
                 _ => throw Unimplemented,
             },
@@ -217,58 +209,6 @@ public partial class SyntaxCompiler
             // Base case //
             _ => throw Unimplemented
 
-        };
-    }
-
-    private RecValue CompileAnd(BinaryExpression context)
-    {
-        // Compute the lhs value
-        var lhs = Compile(context.LHS).Unwrap();
-        var beginBlock = CTX.Builder.InsertBlock;
-
-        // Short circuit on lhs=false
-        var onTrue = CTX.CurrentLLVMFunction.AppendBasicBlock($"{lhs.Name}_true");
-        var final = CTX.CurrentLLVMFunction.AppendBasicBlock($"{lhs.Name}_continue");
-
-        CTX.Builder.BuildCondBr(lhs, onTrue, final);
-        
-        // Otherwise, compute rhs
-        CTX.Builder.PositionAtEnd(onTrue);
-        var rhs = Compile(context.RHS).Unwrap();
-        onTrue = CTX.Builder.InsertBlock;
-        CTX.Builder.BuildBr(final);
-
-        // Return a phi instruction
-        CTX.Builder.PositionAtEnd(final);
-
-        var phi = CTX.Builder.BuildPhi(lhs.TypeOf);
-        phi.AddIncoming([lhs, rhs], [beginBlock, onTrue], 2);
-        return phi;
-    }
-    
-    private RecValue CompileOr(BinaryExpression context)
-    {
-        // Compute the lhs value
-        var lhs = Compile(context.LHS).Unwrap();
-        var beginBlock = CTX.Builder.InsertBlock;
-
-        // Short circuit on lhs=true
-        var onFalse = CTX.CurrentLLVMFunction.AppendBasicBlock($"{lhs.Name}_false");
-        var final = CTX.CurrentLLVMFunction.AppendBasicBlock($"{lhs.Name}_continue");
-
-        CTX.Builder.BuildCondBr(lhs, final, onFalse);
-        
-        // Otherwise, compute rhs
-        CTX.Builder.PositionAtEnd(onFalse);
-        var rhs = Compile(context.RHS).Unwrap();
-        onFalse = CTX.Builder.InsertBlock;
-        CTX.Builder.BuildBr(final);
-
-        // Return a phi instruction
-        CTX.Builder.PositionAtEnd(final);
-
-        var phi = CTX.Builder.BuildPhi(lhs.TypeOf);
-        phi.AddIncoming([lhs, rhs], [beginBlock, onFalse], 2);
-        return phi;
+        });
     }
 }

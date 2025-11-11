@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Runtime.CompilerServices;
-using OneOf.Types;
 
 namespace Re.C.Visitor;
 

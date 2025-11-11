@@ -1,9 +1,6 @@
-using System.Text;
 using Antlr4.Runtime.Misc;
 using OneOf;
 using Re.C.Antlr;
-using Re.C.Definitions;
-using Re.C.Types;
 
 namespace Re.C.Syntax.Resolvers;
 

@@ -1,5 +1,4 @@
 using System.Text;
-using Re.C.Definitions;
 using Re.C.Visitor;
 
 namespace Re.C.IR;
@@ -19,9 +18,8 @@ public class InstructionBlock(IRFunction function, string name) : IVisitable
     public IRFunction Function { get; } = function;
     public string Name { get; } = name;
 
-    public Option<bool> Returns { get; set; }
+    public bool Returns { get; set; }
 
-    public bool VisitedByDropComputer { get; set; } = false;
     public List<DroppableValue> DropAtEnd { get; } = [];
     public List<(Instruction, DroppableValue)> DropBeforeInstruction { get; } = [];
     public Dictionary<ValueID, SourceSpan> MovedNamedValues { get; } = [];
@@ -32,7 +30,6 @@ public class InstructionBlock(IRFunction function, string name) : IVisitable
     private readonly List<InstructionBlock> antecedents = [];
     private readonly List<InstructionBlock> consequents = [];
     private readonly List<Instruction> instructions = [];
-    private readonly Dictionary<ValueID, Instruction> valueToInstruction = [];
     
     public int InstructionCount => instructions.Count;
     public IReadOnlyList<Instruction> Instructions => instructions;
@@ -48,7 +45,7 @@ public class InstructionBlock(IRFunction function, string name) : IVisitable
         instruction.ValueID = Option.Some(id);
 
         instructions.Insert(index, instruction);
-        valueToInstruction.Add(id, instruction);
+        Function.MapValueToInstruction(id, instruction);
 
         var connectingBlocks = new List<InstructionBlock>();
         instruction.Kind.GetJumpBlocks(connectingBlocks);
@@ -80,9 +77,6 @@ public class InstructionBlock(IRFunction function, string name) : IVisitable
 
         instructions.RemoveAt(index);
     }
-
-    public Instruction GetInstructionByValue(ValueID id)
-        => valueToInstruction.GetValueOrDefault(id).UnwrapNull();
 
     public override string ToString()
     {

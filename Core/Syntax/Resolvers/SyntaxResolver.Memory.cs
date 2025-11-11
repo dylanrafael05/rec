@@ -2,8 +2,6 @@ using Antlr4.Runtime.Misc;
 using Re.C.Types;
 using Re.C.Antlr;
 
-using static Re.C.Syntax.UnaryOperator;
-
 namespace Re.C.Syntax.Resolvers;
 
 public partial class SyntaxResolver
@@ -45,7 +43,7 @@ public partial class SyntaxResolver
             return new AddressOfExpression
             {
                 Span = span,
-                Type = new PointerType { Pointee = inner.Type },
+                Type = RecType.Pointer(inner.Type),
                 Inner = inner
             };
         }

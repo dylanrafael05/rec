@@ -1,14 +1,8 @@
-using LLVMSharp.Interop;
-using Re.C.Definitions;
-using Re.C.Types.Descriptors;
-using Re.C.Visitor;
-using Re.C.Vocabulary;
-
 namespace Re.C.Types;
 
 public class StructType : NamedType
 {
-    public record struct Field(Identifier Name, Type Type, int Index);
+    public record struct Field(Identifier Name, RecType Type, int Index);
 
     public Field[]? Fields { get; private set; }
     public override bool TriviallyCopyable => false;
@@ -34,39 +28,6 @@ public class StructType : NamedType
             throw Panic("Attepmt to set the body of a struct more than once.");
 
         Fields = fields;
-    }
-
-    protected override LLVMTypeRef ImplementCompile(RecContext ctx)
-    {
-        var type = ctx.LLVM.CreateNamedStruct(FullName); /* TODO: mangling */
-        type.StructSetBody(
-            [..from f in Fields.UnwrapNull() select f.Type.Compile(ctx)], 
-            false);
-
-        return type;
-    }
-
-    public override LLVMValueRef BuildDestructor(RecContext ctx)
-    {
-        throw Todo;
-    }
-
-    public override FieldDescriptor[] GetFields(RecContext ctx)
-    {
-        var llvm = Compile(ctx);
-
-        throw Todo;
-
-        return [
-            ..from f in Fields.UnwrapNull().Indexed select new FieldDescriptor
-            {
-                Name = f.value.Name.ToString(),
-                Offset = ctx.TargetData.OffsetOfElement(llvm, (uint) f.index),
-
-                FieldType = default /* TODO */,
-                ParentType = default /* TODO */
-            }
-        ];
     }
 
     public override void PropogateVisitor<V>(V visitor)

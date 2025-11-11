@@ -9,7 +9,7 @@ namespace Re.C.Syntax;
 /// </summary>
 public class Expression : BoundSyntax
 {
-    public required Types.Type Type { get; init; }
+    public required RecType Type { get; init; }
     
     [FieldOption(PrintLevel.Hidden)] 
     public virtual bool HasAddress => false;

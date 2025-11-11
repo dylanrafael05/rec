@@ -1,7 +1,6 @@
 using Antlr4.Runtime.Tree;
 using Re.C.Antlr;
 using Re.C.Visitor;
-using Re.C.Vocabulary;
 
 namespace Re.C.Syntax;
 

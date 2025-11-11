@@ -1,39 +1,38 @@
 using LLVMSharp.Interop;
-using Re.C.Syntax;
+using Re.C.IR;
 using Re.C.Types;
-using Re.C.Visitor;
 
-namespace Re.C.Compilation;
+namespace Re.C.LLVM.Codegen;
 
-public partial class SyntaxCompiler
+public partial class CodeGenerator
 {
-    private RecValue CompileCast(CastExpression context)
+    private Option<LLVMValueRef> GenerateCast(InstructionKind.BuiltinCast cast, Instruction inst)
     {
-        var value = Compile(context.Value).Unwrap();
+        var value = ValueOf(cast.Value);
 
-        var t1 = context.Value.Type;
-        var t2 = context.Type;
+        var t1 = CurrentFunction.InstructionByValue(cast.Value).Type;
+        var t2 = inst.Type;
 
         var b = CTX.Builder;
 
-        var l1 = t1.Compile(CTX);
-        var l2 = t2.Compile(CTX);
+        var l1 = CTX.TypeCompiler.Compile(t1);
+        var l2 = CTX.TypeCompiler.Compile(t2);
 
         var s1 = CTX.TargetData.StoreSizeOfType(l1);
         var s2 = CTX.TargetData.StoreSizeOfType(l2);
 
         // No-op casts //
         if(t1 == t2)
-            return value;
+            return Option.Some(value);
 
         if(t1.IsInteger && t2.IsInteger && s1 == s2)
-            return value;
+            return Option.Some(value);
 
         if(t1 is PointerType && t2 is PointerType)
-            return value;
+            return Option.Some(value);
 
         // Meaningful casts //
-        return (t1, t2) switch
+        return Option.Some((t1, t2) switch
         {
             ({ IsInteger: true }, { IsInteger: true, IsSigned: true }) when s1 < s2
                 => b.BuildSExt(value, l2),
@@ -59,6 +58,6 @@ public partial class SyntaxCompiler
                 => b.BuildFPTrunc(value, l2),
 
             _ => throw Unimplemented  
-        };
+        });
     }
 }

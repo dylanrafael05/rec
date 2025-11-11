@@ -1,6 +1,4 @@
 using Antlr4.Runtime.Misc;
-using Re.C.Definitions;
-using Re.C.Vocabulary;
 
 namespace Re.C.Passes;
 
@@ -13,7 +11,6 @@ namespace Re.C.Passes;
 public class BasePass(RecContext ctx) : RecBaseVisitor<Unit>
 {
     public RecContext CTX { get; } = ctx;
-
     public virtual bool EnterAsBlocks => false;
 
     public override Unit VisitModStatement([NotNull] RecParser.ModStatementContext context)

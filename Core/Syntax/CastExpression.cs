@@ -1,5 +1,3 @@
-using Re.C.Visitor;
-
 namespace Re.C.Syntax;
 
 public class CastExpression : Expression

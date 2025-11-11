@@ -123,24 +123,24 @@ public abstract record InstructionKind
         }
     }
 
-    public record Call(ValueID Ptr, ValueID[] Arguments) : InstructionKind
+    public record Call(ValueID TargetPtr, ValueID[] Arguments) : InstructionKind
     {
         public override string ToString()
-            => $"call {Ptr} with {string.Join(", ", Arguments)}";
+            => $"call {TargetPtr} with {string.Join(", ", Arguments)}";
         public override void GetArguments(IList<ValueID> values)
         {
-            values.Add(Ptr);
+            values.Add(TargetPtr);
             foreach(var f in Arguments)
                 values.Add(f);
         }
     }
-    public record BuiltinCast(ValueID Ptr) : InstructionKind
+    public record BuiltinCast(ValueID Value) : InstructionKind
     {
         public override string ToString()
-            => $"cast {Ptr}";
+            => $"cast {Value}";
         public override void GetArguments(IList<ValueID> values)
         {
-            values.Add(Ptr);
+            values.Add(Value);
         }
     }
 
@@ -192,6 +192,26 @@ public abstract record InstructionKind
         }
     }
     
+    
+    public record DropPtr(ValueID Ptr) : InstructionKind
+    {
+        public override string ToString()
+            => $"drop ptr {Ptr}";
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(Ptr);
+        }
+    }
+    public record DropVal(ValueID Val) : InstructionKind
+    {
+        public override string ToString()
+            => $"drop val {Val}";
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(Val);
+        }
+    }
+
     public record Error : InstructionKind
     {
         public override string ToString()

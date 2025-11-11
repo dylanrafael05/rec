@@ -55,6 +55,8 @@ public class DiagnosticBag : IReadOnlyCollection<Diagnostic>
 
     public bool HasErrors(Source source)
         => sourcesWithError.Contains(source);
+    public bool AnyErrors
+        => sourcesWithError.Count > 0;
 
     public IEnumerator<Diagnostic> GetEnumerator()
         => diagnostics.GetEnumerator();

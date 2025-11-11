@@ -1,4 +1,5 @@
 using Re.C.Syntax;
+using Re.C.Types;
 
 namespace Re.C.IR;
 
@@ -13,7 +14,7 @@ public class IRBuilder(RecContext CTX)
         CurrentIndex = block.Instructions.Count;
     }
 
-    public ValueID BuildInst(Types.Type type, SourceSpan span, InstructionKind kind)
+    public ValueID BuildInst(RecType type, SourceSpan span, InstructionKind kind)
     {
         var instruction = new Instruction(type, span, kind);
         return CurrentBlock.UnwrapNull().InsertInstruction(CurrentIndex++, instruction);

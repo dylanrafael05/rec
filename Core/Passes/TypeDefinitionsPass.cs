@@ -1,7 +1,6 @@
 using Antlr4.Runtime.Misc;
 using Re.C.Types;
 using Re.C.Antlr;
-using Re.C.Definitions;
 
 namespace Re.C.Passes;
 

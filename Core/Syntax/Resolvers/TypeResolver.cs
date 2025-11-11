@@ -12,9 +12,9 @@ namespace Re.C.Syntax.Resolvers;
 /// Calls to this class' Visit method with non-typename
 /// syntax trees are ill formed.
 /// </summary>
-public class TypeResolver(RecContext ctx) : RecBaseVisitor<Types.Type>
+public class TypeResolver(RecContext ctx) : RecBaseVisitor<RecType>
 {
-    public override Types.Type VisitTypenameSingle(RecParser.TypenameSingleContext single)
+    public override RecType VisitTypenameSingle(RecParser.TypenameSingleContext single)
     {
         var def = ctx.Scopes.Current.DeepSearchOrDiagnose(
             [..from p in single.Ident._Parts select p.SourceSpan], 
@@ -22,13 +22,13 @@ public class TypeResolver(RecContext ctx) : RecBaseVisitor<Types.Type>
         return (def as NamedType) ?? ctx.BuiltinTypes.Error;
     }
 
-    public override Types.Type VisitTypenamePointer([NotNull] RecParser.TypenamePointerContext context)
+    public override RecType VisitTypenamePointer([NotNull] RecParser.TypenamePointerContext context)
     {
         var inner = Visit(context.Base);
 
         if (inner is ErrorType)
             return inner;
 
-        return new PointerType { Pointee = inner };
+        return RecType.Pointer(inner);
     }
 }

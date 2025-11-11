@@ -1,9 +1,6 @@
-using System.Text;
 using Antlr4.Runtime.Misc;
 using Re.C.Antlr;
 using Re.C.Definitions;
-using Re.C.Types;
-using Re.C.Visitor;
 
 namespace Re.C.Syntax.Resolvers;
 

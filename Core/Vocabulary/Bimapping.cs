@@ -14,7 +14,7 @@ public interface IReadOnlyBimapping<A, B> : ICollection<(A, B)>
     public bool Contains(B key);
 }
 
-public class Bimapping<A, B> : ICollection<(A, B)>, IReadOnlyBimapping<A, B>
+public class Bimapping<A, B> : IReadOnlyBimapping<A, B>
     where A : notnull
     where B : notnull
 {

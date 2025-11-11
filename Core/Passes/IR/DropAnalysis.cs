@@ -6,34 +6,28 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
 {
     public override void Perform(IRFunction fn)
     {
-        Visit(fn.EntryBlock);
+        // TODO: real logging //
+        Console.WriteLine(fn.ToIRString());
     }
 
-    private void Visit(InstructionBlock block)
+    protected override void VisitBlock(InstructionBlock block)
     {
-        if(block.VisitedByDropComputer) 
-            return;
-        
-        block.VisitedByDropComputer = true;
-
         foreach(var antecedent in block.Antecedents)
         {
-            Visit(antecedent);
-
             // NOTE; how to mark/handle partially moved values? //
             foreach(var kvp in antecedent.MovedNamedValues)
                 block.MovedNamedValues[kvp.Key] = kvp.Value;
         }
 
-        var argumentContainer = (List<ValueID>)[];
+        // TODO; inject 'partial drop' handling logic here
 
         // Iterate all instructions
         foreach(var inst in block.Instructions)
         {
-            argumentContainer.Clear();
-            inst.Kind.GetArguments(argumentContainer);
+            using var args = Temporary.List<ValueID>();
+            inst.Kind.GetArguments(args.Value);
 
-            foreach(var arg in argumentContainer)
+            foreach(var arg in args.Value)
             {
                 // TODO: there has to be a better way to do this
                 block.DropAtEnd.Remove(DroppableValue.ViaPointer(arg));
@@ -95,7 +89,5 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
 
         // TODO; inject drop code based on computed values
 
-        foreach(var consequent in block.Consequents)
-            Visit(consequent);
     }
 }

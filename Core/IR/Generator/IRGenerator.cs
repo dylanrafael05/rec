@@ -12,7 +12,7 @@ public partial class IRGenerator(RecContext CTX)
     public void LinkVariable(Variable var, ValueID id)
     {
         Function.BindVariable(var, Builder.BuildInst(
-            new PointerType { Pointee = var.Type }, 
+            RecType.Pointer(var.Type), 
             var.DefinitionLocation, 
             new InstructionKind.Local(id)));
     }
@@ -49,9 +49,6 @@ public partial class IRGenerator(RecContext CTX)
         // Compile the function's body //
         Generate(function.Body.Unwrap());
         fn.SetFinalBlock(Builder.CurrentBlock.UnwrapNull());
-
-        // TODO: real logging //
-        Console.WriteLine(Function.ToIRString());
 
         // Restore the context state //
         CTX.Functions.Exit();

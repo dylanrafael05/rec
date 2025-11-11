@@ -1,21 +1,12 @@
+using System.Collections.Immutable;
+
 namespace Re.C.Passes;
 
 /// <summary>
-/// A helper class holding all passes in the re:c
-/// compiler.
+/// A helper class wrapping a list of passes to be applied
+/// in sequential-parallel order.
 /// </summary>
-public readonly struct RecPasses
+public readonly struct PassList(ImmutableArray<BasePass> all)
 {
-    public required FileDeclarationsPass FileDeclarations { get; init; }
-    public required FileUsagesPass FileUsages { get; init; }
-    public required TypeDeclarationsPass TypeDeclarations { get; init; }
-    public required FunctionDeclarationsPass FunctionDeclarations { get; init; }
-    public required TypeDefinitionsPass TypeDefinitions { get; init; }
-    public required FunctionDefinitionsPass FunctionDefinitions { get; init; }
-
-    public required IRGenerationPass IRGeneration { get; init; }
-    public required IRPass[] IRPasses { get; init; }
-
-    public required LLVMDefinitionsPass LLVMDefinitions { get; init; }
-    public required LLVMGenerationPass LLVMGeneration { get; init; }
+    public ImmutableArray<BasePass> All { get; } = all;
 }
