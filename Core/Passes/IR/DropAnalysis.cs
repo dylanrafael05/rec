@@ -1,4 +1,5 @@
 using Re.C.IR;
+using Re.C.Types;
 
 namespace Re.C.Passes;
 
@@ -10,13 +11,50 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
         Console.WriteLine(fn.ToIRString());
     }
 
+    private void TryMoveValue(
+        InstructionBlock block, 
+        Instruction mover, 
+        ValueID value, 
+        bool throughPointer,
+        bool emitErrors)
+    {
+        var argInst = block.Function.InstructionByValue(value);
+        var argType = throughPointer ? argInst.Type.UnwrapAs<PointerType>().Pointee : argInst.Type;
+        
+        block.DropAtEnd.Remove(value);
+
+        // Throw error on use after move
+        if(emitErrors && block.MovedValues.TryGetValue(value, out var moveLocation))
+        {
+            // TODO: create a ValueRef class which wraps a ValueID and a SourceSpan
+            //       denoting the exact position where it was referenced
+            CTX.Diagnostics.AddError(
+                mover.Span,
+                Errors.UseAfterMove());
+
+            // TODO: class for 'infos' / better way to handle this
+            CTX.Diagnostics.AddInfo(
+                moveLocation,
+                $"Value was moved from here");
+
+            return;
+        }
+
+        // Mark as moved if not leaked and not copyable
+        if(!block.LeakedValues.Contains(value) && !argType.TriviallyCopyable)
+        {
+            block.MovedValues.TryAdd(value, mover.Span);
+        }
+    }
+
     protected override void VisitBlock(InstructionBlock block)
     {
         foreach(var antecedent in block.Antecedents)
         {
-            // NOTE; how to mark/handle partially moved values? //
-            foreach(var kvp in antecedent.MovedNamedValues)
-                block.MovedNamedValues[kvp.Key] = kvp.Value;
+            foreach(var kvp in antecedent.MovedValues)
+                block.MovedValues[kvp.Key] = kvp.Value;
+
+            block.LeakedValues.UnionWith(antecedent.LeakedValues);
         }
 
         // TODO; inject 'partial drop' handling logic here
@@ -27,63 +65,52 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
             using var args = Temporary.List<ValueID>();
             inst.Kind.GetArguments(args.Value);
 
+            // General drop analysis; move all arguments (unless copied or leaked) //
             foreach(var arg in args.Value)
             {
-                // TODO: there has to be a better way to do this
-                block.DropAtEnd.Remove(DroppableValue.ViaPointer(arg));
-                block.DropAtEnd.Remove(DroppableValue.ViaDirect(arg));
-
-                // Throw error on use after move
-                if(block.MovedNamedValues.ContainsKey(arg))
-                {
-                    // TODO: create a ValueRef class which wraps a ValueID and a SourceSpan
-                    //       denoting the exact position where it was referenced
-                    CTX.Diagnostics.AddError(
-                        inst.Span,
-                        Errors.UseAfterMove());
-
-                    // TODO: class for 'infos' / better way to handle this
-                    CTX.Diagnostics.AddInfo(
-                        block.MovedNamedValues[arg],
-                        $"Value was moved from here");
-                }
+                TryMoveValue(block, inst, arg, throughPointer: false, emitErrors: true);
             }
 
-            // Local declarations; mark for drop
+            // General drop analysis: drop (nonleaked) return values of instructions directly if not copyable //
+            if(!inst.Type.TriviallyCopyable)
+            {
+                block.DropAtEnd.Add(inst.ValueID.Unwrap(), DropMethod.Direct);
+            }
+
+            // Special cases //
+            // Local declarations; mark result as a drop-via-pointer type
             if(inst.Kind is InstructionKind.Local)
             {
-                block.DropAtEnd.Add(DroppableValue.ViaPointer(
-                    inst.ValueID.Unwrap()));
+                block.DropAtEnd.Add(inst.ValueID.Unwrap(), DropMethod.ThroughPointer);
             }
-            // Stores; drop before store
-            else if(inst.Kind is InstructionKind.Store store)
-            {
-                var toDrop = DroppableValue.ViaPointer(store.Ptr);
 
-                block.DropAtEnd.Remove(toDrop);
+            // Stores; drop existing value before assigning
+            if(inst.Kind is InstructionKind.Store store)
+            {
                 block.DropBeforeInstruction.Add((
-                    inst, toDrop));
+                    inst, store.Value, DropMethod.ThroughPointer));
             }
-            // Load; mark for drop
-            else if(inst.Kind is InstructionKind.Load load)
-            {
-                // ERROR here if not a copyable type //
-                var toDrop = DroppableValue.ViaDirect(inst.ValueID.Unwrap());
-                block.DropAtEnd.Add(toDrop);
 
-                if(!inst.Type.TriviallyCopyable)
+            // Load; error if not copyable (illegal to move out of (non-local) reference)
+            //     ; and mark as moved if loading from pointer
+            if(inst.Kind is InstructionKind.Load load)
+            {
+                if(block.Function.VariableMappings.Contains(load.Ptr))
                 {
-                    if(block.Function.VariableMappings.Contains(load.Ptr))
-                    {
-                        block.MovedNamedValues[load.Ptr] = inst.Span;
-                    }
-                    else
-                    {
-                        CTX.Diagnostics.AddError(
-                            inst.Span,
-                            Errors.MoveOutOfReference());
-                    }
+                    TryMoveValue(block, inst, load.Ptr, throughPointer: true, emitErrors: false);
                 }
+                else if(!inst.Type.TriviallyCopyable)
+                {
+                    CTX.Diagnostics.AddError(
+                        inst.Span,
+                        Errors.MoveOutOfReference());
+                }
+            }
+
+            // Leak; add result id to leaked values set
+            if(inst.Kind is InstructionKind.Leak)
+            {
+                block.LeakedValues.Add(inst.ValueID.Unwrap());
             }
         }
 

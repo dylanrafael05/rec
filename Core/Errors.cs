@@ -48,6 +48,9 @@ public static class Errors
         => $"Incompatible field type for {structType}.{ident}, expected {fieldType} but got {realType}";
     public static string StructMissingFields(RecType structType, IReadOnlyList<Identifier> missing)
         => $"Incomplete construction of {structType}; missing {string.Join(", ", missing)}";
+    // TODO: handle duplicate field references in struct construction
+    public static string BreakDuplicateStructField(Identifier field)
+        => $"Field {field} has already been used in this 'break'";
     
     
     public static string InvalidAssignmentTarget()
@@ -73,6 +76,8 @@ public static class Errors
         => $"Cannot construct non-struct type {operand}";
     public static string InvalidMethod(IDefinition? def)
         => $"Invalid method {def}";
+    public static string InvalidBreak(RecType target)
+        => $"Cannot 'break' from non-struct type {target}";
     
     public static string CallToNonFunctionType(RecType type)
         => $"Cannot call a non-function value of type {type}";

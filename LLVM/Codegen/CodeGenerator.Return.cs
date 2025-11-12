@@ -7,7 +7,7 @@ public partial class CodeGenerator
 {
     private Option<LLVMValueRef> GenerateReturn(InstructionKind.Return ret, Instruction inst)
     {
-        if(inst.Type.IsNone)
+        if(CurrentFunction.InstructionByValue(ret.Value).Type.IsNone)
         {
             CTX.Builder.BuildRetVoid();
         }

@@ -17,3 +17,15 @@ fn sqr_magnitude(value *Vector2) f32
 {
     return (value*.x * value*.x) + (value*.y * value*.y);
 }
+
+fn break_test() f32
+{
+    let test = struct_test();
+    break test
+    {
+        let x = x,
+        let y = y,
+    };
+
+    return x;
+}

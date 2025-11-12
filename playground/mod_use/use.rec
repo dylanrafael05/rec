@@ -9,7 +9,7 @@ fn main()
     let y = x.get_x().x;
     
     // TODO; lower precedence of 'cast'
-    if y == (0 cast(f32))
+    if y == 0 cast(f32)
     {
         let z = Vector2::make(0 cast(f32), 0 cast(f32)).get_x().x;
     }

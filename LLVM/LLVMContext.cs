@@ -52,7 +52,6 @@ public class LLVMContext
         RecContext rec)
     {
         LLVM = LLVMContextRef.Create();
-
         LLVMSharp.Interop.LLVM.InitializeNativeTarget();
 
         var target = LLVMTargetRef.GetTargetFromTriple(LLVMTargetRef.DefaultTriple);
@@ -80,14 +79,14 @@ public class LLVMContext
         ]);
     }
 
-    public static LLVMContext Create(RecContext ctx, string moduleName = "<default module>")
+    public static LLVMContext Create(RecContext ctx, string moduleName = "default_module")
         => new(moduleName, ctx);
 
     public void CompileAll()
     {
         ReC.AnalyzeAll();
 
-        if(ReC.Diagnostics.AnyErrors)
+        if(!ReC.Diagnostics.AnyErrors)
         {
             ReC.ExecutePasses(DefaultPasses);
         }

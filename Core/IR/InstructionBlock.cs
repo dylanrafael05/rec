@@ -3,14 +3,10 @@ using Re.C.Visitor;
 
 namespace Re.C.IR;
 
-[DiscriminatedUnion]
-public partial record struct DroppableValue
+public enum DropMethod
 {
-    public static class Cases
-    {
-        public record struct ViaPointer(ValueID Ptr);
-        public record struct ViaDirect(ValueID Value);
-    }
+    ThroughPointer,
+    Direct
 }
 
 public class InstructionBlock(IRFunction function, string name) : IVisitable
@@ -20,9 +16,10 @@ public class InstructionBlock(IRFunction function, string name) : IVisitable
 
     public bool Returns { get; set; }
 
-    public List<DroppableValue> DropAtEnd { get; } = [];
-    public List<(Instruction, DroppableValue)> DropBeforeInstruction { get; } = [];
-    public Dictionary<ValueID, SourceSpan> MovedNamedValues { get; } = [];
+    public Dictionary<ValueID, DropMethod> DropAtEnd { get; } = [];
+    public List<(Instruction, ValueID, DropMethod)> DropBeforeInstruction { get; } = [];
+    public Dictionary<ValueID, SourceSpan> MovedValues { get; } = [];
+    public HashSet<ValueID> LeakedValues { get; } = [];
 
     public bool IsFinalBlock => Function.FinalBlock == this;
     public bool IsEntryBlock => Function.EntryBlock == this;

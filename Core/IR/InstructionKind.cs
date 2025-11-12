@@ -46,6 +46,22 @@ public abstract record InstructionKind
                 values.Add(f);
         }
     }
+    
+    /// <summary>
+    /// "leak" is a special instruction which signals that the value returned by this
+    /// instruction can be moved from multiple times (that is, the value is 'leaked' from
+    /// the perspective of the move checker).
+    /// </summary>
+    public record Leak(ValueID Value) : InstructionKind
+    {
+        public override string ToString()
+            => $"leak {Value}";
+
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(Value);
+        }
+    }
 
     public record Argument(int Index) : InstructionKind
     {
@@ -73,7 +89,6 @@ public abstract record InstructionKind
             values.Add(Op);
         }
     }
-    
     public record Local(ValueID Value) : InstructionKind
     {
         public override string ToString()

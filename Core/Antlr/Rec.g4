@@ -192,6 +192,15 @@ statement
     | breakStatement ';'
     | block
     | expression ';'
+    | breakStructStatement ';'
+    ;
+
+breakStructPart
+    : Let Name=Identifier '=' Field=Identifier
+    ;
+
+breakStructStatement
+    : Break Target=expression '{' (Parts+=breakStructPart ',')* (Parts+=breakStructPart)? '}'
     ;
     
 block
@@ -308,12 +317,12 @@ expression
     | Target=expression ('.' MethodMarker=Identifier)? 
       '(' (Args+=expression (',' Args+=expression)*)? ')' #CallExpression
     | Op=unaryOperator Operand=expression                 #UnaryExpression
+    | Operand=expression Cast '(' TargetType=typename ')' #CastExpression
     | LHS=expression logicalOperator RHS=expression       #BinaryExpression
     | LHS=expression compOperator    RHS=expression       #BinaryExpression
     | LHS=expression bitwiseOperator RHS=expression       #BinaryExpression
     | LHS=expression muldivOperator  RHS=expression       #BinaryExpression
     | LHS=expression addsubOperator  RHS=expression       #BinaryExpression
-    | Operand=expression Cast '(' TargetType=typename ')' #CastExpression
     | term                                                #TermExpression
     ;
     
@@ -322,7 +331,7 @@ structExprAssign
     ;
 
 structExpression
-    : New StructType=typename '{' (Parts+=structExprAssign ',')+ (Parts+=structExprAssign)? '}'
+    : New StructType=typename '{' (Parts+=structExprAssign ',')* (Parts+=structExprAssign)? '}'
     ;
 
 variableReference
@@ -335,7 +344,7 @@ term
     : literal         
     | variableReference
     | '(' expression ')'     
-    | structExpression      
+    | structExpression
     ;
 
 literal 

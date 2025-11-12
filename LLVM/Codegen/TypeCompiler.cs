@@ -10,7 +10,7 @@ public class TypeCompiler(LLVMContext ctx)
 
     public LLVMTypeRef Compile(RecType type)
     {
-        if(resultCache.GetOrInsertDefault(type, out var value))
+        if(!resultCache.GetOrInsertDefault(type, out var value))
         {
             value.Value = ImplementCompile(type);
         }
@@ -38,7 +38,7 @@ public class TypeCompiler(LLVMContext ctx)
     private LLVMTypeRef ImplementCompileFunction(FunctionType type)
     {
         return LLVMTypeRef.CreateFunction(
-            Option.Nonnull(type.Return).Map(Compile).Or(LLVMTypeRef.Void),
+            Compile(type.Return),
             [.. from p in type.Parameters select Compile(p)]
         );
     }

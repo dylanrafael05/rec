@@ -13,9 +13,12 @@ public partial class CodeGenerator
         ];
 
         var fnValue = ValueOf(call.TargetPtr);
-        var fnType = CurrentFunction.InstructionByValue(call.TargetPtr).Type;
+        var fnPtrType = CurrentFunction.InstructionByValue(call.TargetPtr).Type;
 
-        Assert(fnType is FunctionType);
+        var fnType = fnPtrType
+            .UnwrapAs<PointerType>()
+            .Pointee
+            .UnwrapAs<FunctionType>();
 
         return Option.Some(
             CTX.Builder.BuildCall2(CTX.TypeCompiler.Compile(fnType), fnValue, args));

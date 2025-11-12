@@ -27,7 +27,7 @@ fn return_test() none
     };
     let mov1 = mov.clone();
 
-    if (mov.x == 1)
+    if mov.x == 1
     {
         let mov2 = mov;
     }

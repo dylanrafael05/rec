@@ -1,3 +1,4 @@
+using System.Net;
 using LLVMSharp.Interop;
 using Re.C.Definitions;
 using Re.C.IR;
@@ -46,21 +47,33 @@ public partial class CodeGenerator(LLVMContext ctx)
         }
 
         // Then, generate each code block //
-        foreach(var block in function.Blocks)
-        {
-            var llvmBlock = LLVMBlocks[block];
-            
-            CTX.Builder.ClearInsertionPosition();
-            CTX.Builder.PositionAtEnd(llvmBlock);
-
-            foreach(var instruction in block.Instructions)
-            {
-                GenerateInstruction(instruction);
-            }
-        }
+        using var visited = Temporary.HashSet<InstructionBlock>();
+        Visit(visited.Value, function.EntryBlock);
 
         // Restore the context state //
         CTX.ReC.Functions.Exit();
+    }
+
+    private void Visit(HashSet<InstructionBlock> visited, InstructionBlock block)
+    {
+        if(visited.Contains(block))
+            return;
+
+        visited.Add(block);
+
+        foreach(var antecedent in block.Antecedents)
+            Visit(visited, antecedent);
+
+        var llvmBlock = LLVMBlocks[block];
+            
+        CTX.Builder.ClearInsertionPosition();
+        CTX.Builder.PositionAtEnd(llvmBlock);
+
+        foreach(var instruction in block.Instructions)
+            GenerateInstruction(instruction);
+        
+        foreach(var consequent in block.Consequents)
+            Visit(visited, consequent);
     }
 
     private LLVMValueRef ValueOf(ValueID id)
@@ -96,9 +109,11 @@ public partial class CodeGenerator(LLVMContext ctx)
             InstructionKind.StructLiteral str => GenerateStruct(str, inst),
             InstructionKind.Unary un => GenerateUnary(un, inst),
 
+            InstructionKind.Leak leak => Option.Some(ValueOf(leak.Value)),
+
             _ => throw Unimplemented
         };
 
-        LLVMValues.Add(inst.ValueID.Unwrap(), optval.If(inst.Type.IsNone).Or(NoneLiteral));
+        LLVMValues.Add(inst.ValueID.Unwrap(), optval.If(!inst.Type.IsNone).Or(NoneLiteral));
     }
 }

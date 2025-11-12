@@ -88,6 +88,10 @@ public partial class IRGenerator(RecContext CTX)
             case ErrorStatement x:
                 GenerateError(x);
                 return;
+
+            case BreakStructStatement x:
+                GenerateBreakStruct(x);
+                return;
             
             case Expression x:
                 Generate(x);
