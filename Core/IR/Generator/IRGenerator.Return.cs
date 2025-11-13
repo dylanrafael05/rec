@@ -10,9 +10,9 @@ public partial class IRGenerator
 
         if(!val.IsSome(out var id))
         {
-            id = Builder.BuildInst(context, new InstructionKind.NoneLiteral());
+            id = Builder.Build(context, new InstructionKind.NoneLiteral());
         }
         
-        Builder.BuildInst(context, new InstructionKind.Return(id));
+        Builder.Build(context, new InstructionKind.Return(id));
     }
 }

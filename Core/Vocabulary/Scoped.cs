@@ -22,4 +22,29 @@ public class Scoped<T>(T init)
 
         return cur;
     }
+
+    /// <summary>
+    /// A variant of Scoped which does not necessarily contain a valid value.
+    /// </summary>
+    public class Optional
+    {
+        public Option<T> Current { get; private set; } = Option.None;
+        private Stack<T> Stack { get; } = [];
+
+        public void Enter(T value)
+        {
+            if(Current.IsSome(out var cur))
+                Stack.Push(cur);
+
+            Current = Option.Some(value);
+        }
+
+        public T Exit()
+        {
+            var cur = Current.Unwrap();
+            Current = Stack.Count is 0 ? Option.Some(Stack.Pop()) : Option.None;
+
+            return cur;
+        }
+    }
 }

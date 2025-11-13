@@ -8,7 +8,7 @@ public class ReturnsAnalysis(RecContext ctx) : IRPass(ctx)
     {
         // If our last block does not always return,
         // either report an error or insert a return
-        if(!fn.FinalBlock.Returns)
+        if(!fn.FinalBlock.DefinitelyReturns)
         {
             if(!fn.Function.Type.Return.IsNone)
             {
@@ -21,9 +21,9 @@ public class ReturnsAnalysis(RecContext ctx) : IRPass(ctx)
                 var span = SourceSpan.Generated(fn.Function.DefinitionSource);
 
                 Builder.PositionAtEnd(fn.FinalBlock);
-                var none = Builder.BuildInst(CTX.BuiltinTypes.None, span,
+                var none = Builder.Build(CTX.BuiltinTypes.None, span,
                     new InstructionKind.NoneLiteral());
-                Builder.BuildInst(CTX.BuiltinTypes.None, span, 
+                Builder.Build(CTX.BuiltinTypes.None, span, 
                     new InstructionKind.Return(none));
             }
         }
@@ -33,7 +33,7 @@ public class ReturnsAnalysis(RecContext ctx) : IRPass(ctx)
     {
         // Check if all antecedents always return
         var returns = block.Antecedents.Count > 0 && 
-            block.Antecedents.All(x => x.Returns);
+            block.Antecedents.All(x => x.DefinitelyReturns);
 
         // If we have a 'return' instruction, we always return
         foreach(var inst in block.Instructions)
@@ -46,6 +46,6 @@ public class ReturnsAnalysis(RecContext ctx) : IRPass(ctx)
         }
 
         // Update our state
-        block.Returns = returns;
+        block.DefinitelyReturns = returns;
     }
 }

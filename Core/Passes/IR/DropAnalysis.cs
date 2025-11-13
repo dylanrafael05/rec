@@ -23,21 +23,29 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
         
         block.DropAtEnd.Remove(value);
 
-        // Throw error on use after move
-        if(emitErrors && block.MovedValues.TryGetValue(value, out var moveLocation))
+        // Throw error on use after move 
+        // (note that it is illegal to move in a potentially recursive block)
+        if(emitErrors)
         {
-            // TODO: create a ValueRef class which wraps a ValueID and a SourceSpan
-            //       denoting the exact position where it was referenced
-            CTX.Diagnostics.AddError(
-                mover.Span,
-                Errors.UseAfterMove());
+            var moved = block.MovedValues.TryGetValue(value, out var moveLocation);
+            if(!moved)
+                moveLocation = mover.Span;
 
-            // TODO: class for 'infos' / better way to handle this
-            CTX.Diagnostics.AddInfo(
-                moveLocation,
-                $"Value was moved from here");
+            if(block.CanRecurse || moved)
+            {
+                // TODO: create a ValueRef class which wraps a ValueID and a SourceSpan
+                //       denoting the exact position where it was referenced
+                CTX.Diagnostics.AddError(
+                    mover.Span,
+                    Errors.UseAfterMove());
 
-            return;
+                // TODO: class for 'infos' / better way to handle this
+                CTX.Diagnostics.AddInfo(
+                    moveLocation,
+                    $"Value was moved from here");
+
+                return;
+            }
         }
 
         // Mark as moved if not leaked and not copyable

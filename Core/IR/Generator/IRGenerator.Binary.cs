@@ -15,7 +15,7 @@ public partial class IRGenerator
         var lhs = Generate(context.LHS);
         var rhs = Generate(context.RHS);
 
-        return Builder.BuildInst(context, new InstructionKind.Binary(lhs, rhs, context.Operator));
+        return Builder.Build(context, new InstructionKind.Binary(lhs, rhs, context.Operator));
     }
 
     private ValueID CompileAnd(BinaryExpression context)
@@ -28,20 +28,18 @@ public partial class IRGenerator
         var onTrue = Function.NewBlock();
         var final = Function.NewBlock();
 
-        Builder.BuildInst(CTX.BuiltinTypes.None, context.Span, 
-            new InstructionKind.Branch(lhs, onTrue, final));
+        Builder.TryBuildBranch(context.Span, lhs, onTrue, final);
         
         // Otherwise, compute rhs
         Builder.PositionAtEnd(onTrue);
         var rhs = Generate(context.RHS);
         onTrue = Builder.CurrentBlock.UnwrapNull();
-        Builder.BuildInst(CTX.BuiltinTypes.None, context.Span, 
-            new InstructionKind.Goto(final));
+        Builder.TryBuildGoto(context.Span, final);
 
         // Return a phi instruction
         Builder.PositionAtEnd(final);
 
-        return Builder.BuildInst(context, 
+        return Builder.Build(context, 
             new InstructionKind.Phi([
                 new(beginBlock, lhs),
                 new(onTrue, rhs),
@@ -58,20 +56,18 @@ public partial class IRGenerator
         var onFalse = Function.NewBlock();
         var final = Function.NewBlock();
 
-        Builder.BuildInst(CTX.BuiltinTypes.None, context.Span, 
-            new InstructionKind.Branch(lhs, final, onFalse));
+        Builder.TryBuildBranch(context.Span, lhs, final, onFalse);
         
         // Otherwise, compute rhs
         Builder.PositionAtEnd(onFalse);
         var rhs = Generate(context.RHS);
         onFalse = Builder.CurrentBlock.UnwrapNull();
-        Builder.BuildInst(CTX.BuiltinTypes.None, context.Span, 
-            new InstructionKind.Goto(final));
+        Builder.TryBuildGoto(context.Span, final);
 
         // Return a phi instruction
         Builder.PositionAtEnd(final);
 
-        return Builder.BuildInst(context, 
+        return Builder.Build(context, 
             new InstructionKind.Phi([
                 new(beginBlock, lhs),
                 new(onFalse, rhs),

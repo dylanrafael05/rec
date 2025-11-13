@@ -7,6 +7,6 @@ public partial class IRGenerator
     private ValueID GenerateCast(CastExpression context)
     {
         var inner = Generate(context.Value);
-        return Builder.BuildInst(context, new InstructionKind.BuiltinCast(inner));
+        return Builder.Build(context, new InstructionKind.BuiltinCast(inner));
     }
 }

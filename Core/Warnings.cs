@@ -8,4 +8,7 @@ public static class Warnings
 {
     public static string UnnecessaryCast()
         => $"Cast is unnecessary.";
+
+    public static string UnreachableCode()
+        => $"Code is unreachable.";
 }

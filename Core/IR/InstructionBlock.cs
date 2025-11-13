@@ -14,7 +14,7 @@ public class InstructionBlock(IRFunction function, string name) : IVisitable
     public IRFunction Function { get; } = function;
     public string Name { get; } = name;
 
-    public bool Returns { get; set; }
+    public bool DefinitelyReturns { get; set; }
 
     public Dictionary<ValueID, DropMethod> DropAtEnd { get; } = [];
     public List<(Instruction, ValueID, DropMethod)> DropBeforeInstruction { get; } = [];
@@ -27,11 +27,16 @@ public class InstructionBlock(IRFunction function, string name) : IVisitable
     private readonly List<InstructionBlock> antecedents = [];
     private readonly List<InstructionBlock> consequents = [];
     private readonly List<Instruction> instructions = [];
+    private readonly MultiSet<InstructionBlock> allAntecedents = [];
     
     public int InstructionCount => instructions.Count;
     public IReadOnlyList<Instruction> Instructions => instructions;
     public IReadOnlyList<InstructionBlock> Antecedents => antecedents;
     public IReadOnlyList<InstructionBlock> Consequents => consequents;
+    public IReadOnlyCollection<InstructionBlock> AllAntecedents => allAntecedents;
+    public bool CanRecurse => allAntecedents.Contains(this);
+
+    public bool IsComplete => instructions.Count > 0 && instructions[^1].Kind.IsTerminal;
 
     /// <summary>
     /// Insert the given instruction at the provided index.
@@ -51,6 +56,9 @@ public class InstructionBlock(IRFunction function, string name) : IVisitable
         {
             consequents.Add(blk);
             blk.antecedents.Add(this);
+
+            using var visited = Temporary.HashSet<InstructionBlock>();
+            CalculateAllAntecedents(visited.Value, blk, blk, remove: false);
         }
 
         return id;
@@ -70,12 +78,43 @@ public class InstructionBlock(IRFunction function, string name) : IVisitable
         {
             consequents.Remove(blk);
             blk.antecedents.Remove(this);
+
+            using var visited = Temporary.HashSet<InstructionBlock>();
+            CalculateAllAntecedents(visited.Value, blk, blk, remove: true);
         }
 
         instructions.RemoveAt(index);
     }
 
-    public override string ToString()
+    /// <summary>
+    /// Recursively update the 'all antecedents' variable for some block
+    /// </summary>
+    private static void CalculateAllAntecedents(
+        HashSet<InstructionBlock> visited, 
+        InstructionBlock start, 
+        InstructionBlock block, 
+        bool remove)
+    {
+        if(visited.Contains(block))
+            return;
+
+        visited.Add(block);
+        foreach(var antecedent in block.Antecedents)
+        {
+            if(remove)
+            {
+                start.allAntecedents.Remove(antecedent);
+            }
+            else 
+            {
+                start.allAntecedents.Add(antecedent);
+            }
+
+            CalculateAllAntecedents(visited, start, antecedent, remove);
+        }
+    }
+
+    public string ToIRString()
     {
         var sb = new StringBuilder();
         sb.Append(Name);

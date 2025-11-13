@@ -13,13 +13,13 @@ public partial class IRGenerator
             return GenerateAsLHS(context.Inner);
 
         var val = Generate(context.Inner);
-        return Builder.BuildInst(context, new InstructionKind.Local(val));
+        return Builder.Build(context, new InstructionKind.Local(val));
     }
 
     private ValueID GenerateDeref(DerefExpression context)
     {
         var inner = Generate(context.Inner);
-        return Builder.BuildInst(context, new InstructionKind.Load(inner));
+        return Builder.Build(context, new InstructionKind.Load(inner));
     }
 
     private ValueID GenerateDerefAsLHS(DerefExpression context)

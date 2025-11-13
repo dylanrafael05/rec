@@ -11,6 +11,6 @@ public partial class IRGenerator
             select Generate(f)
         ];
 
-        return Builder.BuildInst(context, new InstructionKind.StructLiteral(fields));
+        return Builder.Build(context, new InstructionKind.StructLiteral(fields));
     }
 }

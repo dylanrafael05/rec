@@ -9,9 +9,11 @@ public partial class IRGenerator(RecContext CTX)
     public IRBuilder Builder => CTX.IRBuilder;
     public IRFunction Function => CTX.Functions.Current.UnwrapNull().IRFunction.Unwrap();
 
+    public Scoped<LoopBlocks>.Optional Loops { get; } = new();
+
     public void LinkVariable(Variable var, ValueID id)
     {
-        Function.BindVariable(var, Builder.BuildInst(
+        Function.BindVariable(var, Builder.Build(
             RecType.Pointer(var.Type), 
             var.DefinitionLocation, 
             new InstructionKind.Local(id)));
@@ -37,7 +39,7 @@ public partial class IRGenerator(RecContext CTX)
         // as assignable
         for(var i = 0; i < function.ArgumentCount; i++)
         {
-            var arg = Builder.BuildInst(
+            var arg = Builder.Build(
                 function.Type.Parameters[i],
                 function.ArgumentDefs[i].UnwrapNull().DefinitionLocation,
                 new InstructionKind.Argument(i)
@@ -92,6 +94,14 @@ public partial class IRGenerator(RecContext CTX)
             case BreakStructStatement x:
                 GenerateBreakStruct(x);
                 return;
+
+            case BreakStatement x:
+                GenerateBreak(x);
+                return;
+
+            case ContinueStatement x:
+                GenerateContinue(x);
+                return;
             
             case Expression x:
                 Generate(x);
@@ -124,6 +134,7 @@ public partial class IRGenerator(RecContext CTX)
             TempAddressOfExpression x => GenerateTempAddrOf(x),
             DotExpression x => GenerateDot(x),
             StructExpression x => GenerateStruct(x),
+            SizeofExpression x => GenerateSizeof(x),
             ErrorExpression x => GenerateError(x),
 
             _ => throw UnimplementedBecause($"context type {context.GetType()}")

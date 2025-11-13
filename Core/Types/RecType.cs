@@ -24,6 +24,8 @@ public abstract class RecType : IEquatable<RecType>, IVisitable
     [FieldOption(PrintLevel.Verbose)] 
     public bool IsArithmetic => IsInteger || IsFloat;
     [FieldOption(PrintLevel.Hidden)] 
+    public virtual bool IsSized => true;
+    [FieldOption(PrintLevel.Hidden)] 
     public bool ContainsError => this.Contains(static t => t is ErrorType);
     [FieldOption(PrintLevel.Verbose)] 
     public bool IsNone => this is NoneType;

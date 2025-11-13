@@ -79,6 +79,9 @@ public static class Errors
     public static string InvalidBreak(RecType target)
         => $"Cannot 'break' from non-struct type {target}";
     
+    public static string SizeofUnsizedType(RecType target)
+        => $"Cannot take the size of a non-sized type {target}";
+    
     public static string CallToNonFunctionType(RecType type)
         => $"Cannot call a non-function value of type {type}";
     public static string InvalidCallToFunction(FunctionType fn, IEnumerable<RecType> types)

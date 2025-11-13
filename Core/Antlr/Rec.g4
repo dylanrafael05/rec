@@ -60,6 +60,8 @@ Uninit   : 'uninit';
 As       : 'as';
 Cast     : 'cast';
 External : 'external';
+Sizeof   : 'sizeof';
+Typeof   : 'typeof';
 
 Identifier : LETTER+ (DIGIT | LETTER)*;
 
@@ -340,11 +342,16 @@ variableReference
     | {InAsBlock}? Self
     ;
 
+sizeofExpression
+    : Sizeof '(' TargetType=typename ')'
+    ;
+
 term
     : literal         
     | variableReference
     | '(' expression ')'     
     | structExpression
+    | sizeofExpression
     ;
 
 literal 

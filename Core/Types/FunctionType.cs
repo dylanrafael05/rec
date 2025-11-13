@@ -26,6 +26,7 @@ public class FunctionType : RecType
 
     public override string Name => GetName(t => t.Name);
     public override string FullName => GetName(t => t.FullName);
+    public override bool IsSized => false;
 
     public override void PropogateVisitor<V>(V visitor)
     {

@@ -1,5 +1,6 @@
 using Re.C.Definitions;
 using Re.C.Syntax;
+using Re.C.Types;
 
 namespace Re.C.IR;
 
@@ -9,6 +10,7 @@ public abstract record InstructionKind
     {}
     public virtual void GetArguments(IList<ValueID> values)
     {}
+    public virtual bool IsTerminal => false;
 
     public record NoneLiteral : InstructionKind
     {
@@ -46,11 +48,17 @@ public abstract record InstructionKind
                 values.Add(f);
         }
     }
-    
+    public record Sizeof(RecType Type) : InstructionKind
+    {
+        public override string ToString()
+            => $"sizeof {Type}";
+    }
+
     /// <summary>
     /// "leak" is a special instruction which signals that the value returned by this
     /// instruction can be moved from multiple times (that is, the value is 'leaked' from
-    /// the perspective of the move checker).
+    /// the perspective of the move checker). It is used to implement the 'break' expression
+    /// syntax.
     /// </summary>
     public record Leak(ValueID Value) : InstructionKind
     {
@@ -181,6 +189,8 @@ public abstract record InstructionKind
         {
             blocks.Add(Target);
         }
+
+        public override bool IsTerminal => true;
     }
     public record Return(ValueID Value) : InstructionKind
     {
@@ -190,6 +200,8 @@ public abstract record InstructionKind
         {
             values.Add(Value);
         }
+
+        public override bool IsTerminal => true;
     }
     public record Branch(ValueID Cond, InstructionBlock WhenTrue, InstructionBlock WhenFalse) : InstructionKind
     {
@@ -205,6 +217,8 @@ public abstract record InstructionKind
         {
             values.Add(Cond);
         }
+
+        public override bool IsTerminal => true;
     }
     
     

@@ -12,15 +12,13 @@ public partial class IRGenerator
         var @else = Function.NewBlock();
         var end = Function.NewBlock();
 
-        Builder.BuildInst(CTX.BuiltinTypes.None, context.Condition.Span, 
-            new InstructionKind.Branch(cond, then, @else));
+        Builder.TryBuildBranch(context.Condition.Span, cond, then, @else);
 
         // 'then' block
         Builder.PositionAtEnd(then);
 
         Generate(context.Then);
-        Builder.BuildInst(CTX.BuiltinTypes.None, context.Condition.Span,
-            new InstructionKind.Goto(end));
+        Builder.TryBuildGoto(context.Condition.Span, end);
 
         // 'else' block (or none)
         Builder.PositionAtEnd(@else);
@@ -34,8 +32,7 @@ public partial class IRGenerator
             Generate(context.Else.AsT1);
         }
 
-        Builder.BuildInst(CTX.BuiltinTypes.None, context.Condition.Span,
-            new InstructionKind.Goto(end));
+        Builder.TryBuildGoto(context.Condition.Span, end);
 
         // 'end' block (empty but required to be in valid state)
         Builder.PositionAtEnd(end);

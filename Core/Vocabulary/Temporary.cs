@@ -44,6 +44,9 @@ public static class Temporary
         => TempCollections<T, List<T>>.Get();
     public static TempCollections<T, HashSet<T>>.Disposable HashSet<T>()
         => TempCollections<T, HashSet<T>>.Get();
+    public static TempCollections<T, MultiSet<T>>.Disposable MultiSet<T>()
+        where T : notnull
+        => TempCollections<T, MultiSet<T>>.Get();
     public static TempCollections<KeyValuePair<K, V>, Dictionary<K, V>>.Disposable Dictionary<K, V>()
         where K : notnull
         => TempCollections<KeyValuePair<K, V>, Dictionary<K, V>>.Get();

@@ -108,6 +108,7 @@ public partial class CodeGenerator(LLVMContext ctx)
             InstructionKind.StringLiteral str => GenerateString(str, inst),
             InstructionKind.StructLiteral str => GenerateStruct(str, inst),
             InstructionKind.Unary un => GenerateUnary(un, inst),
+            InstructionKind.Sizeof sz => GenerateSizeof(sz, inst),
 
             InstructionKind.Leak leak => Option.Some(ValueOf(leak.Value)),
 

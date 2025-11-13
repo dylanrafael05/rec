@@ -35,6 +35,11 @@ public class IRFunction(Function function)
         return result;
     }
 
+    public void CleanUnreachableBlocks()
+    {
+        blocks.RemoveAll(b => !b.AllAntecedents.Contains(EntryBlock));
+    }
+
     public void SetFinalBlock(InstructionBlock block)
     {
         // Debug assertion; make sure nothing fishy is going on!
@@ -53,7 +58,7 @@ public class IRFunction(Function function)
         sb.AppendLine($"; Definition of {Function.FullName}");
 
         foreach(var block in Blocks)
-            sb.AppendLine($"{block}");
+            sb.AppendLine(block.ToIRString());
 
         return sb.ToString();
     }

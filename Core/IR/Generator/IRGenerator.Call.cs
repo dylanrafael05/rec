@@ -16,7 +16,7 @@ public partial class IRGenerator
 
         Assert(fnType is FunctionType);
 
-        return Builder.BuildInst(context, 
+        return Builder.Build(context, 
             new InstructionKind.Call(fnValue, args));
     }
 }
