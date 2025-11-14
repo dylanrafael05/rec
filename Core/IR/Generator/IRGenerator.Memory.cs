@@ -23,5 +23,5 @@ public partial class IRGenerator
     }
 
     private ValueID GenerateDerefAsLHS(DerefExpression context)
-        => Generate(context.Inner);
+        => Builder.BuildNoop(context, Generate(context.Inner));
 }

@@ -26,6 +26,10 @@ public abstract class RecType : IEquatable<RecType>, IVisitable
     [FieldOption(PrintLevel.Hidden)] 
     public virtual bool IsSized => true;
     [FieldOption(PrintLevel.Hidden)] 
+    public virtual bool IsDereferencable => false;
+    [FieldOption(PrintLevel.Hidden)] 
+    public virtual Option<RecType> Deref => Option.None;
+    [FieldOption(PrintLevel.Hidden)] 
     public bool ContainsError => this.Contains(static t => t is ErrorType);
     [FieldOption(PrintLevel.Verbose)] 
     public bool IsNone => this is NoneType;
@@ -54,4 +58,6 @@ public abstract class RecType : IEquatable<RecType>, IVisitable
     /// </summary>
     public static PointerType Pointer(RecType type)
         => new() { Pointee = type };
+    public static ReferenceType Reference(RecType type)
+        => new() { Referee = type };
 }

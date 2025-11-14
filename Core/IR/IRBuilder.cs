@@ -26,6 +26,15 @@ public class IRBuilder(RecContext CTX)
         var instruction = new Instruction(type, span, kind);
         return CurrentBlock.UnwrapNull().InsertInstruction(CurrentIndex++, instruction);
     }
+
+    public ValueID BuildNoop(BoundSyntax expr, ValueID inner)
+    {
+        var innerInstruction = CurrentBlock.UnwrapNull().Function.InstructionByValue(inner);
+        return Build(
+            innerInstruction.Type,
+            expr.Span,
+            new InstructionKind.Noop(inner));
+    }
     
     /// <summary>
     /// Build an instruction, panicking if the current block is complete.

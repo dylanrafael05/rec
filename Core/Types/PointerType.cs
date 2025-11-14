@@ -12,6 +12,9 @@ public class PointerType : RecType
 
     public override string Name => $"*{Pointee.Name}";
     public override string FullName => $"*{Pointee.FullName}";
+    
+    public override bool IsDereferencable => true;
+    public override Option<RecType> Deref => Option.Some(Pointee);
 
     public override void PropogateVisitor<V>(V visitor)
         => visitor.Visit(Pointee);

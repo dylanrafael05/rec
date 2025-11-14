@@ -110,6 +110,8 @@ public partial class CodeGenerator(LLVMContext ctx)
             InstructionKind.Unary un => GenerateUnary(un, inst),
             InstructionKind.Sizeof sz => GenerateSizeof(sz, inst),
 
+            // Special cases; noop and leak have no impact on codegen
+            InstructionKind.Noop noop => Option.Some(ValueOf(noop.Value)),
             InstructionKind.Leak leak => Option.Some(ValueOf(leak.Value)),
 
             _ => throw Unimplemented

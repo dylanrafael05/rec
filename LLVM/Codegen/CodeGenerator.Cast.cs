@@ -28,7 +28,7 @@ public partial class CodeGenerator
         if(t1.IsInteger && t2.IsInteger && s1 == s2)
             return Option.Some(value);
 
-        if(t1 is PointerType && t2 is PointerType)
+        if(t1 is PointerType or ReferenceType && t2 is PointerType or ReferenceType)
             return Option.Some(value);
 
         // Meaningful casts //

@@ -11,7 +11,7 @@ public partial class CodeGenerator
         var val = ValueOf(fc.Ptr);
         var ty = CurrentFunction.InstructionByValue(fc.Ptr).Type;
         return Option.Some(CTX.Builder.BuildStructGEP2(
-            CTX.TypeCompiler.Compile(ty.UnwrapAs<PointerType>().Pointee), 
+            CTX.TypeCompiler.Compile(ty.Deref.Unwrap()), 
             val, 
             (uint)fc.Index));
     }

@@ -62,6 +62,10 @@ public class RecContext
     /// The object which tracks the associations between types and methods.
     /// </summary>
     public TypeAssociations TypeAssociations { get; }
+    /// <summary>
+    /// Tracker for whether or not we are in an 'unsafe' block.
+    /// </summary>
+    public SimpleScopedBool UnsafeScope { get; } = new();
 
     /// <summary>
     /// The diagnostic bag used for compilation. All diagnostics

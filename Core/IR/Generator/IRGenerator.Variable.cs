@@ -6,12 +6,14 @@ public partial class IRGenerator
 {
     private ValueID GenerateVariable(VariableExpression context)
     {
-        var ptr = Function.VariableMappings.Seconds[context.Variable];
+        var ptr = Function.VariableMappings.Get(context.Variable);
         return Builder.Build(context, new InstructionKind.Load(ptr));
     }
 
     private ValueID GenerateVariableAsLHS(VariableExpression context)
     {
-        return Function.VariableMappings.Seconds[context.Variable];
+        return Builder.BuildNoop(
+            context,
+            Function.VariableMappings.Get(context.Variable));
     }
 }

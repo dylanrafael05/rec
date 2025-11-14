@@ -77,7 +77,7 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
         var selfType = context.fnSelfDefine() switch
         {
             RecParser.FnDefineSelfContext => CTX.Scopes.Current.AssociatedType.UnwrapNull(),
-            RecParser.FnDefineSelfPtrContext => RecType.Pointer(CTX.Scopes.Current.AssociatedType.UnwrapNull()),
+            RecParser.FnDefineSelfPtrContext => RecType.Reference(CTX.Scopes.Current.AssociatedType.UnwrapNull()),
             
             _ => null
         };
@@ -146,7 +146,8 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
             InnerScope = innerScope,
             ArgumentDefs = argDefs,
 
-            IsExternal = context.External() is not null,
+            IsExternal = context.External(0) is not null,
+            IsUnsafe = context.Unsafe(0) is not null,
             HasReceiver = selfType is not null,
             
             DefinitionLocation = context.CalculateSourceSpan(),

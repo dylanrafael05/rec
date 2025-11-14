@@ -86,4 +86,6 @@ public static class Errors
         => $"Cannot call a non-function value of type {type}";
     public static string InvalidCallToFunction(FunctionType fn, IEnumerable<RecType> types)
         => $"Invalid call; expected ({string.Join(", ", fn.Parameters)}), got ({string.Join(", ", types)})";
+    public static string UnsafeOperation()
+        => $"Attempt to perform unsafe operation in safe context";
 }

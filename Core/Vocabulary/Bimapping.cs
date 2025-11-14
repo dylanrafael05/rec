@@ -6,6 +6,9 @@ public interface IReadOnlyBimapping<A, B> : ICollection<(A, B)>
 {
     public IReadOnlyDictionary<B, A> Firsts { get; }
     public IReadOnlyDictionary<A, B> Seconds { get; }
+
+    public A Get(B value);
+    public B Get(A value);
     
     public bool ContainsFirst(A key);
     public bool ContainsSecond(B key);
@@ -23,6 +26,9 @@ public class Bimapping<A, B> : IReadOnlyBimapping<A, B>
 
     public IReadOnlyDictionary<B, A> Firsts => bToA;
     public IReadOnlyDictionary<A, B> Seconds => aToB;
+
+    public A Get(B value) => Firsts[value];
+    public B Get(A value) => Seconds[value];
 
     public int Count => aToB.Count;
     public bool IsReadOnly => false;

@@ -1,4 +1,5 @@
 mod example
+{
     struct Type
     {
         x isize
@@ -8,10 +9,10 @@ mod example
     {
         return new Type
         {
-            x = 0 cast(isize),
+            x = 0isize,
         };
     }
-end mod
+}
 
 fn use_type() example::Type
 {

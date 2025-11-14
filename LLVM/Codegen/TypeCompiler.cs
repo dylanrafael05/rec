@@ -25,6 +25,7 @@ public class TypeCompiler(LLVMContext ctx)
             // Simple to compile types
             NoneType => CTX.LLVM.VoidType,
             PointerType => LLVMTypeRef.CreatePointer(CTX.LLVM.VoidType, 0),
+            ReferenceType => LLVMTypeRef.CreatePointer(CTX.LLVM.VoidType, 0),
 
             // Complex to compile types
             FunctionType f => ImplementCompileFunction(f),

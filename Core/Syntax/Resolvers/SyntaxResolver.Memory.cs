@@ -14,7 +14,7 @@ public partial class SyntaxResolver
         if(context.Op is RecParser.DereferenceOperatorContext)
         {
             // Dereference operator //
-            if(inner.Type is not PointerType { Pointee: var pointee })
+            if(!inner.Type.IsDereferencable)
             {
                 CTX.Diagnostics.AddError(
                     span, Errors.InvalidDereference(inner.Type));
@@ -22,10 +22,15 @@ public partial class SyntaxResolver
                 return BoundSyntax.ErrorExpression(span, CTX);
             }
 
+            if(inner.Type is PointerType)
+            {
+                CheckUnsafe(context);
+            }
+
             return new DerefExpression
             {
                 Span = span,
-                Type = pointee,
+                Type = inner.Type.Deref.Unwrap(),
                 Inner = inner
             };
         }
@@ -43,7 +48,7 @@ public partial class SyntaxResolver
             return new AddressOfExpression
             {
                 Span = span,
-                Type = RecType.Pointer(inner.Type),
+                Type = RecType.Reference(inner.Type),
                 Inner = inner
             };
         }

@@ -33,7 +33,6 @@ MLComment : '/*' .*? '*/' -> skip;
 
 Var      : 'var';
 Let      : 'let';
-End      : 'end';
 If       : 'if';
 Else     : 'else';
 While    : 'while';
@@ -41,7 +40,6 @@ Fn       : 'fn';
 Continue : 'continue';
 Break    : 'break';
 Defer    : 'defer';
-Type     : 'type';
 Struct   : 'struct';
 Template : 'template';
 New      : 'new';
@@ -49,23 +47,22 @@ Return   : 'return';
 For      : 'for';
 Mod      : 'mod';
 Use      : 'use';
-Auto     : 'auto';
 Self     : 'self';
 And      : 'and';
 Not      : 'not';
 Or       : 'or';
 True     : 'true';
 False    : 'false';
-Uninit   : 'uninit';
 As       : 'as';
 Cast     : 'cast';
 External : 'external';
 Sizeof   : 'sizeof';
 Typeof   : 'typeof';
+Unsafe   : 'unsafe';
 
 Identifier : LETTER+ (DIGIT | LETTER)*;
 
-Integer : DIGIT+ (('u'|'i')('8'|'16'|'32'|'64'|'size')|'f32'|'f64')?;
+Integer : DIGIT+ (('u'|'i')('8'|'16'|'32'|'64'|'size'|'z')|'f32'|'f64')?;
 Float   : DIGIT* (DIGIT '.' | '.' DIGIT) DIGIT* ('f32'|'f64')?;
 String  : '"' CHAR* '"';
 
@@ -98,7 +95,6 @@ program
 topLevelStatement
     : fnDefine
     | { !InAsBlock }? structDefine
-    | { !InAsBlock }? aliasDefine
     | { !InAsBlock }? letStatement
     | { !InAsBlock }? modStatement
     | { !InAsBlock }? asStatement
@@ -113,8 +109,10 @@ locals [
 @after { AsBlockDepth--; }
     : {AsBlockDepth <= 1}? 
       Mod ModuleIdent=Identifier? As typename
-        Substatements+=topLevelStatement*
-      (End Mod)?
+      (
+        '{' Substatements+=topLevelStatement* '}'
+        | Substatements+=topLevelStatement+ EOF
+      )
     ;
 
 fullIdentifier
@@ -125,8 +123,10 @@ locals [
     Re.C.Definitions.Scope Scope = null
 ]
     : Mod ModuleIdent=fullIdentifier
-        Substatements+=topLevelStatement*
-      (End Mod)?
+      (
+        '{' Substatements+=topLevelStatement* '}'
+        | Substatements+=topLevelStatement+ EOF
+      )
     ;
 
 useStatement
@@ -160,7 +160,7 @@ fnArgumentDefine
 
 fnSelfDefine
     : { InAsBlock }? Self      #FnDefineSelf
-    | { InAsBlock }? '*' Self  #FnDefineSelfPtr
+    | { InAsBlock }? '&' Self  #FnDefineSelfPtr
     ;
 
 fnDefine
@@ -169,17 +169,13 @@ locals [
     Re.C.Syntax.Block BoundBody = null
 ]
     : templateHeader? 
-      External? Fn Name=Identifier 
+      (External | Unsafe)* Fn Name=Identifier 
       '('( 
         ((fnSelfDefine ',')? Args+=fnArgumentDefine (',' Args+=fnArgumentDefine)*) 
         | fnSelfDefine
       )?')'
       Ret=typename?
       Body=block?
-    ;
-
-aliasDefine
-    : Type Name=Identifier '=' typename
     ;
 
 // Statements //
@@ -193,9 +189,12 @@ statement
     | continueStatement ';'
     | breakStatement ';'
     | block
+    | unsafeBlock
     | expression ';'
     | breakStructStatement ';'
     ;
+
+unsafeBlock : Unsafe block;
 
 breakStructPart
     : Let Name=Identifier '=' Field=Identifier
@@ -257,6 +256,8 @@ typename
         #TypenameGeneric
     | '*' Base=typename 
         #TypenamePointer
+    | '&' Base=typename 
+        #TypenameReference
     | '[' Base=typename (';' Count=Integer)? ']' 
         #TypenameArray
     | Fn '(' (Args+=typenameFnArgs (',' Args+=typenameFnArgs)*)? ')' Ret=typename? 
@@ -345,6 +346,8 @@ variableReference
 sizeofExpression
     : Sizeof '(' TargetType=typename ')'
     ;
+    
+unsafeExpression : Unsafe '(' expression ')';
 
 term
     : literal         
@@ -352,6 +355,7 @@ term
     | '(' expression ')'     
     | structExpression
     | sizeofExpression
+    | unsafeExpression
     ;
 
 literal 

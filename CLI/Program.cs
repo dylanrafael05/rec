@@ -16,11 +16,16 @@ foreach (var arg in args)
     Console.WriteLine($"Adding source {source.Name}");
 }
 
-llvm.CompileAll();
-
-foreach (var diag in ctx.Diagnostics)
+try
 {
-    Console.WriteLine(diag.Format());
+    llvm.CompileAll();
+}
+finally
+{
+    foreach (var diag in ctx.Diagnostics)
+    {
+        Console.WriteLine(diag.Format());
+    }
 }
 
 Console.WriteLine(llvm.Module.PrintToString());

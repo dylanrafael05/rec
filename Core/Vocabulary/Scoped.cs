@@ -48,3 +48,22 @@ public class Scoped<T>(T init)
         }
     }
 }
+
+/// <summary>
+/// Represents an enterable and exitable scope. More efficient than Scoped<bool>.
+/// </summary>
+public class SimpleScopedBool
+{
+    private int count = 0;
+    public bool Current => count > 0;
+
+    public void Enter()
+    {
+        count++;
+    }
+
+    public void Exit()
+    {
+        count--;
+    }
+}

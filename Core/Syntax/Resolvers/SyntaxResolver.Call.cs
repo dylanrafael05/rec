@@ -36,6 +36,11 @@ public partial class SyntaxResolver
             }
             else 
             {
+                if(fn.IsUnsafe)
+                {
+                    CheckUnsafe(context);
+                }
+
                 callTargetExpr = new FunctionExpression
                 {
                     Span = identPT.SourceSpan,
@@ -83,13 +88,13 @@ public partial class SyntaxResolver
         // Allocate a temporary (or use actual reference when available)
         // if declared receiver type is pointer to actual receiver type
         if(hasReceiver 
-        && fnType.Parameters[0] is var pointer and PointerType { Pointee: var pointee }
-        && pointee == args[0].Type)
+        && fnType.Parameters[0] is var reference and ReferenceType { Referee: var referee }
+        && referee == args[0].Type)
         {
             args[0] = new TempAddressOfExpression
             {
                 Span = args[0].Span,
-                Type = pointer,
+                Type = reference,
                 Inner = args[0]
             };
         }

@@ -4,38 +4,41 @@ struct Movable
 }
 
 mod as Movable
-// TODO; improper syntax leads to crashes (adding '->' before return type)
-fn clone(m *Movable) Movable
 {
-    return new Movable 
-    {
-        x = m*.x,
-    };
-}
+    // TODO; improper syntax leads to crashes (adding '->' before return type)
+    // TODO; methods without receivers can be called like they have receivers
 
-fn take_x(m Movable) u64
-{
-    return m.x;
+    fn clone(&self) Movable
+    {
+        return new Movable 
+        {
+            x = self*.x,
+        };
+    }
+
+    fn take_x(self) u64
+    {
+        return self.x cast(u64);
+    }
 }
-end mod
 
 fn return_test() none
 {
     let mov = new Movable 
     {
-        x = 1usize,
+        x = 1uz,
     };
     let mov1 = mov.clone();
 
-    if mov.x == 1usize
+    if mov.x == 1uz
     {
         let mov2 = mov;
     }
 
     let mov3 = mov&;
 
-    let mov4 = mov1&;
-    let mov5 = mov4*;
+    let mov4 = mov1& cast(*Movable);
+    let mov5 = (mov4 cast(&Movable))*;
 
     let mov6 = mov1.take_x();
     let mov7 = mov1;

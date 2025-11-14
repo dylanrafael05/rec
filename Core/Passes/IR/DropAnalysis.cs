@@ -33,8 +33,6 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
 
             if(block.CanRecurse || moved)
             {
-                // TODO: create a ValueRef class which wraps a ValueID and a SourceSpan
-                //       denoting the exact position where it was referenced
                 CTX.Diagnostics.AddError(
                     mover.Span,
                     Errors.UseAfterMove());
@@ -103,11 +101,12 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
             //     ; and mark as moved if loading from pointer
             if(inst.Kind is InstructionKind.Load load)
             {
-                if(block.Function.VariableMappings.Contains(load.Ptr))
+                var ptrInst = block.Function.InstructionByValue(load.Ptr);
+                if(ptrInst.Kind is InstructionKind.Local)
                 {
                     TryMoveValue(block, inst, load.Ptr, throughPointer: true, emitErrors: false);
                 }
-                else if(!inst.Type.TriviallyCopyable)
+                else if(ptrInst.Type is ReferenceType && !inst.Type.TriviallyCopyable)
                 {
                     CTX.Diagnostics.AddError(
                         inst.Span,
