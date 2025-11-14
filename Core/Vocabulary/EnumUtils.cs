@@ -4,6 +4,15 @@ using System.Reflection;
 namespace Re.C.Vocabulary;
 
 /// <summary>
+/// An exception thrown when enum repr operations fail.
+/// </summary>
+[Serializable]
+public class EnumReprException : Exception
+{
+    public EnumReprException() {}
+}
+
+/// <summary>
 /// An attribute for storing the "repr" associated with an
 /// enum value. If this attribute is missing, repr methods
 /// will instead use the name of the enum value.
@@ -63,7 +72,7 @@ public static class EnumUtils
                 ));
             }
 
-            var throwIOE = Expression.Throw(Expression.New(typeof(InvalidOperationException)));
+            var throwIOE = Expression.Throw(Expression.New(typeof(EnumReprException)));
 
             // Compile the lambdas into functions and return them
             var toT = Expression.Lambda<Func<T, string>>(

@@ -88,4 +88,9 @@ public static class Errors
         => $"Invalid call; expected ({string.Join(", ", fn.Parameters)}), got ({string.Join(", ", types)})";
     public static string UnsafeOperation()
         => $"Attempt to perform unsafe operation in safe context";
+
+    public static string UnknownIntrinsic(string text)
+        => $"Unknown intrinsic '{text}'";
+    public static string BadIntrinsicTypes(string text, RecType[] types)
+        => $"Bad call to intrinsic '{text}' with arguments {string.Join(", ", types)}";
 }

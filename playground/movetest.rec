@@ -22,6 +22,20 @@ mod as Movable
     }
 }
 
+fn leak_test() none
+{
+    let from = new Movable 
+    {
+        x = 2uz
+    };
+
+    __intrinsic leak(from);
+    let t1 = from;
+    let t2 = from;
+
+    __intrinsic store_uninit(from& cast(*Movable), from);
+}
+
 fn return_test() none
 {
     let mov = new Movable 

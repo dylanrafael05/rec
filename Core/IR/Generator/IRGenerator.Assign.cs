@@ -9,6 +9,6 @@ public partial class IRGenerator
         var target = GenerateAsLHS(context.Target);
         var value = Generate(context.Value);
 
-        Builder.Build(context, new InstructionKind.Store(target, value));
+        Builder.Build(context, new InstructionKind.Store(target, value, false));
     }
 }

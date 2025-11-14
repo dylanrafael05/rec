@@ -18,6 +18,10 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
         bool throughPointer,
         bool emitErrors)
     {
+        // Ignore leaked values entirely //
+        if(block.LeakedValues.Contains(value))
+            return;
+
         var argInst = block.Function.InstructionByValue(value);
         var argType = throughPointer ? argInst.Type.UnwrapAs<PointerType>().Pointee : argInst.Type;
         
@@ -47,7 +51,7 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
         }
 
         // Mark as moved if not leaked and not copyable
-        if(!block.LeakedValues.Contains(value) && !argType.TriviallyCopyable)
+        if(!argType.TriviallyCopyable)
         {
             block.MovedValues.TryAdd(value, mover.Span);
         }
@@ -91,7 +95,7 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
             }
 
             // Stores; drop existing value before assigning
-            if(inst.Kind is InstructionKind.Store store)
+            if(inst.Kind is InstructionKind.Store store && !store.Uninit)
             {
                 block.DropBeforeInstruction.Add((
                     inst, store.Value, DropMethod.ThroughPointer));
@@ -118,6 +122,7 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
             if(inst.Kind is InstructionKind.Leak)
             {
                 block.LeakedValues.Add(inst.ValueID.Unwrap());
+                block.DropAtEnd.Remove(inst.ValueID.Unwrap());
             }
         }
 

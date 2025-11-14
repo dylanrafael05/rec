@@ -150,10 +150,10 @@ public abstract record InstructionKind
             values.Add(Ptr);
         }
     }
-    public record Store(ValueID Ptr, ValueID Value) : InstructionKind
+    public record Store(ValueID Ptr, ValueID Value, bool Uninit) : InstructionKind
     {
         public override string ToString()
-            => $"store {Ptr} <- {Value}";
+            => $"store {(Uninit ? "uninit " : "")}{Ptr} <- {Value}";
         public override void GetArguments(IList<ValueID> values)
         {
             values.Add(Ptr);

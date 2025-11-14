@@ -52,6 +52,12 @@ public class IRFunction(Function function)
         variables.Add(var, valueID);
     }
 
+    public void RebindVariable(Variable var, ValueID valueID)
+    {
+        variables.Remove(var);
+        variables.Add(var, valueID);
+    }
+
     public string ToIRString()
     {
         var sb = new StringBuilder();

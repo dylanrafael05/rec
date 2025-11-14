@@ -1,3 +1,6 @@
+using System.Collections.Immutable;
+using System.Runtime.CompilerServices;
+
 namespace Re.C;
 
 /// <summary>
@@ -25,5 +28,21 @@ public readonly partial record struct Identifier
     public static class Builtin
     {
         public static Identifier Self => Name("self");
+    }
+}
+
+/// <summary>
+/// A wrapper around a sequence of identifiers.
+/// </summary>
+public readonly record struct LongIdentifier(Seq<Identifier> Parts)
+{
+    public static LongIdentifier Create(params ReadOnlySpan<string> span)
+    {
+        var ary = new Identifier[span.Length];
+
+        for(int i = 0; i < span.Length; i++)
+            ary[i] = Identifier.Name(span[i]);
+
+        return new([.. ary]);
     }
 }

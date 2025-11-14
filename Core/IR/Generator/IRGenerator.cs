@@ -135,6 +135,7 @@ public partial class IRGenerator(RecContext CTX)
             DotExpression x => GenerateDot(x),
             StructExpression x => GenerateStruct(x),
             SizeofExpression x => GenerateSizeof(x),
+            IntrinsicExpression x => GenerateIntrinsic(x),
             ErrorExpression x => GenerateError(x),
 
             _ => throw UnimplementedBecause($"context type {context.GetType()}")

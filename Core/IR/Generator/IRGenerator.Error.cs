@@ -6,7 +6,7 @@ public partial class IRGenerator
 {
     public ValueID GenerateError(ErrorExpression context)
     {
-        return Builder.Build(context, new InstructionKind.Error());
+        return Builder.BuildError(context);
     }
     
     public void GenerateError(ErrorStatement context)

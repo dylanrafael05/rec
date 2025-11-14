@@ -35,6 +35,11 @@ public class IRBuilder(RecContext CTX)
             expr.Span,
             new InstructionKind.Noop(inner));
     }
+
+    public ValueID BuildError(BoundSyntax expr)
+    {
+        return Build(CTX.BuiltinTypes.Error, expr.Span, new InstructionKind.Error());
+    }
     
     /// <summary>
     /// Build an instruction, panicking if the current block is complete.

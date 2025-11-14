@@ -59,6 +59,7 @@ External : 'external';
 Sizeof   : 'sizeof';
 Typeof   : 'typeof';
 Unsafe   : 'unsafe';
+Intr     : '__intrinsic';
 
 Identifier : LETTER+ (DIGIT | LETTER)*;
 
@@ -347,7 +348,12 @@ sizeofExpression
     : Sizeof '(' TargetType=typename ')'
     ;
     
-unsafeExpression : Unsafe '(' expression ')';
+unsafeExpression 
+    : Unsafe '(' expression ')';
+
+intrinsicExpression 
+    : Intr  IntrinsicName=Identifier '(' (Args+=expression ',')* Args+=expression ')'
+    ;
 
 term
     : literal         
@@ -356,6 +362,7 @@ term
     | structExpression
     | sizeofExpression
     | unsafeExpression
+    | intrinsicExpression
     ;
 
 literal 

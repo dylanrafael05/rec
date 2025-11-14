@@ -2,7 +2,7 @@ using System.Collections;
 
 namespace Re.C.Vocabulary;
 
-public interface IReadOnlyBimapping<A, B> : ICollection<(A, B)>
+public interface IReadOnlyBimapping<A, B> : IReadOnlyCollection<(A, B)>
 {
     public IReadOnlyDictionary<B, A> Firsts { get; }
     public IReadOnlyDictionary<A, B> Seconds { get; }
