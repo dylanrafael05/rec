@@ -65,8 +65,8 @@ Typeof   : 'typeof';
 
 Identifier : LETTER+ (DIGIT | LETTER)*;
 
-Integer : DIGIT+;
-Float   : DIGIT* (DIGIT '.' | '.' DIGIT) DIGIT*;
+Integer : DIGIT+ (('u'|'i')('8'|'16'|'32'|'64'|'size')|'f32'|'f64')?;
+Float   : DIGIT* (DIGIT '.' | '.' DIGIT) DIGIT* ('f32'|'f64')?;
 String  : '"' CHAR* '"';
 
 Plus : '+';

@@ -8,22 +8,68 @@ namespace Re.C.Syntax.Resolvers;
 public partial class SyntaxResolver
 {
     /// <summary>
+    /// Create a numerical literal
+    /// </summary>
+    private BoundSyntax MakeNumber(SourceSpan span, string text, string defaultSpecial)
+    {
+        var value = text.AsSpan();
+        var specialStart = value.IndexOfAny(['i', 'u', 'f']);
+        var special = defaultSpecial.AsSpan();
+
+        if(specialStart is not -1)
+        {
+            value = value[..specialStart];
+            special = text.AsSpan(specialStart..);
+        }
+
+        var type = special switch
+        {
+            "u8" => CTX.BuiltinTypes.U8,
+            "u16" => CTX.BuiltinTypes.U16,
+            "u32" => CTX.BuiltinTypes.U32,
+            "u64" => CTX.BuiltinTypes.U64,
+            "usize" => CTX.BuiltinTypes.USize,
+            "i8" => CTX.BuiltinTypes.I8,
+            "i16" => CTX.BuiltinTypes.I16,
+            "i32" => CTX.BuiltinTypes.I32,
+            "i64" => CTX.BuiltinTypes.I64,
+            "isize" => CTX.BuiltinTypes.ISize,
+            "f32" => CTX.BuiltinTypes.F32,
+            "f64" => CTX.BuiltinTypes.F64,
+
+            _ => throw Unimplemented
+        };
+
+        return special[0] switch
+        {
+            'u' or 'i' => new IntLiteral
+            {
+                Span = span,
+                Type = type,
+                Value = UInt128.Parse(value)
+            },
+
+            'f' => new FloatLiteral
+            {
+                Span = span,
+                Type = type,
+                Value = double.Parse(value)
+            },
+
+            _ => throw Unimplemented
+        };
+    }
+
+    /// <summary>
     /// Convert int literals to syntax form.
-    /// 
-    /// TODO: for now, the target type is always assumed to be u64.
     /// In reality, the type should be determined based on context and should
     /// probably default to i32.
     /// </summary>
     public override BoundSyntax VisitIntegerLiteral([NotNull] RecParser.IntegerLiteralContext context)
     {
-        var text = context.Integer().Symbol.Text;
+        var text = context.Integer().Symbol.Text.UnwrapNull();
 
-        return new IntLiteral
-        {
-            Span = context.CalculateSourceSpan(),
-            Type = CTX.BuiltinTypes.U64,
-            Value = UInt128.Parse(text)
-        };
+        return MakeNumber(context.CalculateSourceSpan(), text, "i32");
     }
 
     /// <summary>
@@ -34,12 +80,7 @@ public partial class SyntaxResolver
     {
         var text = context.Float().Symbol.Text;
 
-        return new FloatLiteral
-        {
-            Span = context.CalculateSourceSpan(),
-            Type = CTX.BuiltinTypes.F64,
-            Value = double.Parse(text)
-        };
+        return MakeNumber(context.CalculateSourceSpan(), text, "f32");
     }
 
     /// <summary>

@@ -1,6 +1,6 @@
 struct Movable
 {
-    x u64
+    x usize
 }
 
 mod as Movable
@@ -23,11 +23,11 @@ fn return_test() none
 {
     let mov = new Movable 
     {
-        x = 1,
+        x = 1usize,
     };
     let mov1 = mov.clone();
 
-    if mov.x == 1
+    if mov.x == 1usize
     {
         let mov2 = mov;
     }
