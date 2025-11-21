@@ -19,21 +19,11 @@ public partial class IRGenerator
         return leaked;
     }
 
-    public ValueID GenerateStoreUninitIntrinsic(IntrinsicExpression context)
-    {
-        var ptr = Generate(context.Args[0]);
-        var val = Generate(context.Args[1]);
-
-        // TODO: derive instruction type from kind
-        return Builder.Build(context, new InstructionKind.Store(ptr, val, true));
-    }
-
     public ValueID GenerateIntrinsic(IntrinsicExpression context)
     {
         return context.Intrinsic switch
         {
             Intrinsic.Leak => GenerateLeakIntrinsic(context),
-            Intrinsic.StoreUninit => GenerateStoreUninitIntrinsic(context),
             _ => throw Unimplemented
         };
     }

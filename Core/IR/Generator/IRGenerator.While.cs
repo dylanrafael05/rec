@@ -6,9 +6,9 @@ public partial class IRGenerator
 {
     private void GenerateWhile(WhileStatement context)
     {
-        var beginLoop = Function.NewBlock();
-        var loopBody = Function.NewBlock();
-        var endLoop = Function.NewBlock();
+        var beginLoop = Function.NewBlock(CTX.Scopes.Current);
+        var loopBody = Function.NewBlock(CTX.Scopes.Current);
+        var endLoop = Function.NewBlock(CTX.Scopes.Current);
 
         Loops.Enter(new(beginLoop, endLoop));
 

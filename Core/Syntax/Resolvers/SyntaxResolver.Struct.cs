@@ -25,7 +25,7 @@ public partial class SyntaxResolver
         }
 
         // Handle each field individually //
-        var sfields = stype.Fields.UnwrapNull();
+        var sfields = stype.Fields.Unwrap();
         var fieldCount = sfields.Length;
         var fields = new Expression[fieldCount];
         
@@ -41,7 +41,7 @@ public partial class SyntaxResolver
             {
                 CTX.Diagnostics.AddError(
                     fieldExpr.Field.SourceSpan, 
-                    Errors.UndefinedStructField(stype, fieldname));
+                    Errors.UndefinedField(stype, fieldname));
                 
                 continue;
             }

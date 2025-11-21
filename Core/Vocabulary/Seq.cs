@@ -25,6 +25,39 @@ public readonly struct Seq<T>(ImmutableArray<T> values)
     public T this[int index] => values[index];
     public int Count => values.Length;
 
+    /// <summary>
+    /// Apply the provided function as though through a Linq .Select,
+    /// but do not reallocate if the function returns an equal value.
+    /// </summary>
+    public Seq<T> ThinMap<S>(Func<T, T, bool> equalityCheck, S state, Func<S, T, T> mapper)
+    {
+        var copy = null as ImmutableArray<T>.Builder;
+        var result = this;
+
+        for(int i = 0; i < Count; i++)
+        {
+            var mapped = mapper(state, this[i]);
+
+            if(!equalityCheck(mapped, this[i]) && copy is null)
+            {
+                copy = ImmutableArray.CreateBuilder<T>(Count);
+                copy.AddRange(result.values, i - 1);
+            }
+
+            copy?.Add(mapped);
+        }
+
+        if(copy is not null)
+            return new(copy.ToImmutable());
+
+        return this;
+    }
+
+    public bool ReferenceEquals(Seq<T> other)
+    {
+        return values == other.values;
+    }
+
     public bool Equals(Seq<T> other)
     {
         if (values == other.values)

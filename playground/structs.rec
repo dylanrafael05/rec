@@ -8,14 +8,20 @@ fn struct_test() Vector2
 {
     return new Vector2
     {
-        x = 0.1 cast(f32),
-        y = 0.2 cast(f32),
+        x = 0.1,
+        y = 0.2,
     };
 }
 
-fn sqr_magnitude(value *Vector2) f32
+fn sqr_magnitude(value &Vector2) f32
 {
     return (value*.x * value*.x) + (value*.y * value*.y);
+}
+
+fn t1() f32
+{
+    let s = struct_test();
+    return sqr_magnitude(s&);
 }
 
 fn break_test() f32

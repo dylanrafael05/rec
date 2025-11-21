@@ -10,7 +10,7 @@ public class TypeDefinitionsPass(RecContext ctx) : BasePass(ctx)
     {
         context.DefinedType.UnwrapNull().SetBody([..
             from field in context._Fields.Indexed
-            select new StructType.Field(
+            select new Field(
                 field.value.Name.TextAsIdentifier, 
                 CTX.Resolvers.Type.Visit(field.value.FieldType),
                 field.index)

@@ -19,4 +19,14 @@ public class ReferenceType : RecType
 
     public override void PropogateVisitor<V>(V visitor)
         => visitor.Visit(Referee);
+
+    public override RecType ApplySubstitutions(TypeSubstitutions substitutions)
+    {
+        var referee = Referee.ApplySubstitutions(substitutions);
+
+        if(!ReferenceEquals(referee, Referee))
+            return new ReferenceType { Referee = referee };
+
+        return this;
+    }
 }

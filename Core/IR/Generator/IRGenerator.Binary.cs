@@ -25,8 +25,8 @@ public partial class IRGenerator
         var beginBlock = Builder.CurrentBlock.UnwrapNull();
 
         // Short circuit on lhs=false
-        var onTrue = Function.NewBlock();
-        var final = Function.NewBlock();
+        var onTrue = Function.NewBlock(CTX.Scopes.Current);
+        var final = Function.NewBlock(CTX.Scopes.Current);
 
         Builder.TryBuildBranch(context.Span, lhs, onTrue, final);
         
@@ -53,8 +53,8 @@ public partial class IRGenerator
         var beginBlock = Builder.CurrentBlock.UnwrapNull();
 
         // Short circuit on lhs=true
-        var onFalse = Function.NewBlock();
-        var final = Function.NewBlock();
+        var onFalse = Function.NewBlock(CTX.Scopes.Current);
+        var final = Function.NewBlock(CTX.Scopes.Current);
 
         Builder.TryBuildBranch(context.Span, lhs, final, onFalse);
         

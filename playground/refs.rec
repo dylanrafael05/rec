@@ -1,6 +1,9 @@
 fn test_expand() u64
 {
-    let x u32 = 0 cast(u32);
-    let y *u32 = x&;
-    return y cast(*u64)*;
+    let x = 0u32;
+    unsafe 
+    {
+        let y *u32 = x& cast(*u32);
+        return y cast(*u64)*;
+    }
 }

@@ -12,7 +12,8 @@ public class TypeDeclarationsPass(RecContext ctx) : BasePass(ctx)
         var type = new StructType
         {
             Identifier = context.Identifier().TextAsIdentifier,
-            DefinitionLocation = span
+            DefinitionLocation = span,
+            TypeArguments = []
         };
 
         context.DefinedType = CTX.Scopes.Current.DefineOrDiagnose(

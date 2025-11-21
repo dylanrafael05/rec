@@ -8,9 +8,9 @@ public partial class IRGenerator
     {
         var cond = Generate(context.Condition);
 
-        var then = Function.NewBlock();
-        var @else = Function.NewBlock();
-        var end = Function.NewBlock();
+        var then = Function.NewBlock(CTX.Scopes.Current);
+        var @else = Function.NewBlock(CTX.Scopes.Current);
+        var end = Function.NewBlock(CTX.Scopes.Current);
 
         Builder.TryBuildBranch(context.Condition.Span, cond, then, @else);
 

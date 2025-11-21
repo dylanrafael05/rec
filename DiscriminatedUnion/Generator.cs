@@ -162,6 +162,12 @@ namespace {symbol.ContainingNamespace.ToDisplayString()}
         /// <summary>
         /// Check if this represents a {typename}
         /// </summary>
+        public bool Matches{typename}
+            => _Is{typename}({CSV(from a in args select "out _")});
+
+        /// <summary>
+        /// Check if this represents a {typename}
+        /// </summary>
         public bool Is{typename} 
             {IfNotEmpty("(", args)} 
             {CSV(from a in args select $"out {a.Type.ToDisplayString()} {a.Name}")}

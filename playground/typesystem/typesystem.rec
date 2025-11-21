@@ -1,0 +1,169 @@
+/*
+
+code taken from LLVM
+
+StructLayout::StructLayout(StructType *ST, const DataLayout &DL)
+    : StructSize(TypeSize::getFixed(0)) {
+  assert(!ST->isOpaque() && "Cannot get layout of opaque structs");
+  IsPadded = false;
+  NumElements = ST->getNumElements();
+ 
+  // Loop over each of the elements, placing them in memory.
+  for (unsigned i = 0, e = NumElements; i != e; ++i) {
+    Type *Ty = ST->getElementType(i);
+    if (i == 0 && Ty->isScalableTy())
+      StructSize = TypeSize::getScalable(0);
+ 
+    const Align TyAlign = ST->isPacked() ? Align(1) : DL.getABITypeAlign(Ty);
+ 
+    // Add padding if necessary to align the data element properly.
+    // Currently the only structure with scalable size will be the homogeneous
+    // scalable vector types. Homogeneous scalable vector types have members of
+    // the same data type so no alignment issue will happen. The condition here
+    // assumes so and needs to be adjusted if this assumption changes (e.g. we
+    // support structures with arbitrary scalable data type, or structure that
+    // contains both fixed size and scalable size data type members).
+    if (!StructSize.isScalable() && !isAligned(TyAlign, StructSize)) {
+      IsPadded = true;
+      StructSize = TypeSize::getFixed(alignTo(StructSize, TyAlign));
+    }
+ 
+    // Keep track of maximum alignment constraint.
+    StructAlignment = std::max(TyAlign, StructAlignment);
+ 
+    getMemberOffsets()[i] = StructSize;
+    // Consume space for this data item
+    StructSize += DL.getTypeAllocSize(Ty);
+  }
+ 
+  // Add padding to the end of the struct so that it could be put in an array
+  // and all array elements would be aligned correctly.
+  if (!StructSize.isScalable() && !isAligned(StructAlignment, StructSize)) {
+    IsPadded = true;
+    StructSize = TypeSize::getFixed(alignTo(StructSize, StructAlignment));
+  }
+}
+
+*/
+
+// Simplifying assumption; type cannot be an unbound generic
+
+
+// True type information //
+struct Field
+{
+    offset usize,
+    name *u8,
+    type Type,
+}
+
+struct Type
+{
+    // if null, this is a generic argument specified by gen_arg
+    ptr *TypeDesc,
+    gen_arg usize,
+}
+
+// dynamically sized; cannot be stored on stack or used as generic argument
+unsized struct TypeDesc
+{
+    // a hash used to speed up generic type lookup
+    hash u64,
+
+    size usize,
+    align usize,
+
+    next_heap_allocated Type,
+    flags u64,
+    
+    /*
+    struct 
+    {
+        bool t_is_struct : 1;
+        bool t_is_gen_inst : 1;
+        bool t_is_ptr : 1;
+        bool t_is_ref : 1;
+        bool t_is_array : 1;
+        bool t_is_primitive : 1;
+    };
+    */
+
+    // follow with tail
+}
+
+unsized struct TypeDesc_Tail_Struct
+{
+    name *u8,
+    next_gen_inst Type,
+    
+    field_count usize
+
+    // follow with field_count Field instances
+}
+
+unsized struct TypeDesc_Tail_GenInst
+{
+    template *TypeTemplate,
+    args [Type],
+    tail TypeDesc_Tail_Struct
+}
+
+struct TypeDesc_Tail_Ptr
+{
+    pointee Type
+}
+
+struct TypeDesc_Tail_Ref
+{
+    referee Type
+}
+
+struct TypeDesc_Tail_Array
+{
+    element Type
+}
+
+struct TypeDesc_Tail_Prim
+{
+    primitive_id usize
+
+    /*
+    TK_None,
+
+    TK_U8,
+    TK_U16,
+    TK_U32,
+    TK_U64,
+    TK_USize,
+
+    TK_I8,
+    TK_I16,
+    TK_I32,
+    TK_I64,
+    TK_ISize,
+
+    TK_F32,
+    TK_F64,
+    */
+}
+
+// Template type information //
+unsized struct TypeTemplate
+{
+    name *u8,
+    inst_list Type,
+
+    field_count usize,
+
+    // follow with field_count Field instances
+}
+
+fn construct(template *TypeTemplate, args [Type]) -> Type
+{
+    // TODO: this
+}
+
+fn cleanup(template *TypeTemplate)
+{
+    // TODO: this
+}

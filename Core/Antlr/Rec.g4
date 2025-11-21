@@ -56,6 +56,7 @@ False    : 'false';
 As       : 'as';
 Cast     : 'cast';
 External : 'external';
+Uninit   : 'uninitialized';
 Sizeof   : 'sizeof';
 Typeof   : 'typeof';
 Unsafe   : 'unsafe';
@@ -236,7 +237,7 @@ whileStatement
       {LoopDepth--;};
 
 assignStatement
-    : Target=expression '=' Value=expression
+    : Uninit? Target=expression '=' Value=expression
     ;
 
 letStatement
@@ -259,7 +260,7 @@ typename
         #TypenamePointer
     | '&' Base=typename 
         #TypenameReference
-    | '[' Base=typename (';' Count=Integer)? ']' 
+    | '[' Base=typename ']' 
         #TypenameArray
     | Fn '(' (Args+=typenameFnArgs (',' Args+=typenameFnArgs)*)? ')' Ret=typename? 
         #TypenameFn
@@ -320,6 +321,7 @@ expression
     | Operand=expression Op=memoryOperator                #MemoryExpression
     | Target=expression ('.' MethodMarker=Identifier)? 
       '(' (Args+=expression (',' Args+=expression)*)? ')' #CallExpression
+    | Target=expression '[' Index=expression ']'          #IndexExpression
     | Op=unaryOperator Operand=expression                 #UnaryExpression
     | Operand=expression Cast '(' TargetType=typename ')' #CastExpression
     | LHS=expression logicalOperator RHS=expression       #BinaryExpression
@@ -355,6 +357,12 @@ intrinsicExpression
     : Intr  IntrinsicName=Identifier '(' (Args+=expression ',')* Args+=expression ')'
     ;
 
+arrayExpr
+    : '[' Element=expression ';' Count=expression ']'                                               #ArrayRepeatExpr
+    | '[' Pointer=expression ';' ';' Count=expression ']'                                           #ArrayRawExpr
+    | '[' ((Elements+=expression ','?) | (Elements+=expression ',')* (Elements+=expression)?) ']'   #ArrayDirectExpr
+    ;
+
 term
     : literal         
     | variableReference
@@ -363,6 +371,7 @@ term
     | sizeofExpression
     | unsafeExpression
     | intrinsicExpression
+    | arrayExpr
     ;
 
 literal 

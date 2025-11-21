@@ -12,6 +12,36 @@ public partial class SyntaxResolver
         var inner = Visit(context.Base).UnwrapAs<Expression>();
         var fieldname = context.Field.TextAsIdentifier;
 
+        if(inner.Type is ArrayType arrayType)
+        {
+            // Nasty special case! Arrays have two psuedo-fields 'size' and 'ptr'
+            if(fieldname == Identifier.Builtin.Size)
+            {
+                return new DotExpression
+                {
+                    Span = span,
+                    Type = CTX.BuiltinTypes.USize,
+                    Inner = inner,
+                    Field = DotField.ArraySize
+                };
+            }
+            else if(fieldname == Identifier.Builtin.Ptr)
+            {
+                return new DotExpression
+                {
+                    Span = span,
+                    Type = RecType.Pointer(arrayType.Elem),
+                    Inner = inner,
+                    Field = DotField.ArrayPtr
+                };
+            }
+
+            CTX.Diagnostics.AddError(
+                span, Errors.UndefinedField(arrayType, fieldname));
+
+            return BoundSyntax.ErrorExpression(context, CTX);
+        }
+
         if(inner.Type is not StructType asStruct)
         {
             CTX.Diagnostics.AddError(
@@ -25,7 +55,7 @@ public partial class SyntaxResolver
         if(field.IsNone)
         {
             CTX.Diagnostics.AddError(
-                span, Errors.UndefinedStructField(inner.Type, fieldname));
+                span, Errors.UndefinedField(inner.Type, fieldname));
 
             return BoundSyntax.ErrorExpression(context, CTX);
         }
@@ -35,7 +65,7 @@ public partial class SyntaxResolver
             Span = span,
             Type = field.Unwrap().Type,
             Inner = inner,
-            FieldIndex = field.Unwrap().Index
+            Field = DotField.Struct(field.Unwrap().Index)
         };
     }
 }

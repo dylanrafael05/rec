@@ -1,4 +1,5 @@
 using System.Text;
+using Re.C.Definitions;
 using Re.C.Visitor;
 
 namespace Re.C.IR;
@@ -6,13 +7,15 @@ namespace Re.C.IR;
 public enum DropMethod
 {
     ThroughPointer,
+    ThroughArray,
     Direct
 }
 
-public class InstructionBlock(IRFunction function, string name) : IVisitable
+public class InstructionBlock(IRFunction function, string name, Scope lexicalScope) : IVisitable
 {
     public IRFunction Function { get; } = function;
     public string Name { get; } = name;
+    public Scope LexicalScope { get; } = lexicalScope;
 
     public bool DefinitelyReturns { get; set; }
 

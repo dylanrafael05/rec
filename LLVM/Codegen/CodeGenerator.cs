@@ -9,19 +9,19 @@ public partial class CodeGenerator(LLVMContext ctx)
 {
     public LLVMContext CTX { get; } = ctx;
 
-    private Dictionary<IRFunction, LLVMValueRef> LLVMFunctions { get; } = [];
+    private Dictionary<Function, LLVMValueRef> LLVMFunctions { get; } = [];
     private Dictionary<InstructionBlock, LLVMBasicBlockRef> LLVMBlocks { get; } = [];
     private Dictionary<ValueID, LLVMValueRef> LLVMValues { get; } = [];
 
     private IRFunction CurrentFunction
         => CTX.ReC.Functions.Current.UnwrapNull().IRFunction.Unwrap();
     private LLVMValueRef CurrentLLVMFunction 
-        => LLVMFunctions[CurrentFunction];
+        => LLVMFunctions[CurrentFunction.Function];
 
-    public void DefineFunction(IRFunction function)
+    public void DefineFunction(Function function)
     {
-        var type = CTX.TypeCompiler.Compile(function.Function.Type);
-        var llvmfn = CTX.Module.AddFunction(function.Function.FullName, type);
+        var type = CTX.TypeCompiler.Compile(function.Type);
+        var llvmfn = CTX.Module.AddFunction(function.FullName, type);
 
         LLVMFunctions.Add(function, llvmfn);
     }
@@ -35,7 +35,7 @@ public partial class CodeGenerator(LLVMContext ctx)
         // Clear previously cached block and value mappings //
         LLVMBlocks.Clear();
         LLVMValues.Clear();
-        var fn = LLVMFunctions[function];
+        var fn = LLVMFunctions[function.Function];
 
         // Set up the context state //
         CTX.ReC.Functions.Enter(function.Function);
@@ -52,6 +52,46 @@ public partial class CodeGenerator(LLVMContext ctx)
 
         // Restore the context state //
         CTX.ReC.Functions.Exit();
+    }
+    
+    private LLVMValueRef USizeLiteral(ulong n)
+        => LLVMValueRef.CreateConstInt(
+            CTX.TypeCompiler.Compile(CTX.ReC.BuiltinTypes.USize), n
+        );
+    
+    private LLVMValueRef USizeLiteral(int n)
+        => USizeLiteral((ulong)n);
+
+    private void GenerateIndexLoop(
+        LLVMValueRef minInclusive, LLVMValueRef maxExclusive, 
+        Action<LLVMValueRef> loopBody)
+    {
+        var usizeTy = CTX.TypeCompiler.Compile(CTX.ReC.BuiltinTypes.USize);
+        
+        var indexPtr = CTX.Builder.BuildAlloca(usizeTy);
+        CTX.Builder.BuildStore(minInclusive, indexPtr);
+
+        var condBlock = CurrentLLVMFunction.AppendBasicBlock("");
+        var loopBlock = CurrentLLVMFunction.AppendBasicBlock("");
+        var endBlock = CurrentLLVMFunction.AppendBasicBlock("");
+
+        // Condition block; loop if (index < arrSize)
+        CTX.Builder.BuildBr(condBlock);
+        CTX.Builder.PositionAtEnd(condBlock);
+
+        var index = CTX.Builder.BuildLoad2(usizeTy, indexPtr);
+        var cmp = CTX.Builder.BuildICmp(LLVMIntPredicate.LLVMIntULT, index, maxExclusive);
+        CTX.Builder.BuildCondBr(cmp, loopBlock, endBlock);
+
+        // Loop block; write value to index 
+        CTX.Builder.PositionAtEnd(loopBlock);
+        loopBody(index);
+        var newIndex = CTX.Builder.BuildAdd(index, USizeLiteral(1));
+        CTX.Builder.BuildStore(newIndex, indexPtr);
+        CTX.Builder.BuildBr(condBlock);
+
+        // End block
+        CTX.Builder.PositionAtEnd(endBlock);
     }
 
     private void Visit(HashSet<InstructionBlock> visited, InstructionBlock block)
@@ -105,10 +145,12 @@ public partial class CodeGenerator(LLVMContext ctx)
             InstructionKind.Phi phi => GeneratePhi(phi, inst),
             InstructionKind.Return ret => GenerateReturn(ret, inst),
             InstructionKind.Store store => GenerateStore(store, inst),
+            InstructionKind.ArrayLiteral array => GenerateArray(array, inst),
             InstructionKind.StringLiteral str => GenerateString(str, inst),
             InstructionKind.StructLiteral str => GenerateStruct(str, inst),
             InstructionKind.Unary un => GenerateUnary(un, inst),
             InstructionKind.Sizeof sz => GenerateSizeof(sz, inst),
+            InstructionKind.IndexAddress index => GenerateIndex(index, inst),
 
             // Special cases; noop and leak have no impact on codegen
             InstructionKind.Noop noop => Option.Some(ValueOf(noop.Value)),

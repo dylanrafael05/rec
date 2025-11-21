@@ -33,7 +33,7 @@ public partial class SyntaxResolver
             {
                 CTX.Diagnostics.AddError(
                     part.Field.SourceSpan, 
-                    Errors.UndefinedStructField(argtype, fieldID));
+                    Errors.UndefinedField(argtype, fieldID));
                     
                 anyErrors = true;
                 continue;

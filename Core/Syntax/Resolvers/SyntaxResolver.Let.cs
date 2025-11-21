@@ -17,6 +17,8 @@ public partial class SyntaxResolver
             var nonnull => CTX.Resolvers.Type.Visit(nonnull)
         };
 
+        expr = Coerce(expr, type);
+
         // Error on type mismatch //
         if (type != expr.Type)
         {

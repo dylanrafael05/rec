@@ -18,4 +18,14 @@ public class PointerType : RecType
 
     public override void PropogateVisitor<V>(V visitor)
         => visitor.Visit(Pointee);
+
+    public override RecType ApplySubstitutions(TypeSubstitutions substitutions)
+    {
+        var pointee = Pointee.ApplySubstitutions(substitutions);
+
+        if(!ReferenceEquals(pointee, Pointee))
+            return new PointerType { Pointee = pointee };
+
+        return this;
+    }
 }

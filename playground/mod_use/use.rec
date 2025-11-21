@@ -8,7 +8,6 @@ fn main()
     let x = Vector2::make(0.51, 0.0);
     let y = x.get_x().x;
     
-    // TODO; lower precedence of 'cast'
     if y == 0.0
     {
         let z = Vector2::make(0f32, 0f32).get_x().x;

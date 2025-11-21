@@ -1,7 +1,10 @@
-﻿using LLVMSharp.Interop;
+﻿using System.Text;
+using LLVMSharp.Interop;
 using Re.C.LLVM.Codegen;
 using Re.C.LLVM.Passes;
 using Re.C.Passes;
+
+using LLVM_Api = LLVMSharp.Interop.LLVM;
 
 namespace Re.C.LLVM;
 
@@ -52,7 +55,7 @@ public class LLVMContext
         RecContext rec)
     {
         LLVM = LLVMContextRef.Create();
-        LLVMSharp.Interop.LLVM.InitializeNativeTarget();
+        LLVM_Api.InitializeNativeTarget();
 
         var target = LLVMTargetRef.GetTargetFromTriple(LLVMTargetRef.DefaultTriple);
         TargetMachine = target.CreateTargetMachine(
@@ -91,6 +94,22 @@ public class LLVMContext
             ReC.ExecutePasses(DefaultPasses);
         }
 
-        Module.Verify(LLVMVerifierFailureAction.LLVMPrintMessageAction);
+        unsafe
+        {
+            LLVMPassBuilderOptionsRef options = LLVM_Api.CreatePassBuilderOptions();
+
+            options.SetVerifyEach(true);
+            options.SetCallGraphProfile(true);
+            options.SetInlinerThreshold(10);
+            options.SetLoopVectorization(true);
+            options.SetLoopUnrolling(true);
+            options.SetLoopInterleaving(true);
+            options.SetSLPVectorization(true);
+
+            using var str = new MarshaledString("default<O2>");
+            var error = LLVM_Api.RunPasses(Module, str, TargetMachine, options);
+
+            LLVM_Api.CantFail(error);
+        }
     }
 }

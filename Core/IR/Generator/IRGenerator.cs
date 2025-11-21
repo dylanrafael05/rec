@@ -24,16 +24,17 @@ public partial class IRGenerator(RecContext CTX)
         // External functions need not be realized //
         if (function.IsExternal)
             return;
+        
+        // Set up the context state //
+        CTX.Functions.Enter(function);
+        CTX.Scopes.Enter(function.InnerScope);
 
         // Set up the builder position //
         var fn = new IRFunction(function);
         function.IRFunction = Option.Some(fn);
-        var block = fn.NewBlock();
+        var block = fn.NewBlock(CTX.Scopes.Current);
 
         Builder.PositionAtEnd(block);
-
-        // Set up the context state //
-        CTX.Functions.Enter(function);
 
         // Link all arguments to variables so they may be treated
         // as assignable
@@ -53,6 +54,7 @@ public partial class IRGenerator(RecContext CTX)
         fn.SetFinalBlock(Builder.CurrentBlock.UnwrapNull());
 
         // Restore the context state //
+        CTX.Scopes.Exit();
         CTX.Functions.Exit();
     }
 
@@ -136,6 +138,10 @@ public partial class IRGenerator(RecContext CTX)
             StructExpression x => GenerateStruct(x),
             SizeofExpression x => GenerateSizeof(x),
             IntrinsicExpression x => GenerateIntrinsic(x),
+            IndexExpression x => GenerateIndex(x),
+            ArrayExpression x => GenerateArray(x),
+            ArrayRepeatExpression x => GenerateArrayRepeat(x),
+            ArrayRawExpression x => GenerateArrayRaw(x),
             ErrorExpression x => GenerateError(x),
 
             _ => throw UnimplementedBecause($"context type {context.GetType()}")
@@ -152,7 +158,8 @@ public partial class IRGenerator(RecContext CTX)
         {
             VariableExpression x => GenerateVariableAsLHS(x),
             DerefExpression x => GenerateDerefAsLHS(x),
-            DotExpression x => GenerateDot(x),
+            DotExpression x => GenerateDotAsLHS(x),
+            IndexExpression x => GenerateIndexAsLHS(x),
 
             _ => throw UnimplementedBecause($"context type {context.GetType()}")
         };

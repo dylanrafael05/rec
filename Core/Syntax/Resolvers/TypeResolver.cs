@@ -41,4 +41,14 @@ public class TypeResolver(RecContext ctx) : RecBaseVisitor<RecType>
 
         return RecType.Reference(inner);
     }
+
+    public override RecType VisitTypenameArray([NotNull] RecParser.TypenameArrayContext context)
+    {
+        var inner = Visit(context.Base);
+
+        if(inner is ErrorType)
+            return inner;
+
+        return RecType.Array(inner);
+    }
 }

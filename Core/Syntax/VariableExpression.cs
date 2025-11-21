@@ -6,4 +6,5 @@ public class VariableExpression : Expression
 {
     public required Variable Variable { get; init; }
     public override bool HasAddress => true;
+    public override bool CanBeAssigned => true;
 }

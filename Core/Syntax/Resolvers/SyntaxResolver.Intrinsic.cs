@@ -15,6 +15,8 @@ public partial class SyntaxResolver
         {
             var intrinsic = Intrinsic.FromRepr(intrinsicName);
 
+            CheckUnsafe(context);
+
             var args = (Expression[])[..
                 from arg in context._Args select
                 Visit(arg).UnwrapAs<Expression>()
@@ -41,27 +43,6 @@ public partial class SyntaxResolver
                     Type = CTX.BuiltinTypes.None,
                     Args = args,
                     Intrinsic = Intrinsic.Leak
-                };
-            }
-
-            // Store uninit; requires a pointer then the value to assign to it
-            if(intrinsic is Intrinsic.StoreUninit)
-            {
-                if(types is not [PointerType { Pointee: var ptr }, var pte] || ptr != pte)
-                {
-                    CTX.Diagnostics.AddError(
-                        context.CalculateSourceSpan(), 
-                        Errors.BadIntrinsicTypes(intrinsicName, types));
-
-                    return BoundSyntax.ErrorExpression(context, CTX);
-                }
-                
-                return new IntrinsicExpression
-                {
-                    Span = context.CalculateSourceSpan(),
-                    Type = CTX.BuiltinTypes.None,
-                    Args = args,
-                    Intrinsic = Intrinsic.StoreUninit
                 };
             }
 

@@ -19,5 +19,15 @@ fn make(x f32, y f32) Vector2
 
 fn get_x(&self) Vector2
 {
-    return make(self*.x, self*.x);
+    return Vector2::make(self*.x, self*.x);
+}
+
+fn get_px(&self) &f32
+{
+    return self*.y&;
+}
+
+fn get_arr(&self) [f32]
+{
+    return [self*.x, self*.y];
 }

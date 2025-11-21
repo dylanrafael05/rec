@@ -54,6 +54,39 @@ public abstract record InstructionKind
             => $"sizeof {Type}";
     }
 
+    public record ArrayLiteral(ArrayConstruction Construction) : InstructionKind
+    {
+        public override string ToString()
+            => Construction.ToString();
+        public override void GetArguments(IList<ValueID> values)
+            => Construction.GetArguments(values);
+    }
+    public record ArraySize(ValueID Array) : InstructionKind
+    {
+        public override string ToString()
+            => $"{Array} .size";
+        public override void GetArguments(IList<ValueID> values)
+            => values.Add(Array);
+    }
+    public record ArrayPtr(ValueID Array) : InstructionKind
+    {
+        public override string ToString()
+            => $"{Array} .ptr";
+        public override void GetArguments(IList<ValueID> values)
+            => values.Add(Array);
+    }
+    public record IndexAddress(ValueID Array, ValueID Index) : InstructionKind
+    {
+        public override string ToString()
+            => $"{Array}[{Index}]&";
+
+        public override void GetArguments(IList<ValueID> values)
+        {
+            values.Add(Array);
+            values.Add(Index);
+        }
+    }
+
     /// <summary>
     /// "noop" is mostly used to signal that a no-op but meaningful operation has taken place,
     /// like a cast from a pointer to a reference.
@@ -235,7 +268,6 @@ public abstract record InstructionKind
 
         public override bool IsTerminal => true;
     }
-    
     
     public record DropPtr(ValueID Ptr) : InstructionKind
     {

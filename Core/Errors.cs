@@ -16,7 +16,7 @@ public static class Errors
         => $"Could not find a definition of '{name}' in '{scope.FullName}'";
     public static string AmbiguousIdentifier(Identifier name, IEnumerable<IDefinition> defs)
         => $"Ambiguous reference to '{name}' in current context; could be {string.Join(" or ", from d in defs select d.FullName)}";
-    public static string UndefinedStructField(RecType operand, Identifier ident)
+    public static string UndefinedField(RecType operand, Identifier ident)
         => $"No such field {ident} on type {operand}";
     public static string InvalidScopeResolutionTarget()
         => $"Cannot use '.' here; target is not a scope";
@@ -44,6 +44,12 @@ public static class Errors
 
     public static string TypeMismatch(RecType expected, RecType real)
         => $"Expected a value of type {expected} but got {real}";
+    public static string ArrayLitTypeMismatch(RecType expected, RecType real)
+        => $"Expected a value of type {expected} to match first element of array, but got {real}";
+    public static string ArrayRepNonTrivial(RecType real)
+        => $"Cannot use an array repetition statement for non-trivially copy element type {real}";
+    public static string ArrayPtrNotPtr(RecType real)
+        => $"Array pointer type must be pointer, got {real}";
     public static string StructFieldTypeMismatch(RecType structType, Identifier ident, RecType fieldType, RecType realType)
         => $"Incompatible field type for {structType}.{ident}, expected {fieldType} but got {realType}";
     public static string StructMissingFields(RecType structType, IReadOnlyList<Identifier> missing)
@@ -55,6 +61,8 @@ public static class Errors
     
     public static string InvalidAssignmentTarget()
         => $"Cannot assign to this expression";
+    public static string InvalidUninitializedAssignmentTarget()
+        => $"Cannot uninitialized assign to this expression";
 
     public static string MathOnNonArithmeticType(RecType type)
         => $"Cannot perform arithmetic on non-arithmetic type {type}";
@@ -62,6 +70,10 @@ public static class Errors
         => $"Binary operator {BinaryOperator.GetRepr(op)} does not accept operands of {lhs} and {rhs}";
     public static string InvalidUnaryType(UnaryOperator op, RecType operand)
         => $"Unary operator {UnaryOperator.GetRepr(op)} does not accept operand of type {operand}";
+    public static string InvalidIndexTarget(RecType target)
+        => $"Cannot index a value of type {target}";
+    public static string InvalidIndexIndex(RecType expected, RecType target)
+        => $"Cannot use a value of type {target} as an index (use {expected} instead)";
     public static string InvalidConditionType(RecType condition)
         => $"Control flow conditions must be booleans, not {condition}";
     public static string InvalidCast(RecType to, RecType from)

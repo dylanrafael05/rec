@@ -108,8 +108,8 @@ public class RecContext
             DefinitionLocation = SourceSpan.Builtin
         };
 
-        RecType MakePrimitive(string name, PrimitiveType.Class cls)
-            => scope.Define(new PrimitiveType(cls) { 
+        RecType MakePrimitive(string name, PrimitiveType.Class cls, Option<int> minIntegerDepth = default)
+            => scope.Define(new PrimitiveType(cls, minIntegerDepth) { 
                 Identifier = Identifier.Name(name), 
                 DefinitionLocation = SourceSpan.Builtin }).UnwrapNull();
 
@@ -121,16 +121,16 @@ public class RecContext
                 DefinitionLocation = SourceSpan.Builtin }).UnwrapNull(),
 
             Bool  = MakePrimitive("bool",  PrimitiveType.Class.Bool),
-            I8    = MakePrimitive("i8",    PrimitiveType.Class.SignedInt),
-            I16   = MakePrimitive("i16",   PrimitiveType.Class.SignedInt),
-            I32   = MakePrimitive("i32",   PrimitiveType.Class.SignedInt),
-            I64   = MakePrimitive("i64",   PrimitiveType.Class.SignedInt),
-            ISize = MakePrimitive("isize", PrimitiveType.Class.SignedInt),
-            U8    = MakePrimitive("u8",    PrimitiveType.Class.UnsignedInt),
-            U16   = MakePrimitive("u16",   PrimitiveType.Class.UnsignedInt),
-            U32   = MakePrimitive("u32",   PrimitiveType.Class.UnsignedInt),
-            U64   = MakePrimitive("u64",   PrimitiveType.Class.UnsignedInt),
-            USize = MakePrimitive("usize", PrimitiveType.Class.UnsignedInt),
+            I8    = MakePrimitive("i8",    PrimitiveType.Class.SignedInt, Option.Some(7)),
+            I16   = MakePrimitive("i16",   PrimitiveType.Class.SignedInt, Option.Some(15)),
+            I32   = MakePrimitive("i32",   PrimitiveType.Class.SignedInt, Option.Some(31)),
+            I64   = MakePrimitive("i64",   PrimitiveType.Class.SignedInt, Option.Some(63)),
+            ISize = MakePrimitive("isize", PrimitiveType.Class.SignedInt, Option.Some(7)),
+            U8    = MakePrimitive("u8",    PrimitiveType.Class.UnsignedInt, Option.Some(8)),
+            U16   = MakePrimitive("u16",   PrimitiveType.Class.UnsignedInt, Option.Some(16)),
+            U32   = MakePrimitive("u32",   PrimitiveType.Class.UnsignedInt, Option.Some(32)),
+            U64   = MakePrimitive("u64",   PrimitiveType.Class.UnsignedInt, Option.Some(64)),
+            USize = MakePrimitive("usize", PrimitiveType.Class.UnsignedInt, Option.Some(8)),
             F32   = MakePrimitive("f32",   PrimitiveType.Class.Float),
             F64   = MakePrimitive("f64",   PrimitiveType.Class.Float),
         };

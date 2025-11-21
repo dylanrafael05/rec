@@ -12,10 +12,11 @@ public abstract class IRPass(RecContext ctx) : BasePass(ctx)
     
     public override Unit VisitFnDefine([NotNull] RecParser.FnDefineContext context)
     {
-        var fn = context.DefinedFunction.IRFunction.Unwrap();
-
-        Traverse(fn.EntryBlock);
-        Perform(context.DefinedFunction.IRFunction.Unwrap());
+        if(context.DefinedFunction.IRFunction.IsSome(out var fn))
+        {
+            Traverse(fn.EntryBlock);
+            Perform(context.DefinedFunction.IRFunction.Unwrap());
+        }
 
         return default;
     }

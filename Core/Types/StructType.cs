@@ -2,17 +2,20 @@ namespace Re.C.Types;
 
 public class StructType : NamedType
 {
-    public record struct Field(Identifier Name, RecType Type, int Index);
+    private Field[]? fields = null;
 
-    public Field[]? Fields { get; private set; }
+    public required GenericArgumentType[] TypeArguments { get; init; }
+    public override bool IsStructural => true;
+    public override bool IsTemplate => TypeArguments.Length > 0;
+    public override Option<Field[]> Fields => Option.Nonnull(fields);
     public override bool TriviallyCopyable => false;
 
     /// <summary>
     /// Find the field associated with the provided name.
     /// </summary>
-    public Option<Field> FindField(Identifier name)
+    public override Option<Field> FindField(Identifier name)
     {
-        var fields = Fields.UnwrapNull();
+        var fields = this.fields.UnwrapNull();
         for(var i = 0; i < fields.Length; i++)
         {
             if(fields[i].Name == name)
@@ -24,15 +27,21 @@ public class StructType : NamedType
 
     public void SetBody(Field[] fields)
     {
-        if (Fields is not null)
+        if (this.fields is not null)
             throw Panic("Attepmt to set the body of a struct more than once.");
 
-        Fields = fields;
+        this.fields = fields;
     }
 
     public override void PropogateVisitor<V>(V visitor)
     {
-        if(Fields is not null)
-            visitor.VisitMany(Fields, f => f.Type);
+        if(fields is not null)
+            visitor.VisitMany(fields, f => f.Type);
     }
 }
+
+// public class GenericInstanceType : RecType
+// {
+//     public required StructType Template { get; init; }
+//     // TODO; continue from here
+// }

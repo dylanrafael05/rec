@@ -1,6 +1,7 @@
 using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 using Re.C.Antlr;
+using Re.C.Types;
 
 namespace Re.C.Syntax.Resolvers;
 
@@ -43,5 +44,60 @@ public partial class SyntaxResolver(RecContext CTX) : RecBaseVisitor<BoundSyntax
         CTX.UnsafeScope.Exit();
 
         return result;
+    }
+
+    /// <summary>
+    /// Coerce the provided expression to the provided type. This should only be
+    /// used when the language *requires* a type to match, and not when performing
+    /// operator binding.
+    /// </summary>
+    public Expression Coerce(Expression expr, RecType type)
+    {
+        // Handle int->int coersion
+        {
+            if(expr is IntLiteral @int && type.IsInteger)
+            {
+                var depth = type.MinIntegerDepth.Unwrap();
+                var max = unchecked(((UInt128)1 << depth) - 1);
+
+                if(@int.Value < max)
+                {
+                    return new IntLiteral
+                    {
+                        Span = @int.Span,
+                        Type = type,
+                        Value = @int.Value
+                    };
+                }
+            }
+        }
+
+        // Handle int->float coersion
+        {
+            if(expr is IntLiteral @int && type.IsFloat)
+            {
+                return new FloatLiteral
+                {
+                    Span = @int.Span,
+                    Type = type,
+                    Value = (double)@int.Value
+                };
+            }
+        }
+
+        // Handle float->float conversion
+        {
+            if(expr is FloatLiteral @float && type.IsFloat)
+            {
+                return new FloatLiteral
+                {
+                    Span = @float.Span,
+                    Type = type,
+                    Value = @float.Value
+                };
+            }
+        }
+
+        return expr;
     }
 }

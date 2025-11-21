@@ -7,7 +7,7 @@ public class DeclarationsPass(LLVMContext ctx) : BaseLLVMPass(ctx)
     public override Unit VisitFnDefine([NotNull] RecParser.FnDefineContext context)
     {
         CTX.CodeGenerator.DefineFunction(
-            context.DefinedFunction.IRFunction.Unwrap());
+            context.DefinedFunction);
 
         return default;
     }

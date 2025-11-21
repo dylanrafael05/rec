@@ -33,4 +33,15 @@ public class FunctionType : RecType
         visitor.Visit(Return);
         visitor.VisitMany(Parameters);
     }
+    
+    public override RecType ApplySubstitutions(TypeSubstitutions substitutions)
+    {
+        var ret = Return.ApplySubstitutions(substitutions);
+        var parameters = Parameters.ThinMap(ReferenceEquals, substitutions, (s, t) => t.ApplySubstitutions(s));
+
+        if(!ReferenceEquals(ret, Return) || !parameters.ReferenceEquals(Parameters))
+            return new FunctionType { Return = ret, Parameters = parameters };
+
+        return this;
+    }
 }

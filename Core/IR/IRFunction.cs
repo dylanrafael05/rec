@@ -27,9 +27,9 @@ public class IRFunction(Function function)
     public ValueID NextValueID()
         => new(this, maxValueID++);
 
-    public InstructionBlock NewBlock(string? name = null)
+    public InstructionBlock NewBlock(Scope lexicalScope, string? name = null)
     {
-        var result = new InstructionBlock(this, name ?? $"{Function.Identifier}_{Blocks.Count}");
+        var result = new InstructionBlock(this, name ?? $"{Function.Identifier}_{Blocks.Count}", lexicalScope);
         blocks.Add(result);
 
         return result;

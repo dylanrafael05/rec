@@ -94,6 +94,12 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
                 block.DropAtEnd.Add(inst.ValueID.Unwrap(), DropMethod.ThroughPointer);
             }
 
+            // Array declarations; drop elements inside array
+            if(inst.Kind is InstructionKind.ArrayLiteral arr && !arr.Construction.MatchesRaw)
+            {
+                block.DropAtEnd.Add(inst.ValueID.Unwrap(), DropMethod.ThroughArray);
+            }
+
             // Stores; drop existing value before assigning
             if(inst.Kind is InstructionKind.Store store && !store.Uninit)
             {
@@ -126,7 +132,7 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
             }
         }
 
-        // TODO; inject drop code based on computed values
+        // TODO; inject drop code based on computed values if this block ends a lexical scope
 
     }
 }

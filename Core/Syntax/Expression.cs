@@ -13,6 +13,8 @@ public class Expression : BoundSyntax
     
     [FieldOption(PrintLevel.Hidden)] 
     public virtual bool HasAddress => false;
+    [FieldOption(PrintLevel.Hidden)]
+    public virtual bool CanBeAssigned => false;
 
     public override bool IsError => Type is ErrorType;
 }

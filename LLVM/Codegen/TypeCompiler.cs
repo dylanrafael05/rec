@@ -28,12 +28,26 @@ public class TypeCompiler(LLVMContext ctx)
             ReferenceType => LLVMTypeRef.CreatePointer(CTX.LLVM.VoidType, 0),
 
             // Complex to compile types
+            ArrayType a => ImplementCompileArray(a),
             FunctionType f => ImplementCompileFunction(f),
             StructType s => ImplementCompileStruct(s),
             PrimitiveType p => ImplementCompilePrimitive(p),
 
             _ => throw Unimplemented
         };
+    }
+
+    public const int ArrayPtrIndex = 0;
+    public const int ArraySizeIndex = 1;
+
+    private LLVMTypeRef ImplementCompileArray(ArrayType type)
+    {
+        return CTX.LLVM.GetStructType(
+            [
+                Compile(RecType.Pointer(type.Elem)),
+                Compile(CTX.ReC.BuiltinTypes.USize)
+            ], 
+            false);
     }
 
     private LLVMTypeRef ImplementCompileFunction(FunctionType type)
@@ -48,7 +62,7 @@ public class TypeCompiler(LLVMContext ctx)
     {
         var ltype = CTX.LLVM.CreateNamedStruct(type.FullName); /* TODO: mangling */
         ltype.StructSetBody(
-            [..from f in type.Fields.UnwrapNull() select Compile(f.Type)], 
+            [..from f in type.Fields.Unwrap() select Compile(f.Type)], 
             false);
 
         return ltype;
