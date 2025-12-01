@@ -45,7 +45,7 @@ public partial class SyntaxResolver
             };
         }
         
-        // TODO: report an error message here //
+        CTX.Diagnostics.AddError(span, Errors.ReferenceToNonValueDefinition(defn));
         
         return new ErrorExpression
         {

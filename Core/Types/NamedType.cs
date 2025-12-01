@@ -8,6 +8,8 @@ public abstract class NamedType : RecType, IDefinition
     public required Identifier Identifier { get; init; }
     public required SourceSpan DefinitionLocation { get; init; }
     public bool IsLinked { get; set; }
+    
+    string IDefinition.DefinitionKind => "type";
 
     public override bool Equals(RecType? other)
         => other is NamedType t

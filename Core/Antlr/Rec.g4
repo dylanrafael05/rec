@@ -138,8 +138,16 @@ locals [
     : Use Ident=fullIdentifier
     ;
 
-templateHeader
-    : Template (Args+=Identifier)+
+templateArgDef
+    : Name=Identifier
+    ;
+
+templateDef
+    : '!' '<' Args+=templateArgDef (',' Args+=templateArgDef)* '>'
+    ;
+
+templateArgs
+    : '!' '<' Args+=typename (',' Args+=typename)* '>'
     ;
 
 structFieldDefine
@@ -148,9 +156,9 @@ structFieldDefine
 
 structDefine
 locals [
-    Re.C.Types.StructType DefinedType = null
+    Re.C.Types.IStructlikeDefinition DefinedType = null
 ]
-    : templateHeader? Struct Name=Identifier '{' 
+    : Struct Name=Identifier templateDef? '{' 
         (Fields+=structFieldDefine ',' )*
         (Fields+=structFieldDefine ','?)?
       '}'
@@ -170,8 +178,7 @@ locals [
     Re.C.Definitions.Function DefinedFunction = null,
     Re.C.Syntax.Block BoundBody = null
 ]
-    : templateHeader? 
-      (External | Unsafe)* Fn Name=Identifier 
+    : (External | Unsafe)* Fn Name=Identifier templateDef?
       '('( 
         ((fnSelfDefine ',')? Args+=fnArgumentDefine (',' Args+=fnArgumentDefine)*) 
         | fnSelfDefine
@@ -254,8 +261,6 @@ typename
         #TypenameSingle
     | '(' Inner=typename ')' 
         #TypenameWrapped
-    | '(' Base=typename (Args+=typename)+ ')' 
-        #TypenameGeneric
     | '*' Base=typename 
         #TypenamePointer
     | '&' Base=typename 
@@ -264,6 +269,8 @@ typename
         #TypenameArray
     | Fn '(' (Args+=typenameFnArgs (',' Args+=typenameFnArgs)*)? ')' Ret=typename? 
         #TypenameFn
+    | Base=fullIdentifier Args=templateArgs
+        #TypenameGeneric
     ;
 
 // Define operators //
@@ -314,12 +321,13 @@ memoryOperator
 // Main expression format //
 expression
     : Base=expression 
-        {TokenStream.LT(3).Text != "("}? 
+        {TokenStream.LT(3).Text is not "(" or "!"}? 
         // NOTE: this ^^ is a somewhat hacky fix to ensure
         //       that method calls are appropriately parsed
         '.' Field=Identifier                              #DotExpression
     | Operand=expression Op=memoryOperator                #MemoryExpression
     | Target=expression ('.' MethodMarker=Identifier)? 
+      templateArgs?
       '(' (Args+=expression (',' Args+=expression)*)? ')' #CallExpression
     | Target=expression '[' Index=expression ']'          #IndexExpression
     | Op=unaryOperator Operand=expression                 #UnaryExpression

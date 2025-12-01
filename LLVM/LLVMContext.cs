@@ -55,7 +55,12 @@ public class LLVMContext
         RecContext rec)
     {
         LLVM = LLVMContextRef.Create();
-        LLVM_Api.InitializeNativeTarget();
+        
+        LLVM_Api.InitializeAllTargets();
+        LLVM_Api.InitializeAllTargetInfos();
+        LLVM_Api.InitializeAllTargetMCs();
+        LLVM_Api.InitializeAllAsmParsers();
+        LLVM_Api.InitializeAllAsmPrinters();
 
         var target = LLVMTargetRef.GetTargetFromTriple(LLVMTargetRef.DefaultTriple);
         TargetMachine = target.CreateTargetMachine(
@@ -63,13 +68,24 @@ public class LLVMContext
             "generic",
             "",
             LLVMCodeGenOptLevel.LLVMCodeGenLevelDefault,
-            LLVMRelocMode.LLVMRelocPIC,
+            LLVMRelocMode.LLVMRelocDefault,
             LLVMCodeModel.LLVMCodeModelDefault);
 
         TargetData = TargetMachine.CreateTargetDataLayout();
 
         Module = LLVM.CreateModuleWithName(moduleName);
         Builder = LLVM.CreateBuilder();
+
+        unsafe
+        {
+            using var triple = new MarshaledString(LLVMTargetRef.DefaultTriple);
+            var datalayout = LLVM_Api.CopyStringRepOfTargetData(TargetData);
+
+            LLVM_Api.SetTarget(Module, triple);
+            LLVM_Api.SetDataLayout(Module, datalayout);
+
+            LLVM_Api.DisposeMessage(datalayout);
+        }
 
         ReC = rec;
 
@@ -85,7 +101,7 @@ public class LLVMContext
     public static LLVMContext Create(RecContext ctx, string moduleName = "default_module")
         => new(moduleName, ctx);
 
-    public void CompileAll()
+    public void CompileAll(string outfile)
     {
         ReC.AnalyzeAll();
 
@@ -110,6 +126,9 @@ public class LLVMContext
             var error = LLVM_Api.RunPasses(Module, str, TargetMachine, options);
 
             LLVM_Api.CantFail(error);
+
+            TargetMachine.EmitToFile(
+                Module, outfile, LLVMCodeGenFileType.LLVMObjectFile);
         }
     }
 }

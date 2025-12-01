@@ -4,6 +4,8 @@ namespace Re.C.Definitions;
 
 public class Scope : DefinitionBase
 {
+    public override string DefinitionKind => "scope";
+
     public required RecContext CTX { get; init; }
     public RecType? AssociatedType { get; init; }
     public Dictionary<Identifier, IDefinition> Definitions { get; } = [];
@@ -99,7 +101,7 @@ public class Scope : DefinitionBase
         else if (err.IsAmbiguous(out var ambiguous))
         {
             CTX.Diagnostics.AddError(
-                span, Errors.AmbiguousIdentifier(identifier, ambiguous));
+                span, Errors.Ambiguous(identifier, ambiguous));
         }
         else throw Unreachable;
     }

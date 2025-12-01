@@ -54,7 +54,7 @@ public class TypeAssociations(RecContext ctx)
         {
             err.UnwrapAsAmbiguous(out var values);
             CTX.Diagnostics.AddError(
-                span, Errors.AmbiguousIdentifier(ident, values));
+                span, Errors.Ambiguous(ident, values));
         }
 
         return null;

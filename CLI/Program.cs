@@ -18,7 +18,10 @@ foreach (var arg in args)
 
 try
 {
-    llvm.CompileAll();
+    llvm.CompileAll(
+        Path.Combine(
+            Directory.GetCurrentDirectory(),
+            ".out"));
 }
 finally
 {

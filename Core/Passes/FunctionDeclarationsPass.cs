@@ -149,6 +149,9 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
             IsExternal = context.External(0) is not null,
             IsUnsafe = context.Unsafe(0) is not null,
             HasReceiver = selfType is not null,
+
+            TemplateArguments = null!,
+            OuterScope = null!,
             
             DefinitionLocation = context.CalculateSourceSpan(),
         };

@@ -105,13 +105,6 @@ public abstract class RecType : IEquatable<RecType>, IVisitable
     public virtual Option<Field[]> Fields => Option.None;
 
     /// <summary>
-    /// Return if this type is 'template' (i.e. a non-instantiated generic struct).
-    /// These types cannot be used as the type of a variable of expression.
-    /// </summary>
-    [FieldOption(PrintLevel.Hidden)]
-    public virtual bool IsTemplate => false;
-
-    /// <summary>
     /// Return if this type can be copied bitwise without needing to mark its
     /// original location as moved-from.
     /// </summary>
@@ -161,6 +154,17 @@ public abstract class RecType : IEquatable<RecType>, IVisitable
     /// </summary>
     public static ArrayType Array(RecType type)
         => new() { Elem = type };
+    /// <summary>
+    /// Create an instance of the provided template.
+    /// </summary>
+    public static TemplateInstanceType TemplateInstance(StructTemplate template, Seq<RecType> args)
+    {
+        return new()
+        {
+            Arguments = args,
+            Template = template
+        };
+    }
         
     public virtual void PropogateVisitor<V>(V visitor)
         where V : IVisitor, allows ref struct

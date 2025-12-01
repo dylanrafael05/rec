@@ -1,12 +1,10 @@
 namespace Re.C.Types;
 
-public class StructType : NamedType
+public class StructType : NamedType, IStructlikeDefinition
 {
     private Field[]? fields = null;
 
-    public required GenericArgumentType[] TypeArguments { get; init; }
     public override bool IsStructural => true;
-    public override bool IsTemplate => TypeArguments.Length > 0;
     public override Option<Field[]> Fields => Option.Nonnull(fields);
     public override bool TriviallyCopyable => false;
 
@@ -39,9 +37,3 @@ public class StructType : NamedType
             visitor.VisitMany(fields, f => f.Type);
     }
 }
-
-// public class GenericInstanceType : RecType
-// {
-//     public required StructType Template { get; init; }
-//     // TODO; continue from here
-// }

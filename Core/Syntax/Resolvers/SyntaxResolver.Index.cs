@@ -18,7 +18,7 @@ public partial class SyntaxResolver
         if(array.Type is not ArrayType)
         {
             CTX.Diagnostics.AddError(
-                array.Span, Errors.InvalidIndexTarget(array.Type));
+                array.Span, Errors.InvalidIndexExprTarget(array.Type));
 
             anyErrors = true;
         }
@@ -26,7 +26,7 @@ public partial class SyntaxResolver
         if(index.Type != CTX.BuiltinTypes.USize)
         {
             CTX.Diagnostics.AddError(
-                index.Span, Errors.InvalidIndexIndex(CTX.BuiltinTypes.USize, array.Type));
+                index.Span, Errors.InvalidIndexExprIndex(CTX.BuiltinTypes.USize, array.Type));
         }
 
         if(anyErrors)

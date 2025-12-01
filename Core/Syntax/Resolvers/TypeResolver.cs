@@ -19,14 +19,25 @@ public class TypeResolver(RecContext ctx) : RecBaseVisitor<RecType>
         var def = ctx.Scopes.Current.DeepSearchOrDiagnose(
             [..from p in single.Ident._Parts select p.SourceSpan], 
             [..from p in single.Ident._Parts select p.TextAsIdentifier]);
-        return (def as NamedType) ?? ctx.BuiltinTypes.Error;
+
+        if(def is not NamedType namedType)
+        {
+            if(def is not null)
+                ctx.Diagnostics.AddError(
+                    single.CalculateSourceSpan(),
+                    Errors.InvalidType(def));
+
+            return ctx.BuiltinTypes.Error;
+        }
+        
+        return namedType;
     }
 
     public override RecType VisitTypenamePointer([NotNull] RecParser.TypenamePointerContext context)
     {
         var inner = Visit(context.Base);
 
-        if (inner is ErrorType)
+        if (inner.ContainsError)
             return inner;
 
         return RecType.Pointer(inner);
@@ -36,7 +47,7 @@ public class TypeResolver(RecContext ctx) : RecBaseVisitor<RecType>
     {
         var inner = Visit(context.Base);
 
-        if (inner is ErrorType)
+        if (inner.ContainsError)
             return inner;
 
         return RecType.Reference(inner);
@@ -46,9 +57,42 @@ public class TypeResolver(RecContext ctx) : RecBaseVisitor<RecType>
     {
         var inner = Visit(context.Base);
 
-        if(inner is ErrorType)
+        if(inner.ContainsError)
             return inner;
 
         return RecType.Array(inner);
+    }
+
+    public override RecType VisitTypenameGeneric([NotNull] RecParser.TypenameGenericContext context)
+    {
+        var templateAny = ctx.Scopes.Current.DeepSearchOrDiagnose(
+            [..from p in context.Base._Parts select p.SourceSpan], 
+            [..from p in context.Base._Parts select p.TextAsIdentifier]);
+
+        if(templateAny is null)
+            return ctx.BuiltinTypes.Error;
+
+        if(templateAny is not StructTemplate template)
+        {
+            ctx.Diagnostics.AddError(
+                context.CalculateSourceSpan(),
+                Errors.BadTypeInstantiationBase(templateAny));
+            
+            return ctx.BuiltinTypes.Error;
+        }
+
+        var args = context.Args._Args;
+
+        if(template.TypeArguments.Length != args.Count)
+        {
+            ctx.Diagnostics.AddError(
+                context.CalculateSourceSpan(),
+                Errors.InvalidNumberOfTypeInstantiationArgs(template, args.Count));
+            
+            return ctx.BuiltinTypes.Error;
+        }
+
+        return RecType.TemplateInstance(
+            template, [..from a in args select Visit(a)]);
     }
 }

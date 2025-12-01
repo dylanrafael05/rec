@@ -15,7 +15,7 @@ public partial class IRGenerator
     private ValueID GenerateIndexAsLHS(IndexExpression context)
     {
         return Builder.Build(
-            RecType.Pointer(context.Type), 
+            RecType.Reference(context.Type), 
             context.Span,
             new InstructionKind.IndexAddress(
                 Generate(context.Target),

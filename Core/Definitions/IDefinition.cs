@@ -14,6 +14,7 @@ public interface IDefinition
     public bool IsLinked { get; set; }
     
     public SourceSpan DefinitionLocation { get; }
+    public string DefinitionKind { get; }
 }
 
 public abstract class DefinitionBase : IDefinition
@@ -25,6 +26,7 @@ public abstract class DefinitionBase : IDefinition
     public bool IsLinked { get; set; }
 
     public Source DefinitionSource => DefinitionLocation.Source;
+    public abstract string DefinitionKind { get; }
 
     public override string ToString()
         => $"{GetType().Name} '{this.FullName}'";

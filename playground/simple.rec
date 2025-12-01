@@ -1,7 +1,7 @@
 external fn puts(str *u8)
 external fn malloc(sz usize) *none
 
-fn zero() u64
+fn main() i32
 {
     puts("Hello, world!\n");
     return 0;

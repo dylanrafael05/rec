@@ -1,17 +1,29 @@
+using System.Runtime.CompilerServices;
+
 namespace Re.C.Types;
 
 public class TypeSubstitutions
 {
-    private readonly Dictionary<GenericArgumentType, RecType> mappings = [];
-    public IReadOnlyDictionary<GenericArgumentType, RecType> Mappings => mappings;
+    public static TypeSubstitutions Of(params ReadOnlySpan<(TemplateType, RecType)> mappings)
+    {
+        var result = new TypeSubstitutions();
 
-    public bool ContainsSubstutionFor(GenericArgumentType type)
+        foreach(var mapping in mappings)
+            result.AddSubstitution(mapping.Item1, mapping.Item2);
+            
+        return result;
+    }
+
+    private readonly Dictionary<TemplateType, RecType> mappings = [];
+    public IReadOnlyDictionary<TemplateType, RecType> Mappings => mappings;
+
+    public bool ContainsSubstutionFor(TemplateType type)
         => mappings.ContainsKey(type);
 
-    public RecType TrySubstitute(GenericArgumentType type)
+    public RecType TrySubstitute(TemplateType type)
         => mappings.GetValueOrDefault(type) ?? type;
 
-    public void AddSubstitution(GenericArgumentType from, RecType to)
+    public void AddSubstitution(TemplateType from, RecType to)
     {
         mappings.Add(from, to);
     }
