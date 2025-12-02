@@ -5,9 +5,35 @@ namespace Re.C.Vocabulary;
 
 public static class DictionaryUtils
 {
-    public readonly ref struct DictionaryValue<K, V>(ref V value)
+    public struct UninitDictionaryEntry<K, V>(IDictionary<K, V> dict, K key, Option<V> value)
     {
-        public readonly ref V Value = ref value;
+        private readonly IDictionary<K, V> dict = dict;
+        private readonly K key = key;
+        private Option<V> value = value;
+
+        public readonly bool IsInitialized 
+            => value.MatchesSome;
+
+        public V Value
+        {
+            get
+            {
+                if(value.IsNone)
+                {
+                    var def = default(V);
+                    value = Option.Some(def!);
+                    dict.Add(key, def!);
+                }
+
+                return value.Unwrap();
+            }
+
+            set
+            {
+                this.value = Option.Some(value);
+                dict[key] = value; 
+            }
+        }
     }
 
     public readonly ref struct OptionalDictionaryValue<K, V>(ref V value)
@@ -34,11 +60,17 @@ public static class DictionaryUtils
         return new(ref CollectionsMarshal.GetValueRefOrNullRef(self, key));
     }
 
-    public static bool GetOrInsertDefault<K, V>(this Dictionary<K, V> self, K key, out DictionaryValue<K, V> value)
+    public static bool GetOrInsertDefault<K, V>(this Dictionary<K, V> self, K key, out UninitDictionaryEntry<K, V> value)
         where K : notnull
     {
-        value = new(ref CollectionsMarshal.GetValueRefOrAddDefault(self, key, out var exists)!);
-        return exists;
+        if(self.TryGetValue(key, out var initValue))
+        {
+            value = new(self, key, Option.Some(initValue));
+            return true;
+        }
+
+        value = new(self, key, Option.None);
+        return false;
     }
 
     public static void Add<K, V>(this Dictionary<K, V> self, (K, V) tuple)

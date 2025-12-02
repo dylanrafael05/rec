@@ -152,6 +152,10 @@ public partial class CodeGenerator(LLVMContext ctx)
             InstructionKind.Sizeof sz => GenerateSizeof(sz, inst),
             InstructionKind.IndexAddress index => GenerateIndex(index, inst),
 
+            // Simple, inlined examples
+            InstructionKind.ArrayPtr array => GenerateFieldCopyFromIndex(array.Array, TypeCompiler.ArrayPtrIndex),
+            InstructionKind.ArraySize array => GenerateFieldCopyFromIndex(array.Array, TypeCompiler.ArraySizeIndex),
+
             // Special cases; noop and leak have no impact on codegen
             InstructionKind.Noop noop => Option.Some(ValueOf(noop.Value)),
             InstructionKind.Leak leak => Option.Some(ValueOf(leak.Value)),

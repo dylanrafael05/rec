@@ -8,7 +8,7 @@ public class PointerType : RecType
         => other is PointerType t
         && t.Pointee.Equals(Pointee);
     public override int GetHashCode()
-        => HashCode.Combine(Pointee);
+        => HashCode.Combine(typeof(PointerType), Pointee);
 
     public override string Name => $"*{Pointee.Name}";
     public override string FullName => $"*{Pointee.FullName}";

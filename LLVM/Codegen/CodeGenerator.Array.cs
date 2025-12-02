@@ -9,15 +9,14 @@ public partial class CodeGenerator
     public LLVMValueRef GenerateArrayFromParts(ArrayType type, LLVMValueRef ptr, LLVMValueRef size)
     {
         var ty = CTX.TypeCompiler.Compile(type);
-        var lptr = CTX.Builder.BuildAlloca(ty);
+        var value = ty.Poison;
 
-        CTX.Builder.BuildStore(
-            ptr, CTX.Builder.BuildStructGEP2(ty, lptr, TypeCompiler.ArrayPtrIndex));
+        value = CTX.Builder.BuildInsertValue(
+            value, ptr, TypeCompiler.ArrayPtrIndex);
+        value = CTX.Builder.BuildInsertValue(
+            value, size, TypeCompiler.ArraySizeIndex);
         
-        CTX.Builder.BuildStore(
-            size, CTX.Builder.BuildStructGEP2(ty, lptr, TypeCompiler.ArraySizeIndex));
-        
-        return CTX.Builder.BuildLoad2(ty, lptr);
+        return value;
     }
 
     private Option<LLVMValueRef> GenerateArray(InstructionKind.ArrayLiteral array, Instruction inst)

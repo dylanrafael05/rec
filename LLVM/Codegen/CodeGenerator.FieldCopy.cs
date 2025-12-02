@@ -7,8 +7,13 @@ public partial class CodeGenerator
 {
     private Option<LLVMValueRef> GenerateFieldCopy(InstructionKind.FieldCopy fc, Instruction inst)
     {
-        var value = ValueOf(fc.Value);
+        return GenerateFieldCopyFromIndex(fc.Value, fc.Index);
+    }
+
+    private Option<LLVMValueRef> GenerateFieldCopyFromIndex(ValueID value, int index)
+    {
+        var lvalue = ValueOf(value);
         return Option.Some(
-            CTX.Builder.BuildExtractValue(value, (uint)fc.Index));
+            CTX.Builder.BuildExtractValue(lvalue, (uint)index));
     }
 }

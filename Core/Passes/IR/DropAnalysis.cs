@@ -8,7 +8,7 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
     public override void Perform(IRFunction fn)
     {
         // TODO: real logging //
-        Console.WriteLine(fn.ToIRString());
+        // Console.WriteLine(fn.ToIRString());
     }
 
     private void TryMoveValue(

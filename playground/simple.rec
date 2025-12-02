@@ -1,8 +1,16 @@
 external fn puts(str *u8)
 external fn malloc(sz usize) *none
 
+mod sys
+{
+    fn println(str [u8]) 
+    {
+        puts(str.ptr);
+    }
+}
+
 fn main() i32
 {
-    puts("Hello, world!\n");
+    sys::println("Hello, world!\n");
     return 0;
 }

@@ -52,10 +52,12 @@ public class TypeCompiler(LLVMContext ctx)
 
     private LLVMTypeRef ImplementCompileFunction(FunctionType type)
     {
-        return LLVMTypeRef.CreateFunction(
+        var result = LLVMTypeRef.CreateFunction(
             Compile(type.Return),
             [.. from p in type.Parameters select Compile(p)]
         );
+
+        return result;
     }
 
     private LLVMTypeRef ImplementCompileStruct(StructType type)

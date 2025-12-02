@@ -10,7 +10,7 @@ public class ArrayType : RecType
         => other is ArrayType t
         && t.Elem.Equals(Elem);
     public override int GetHashCode()
-        => HashCode.Combine(Elem);
+        => HashCode.Combine(typeof(ArrayType), Elem);
 
     public override string Name => $"[{Elem.Name}]";
     public override string FullName => $"[{Elem.FullName}]";

@@ -152,7 +152,7 @@ public partial class SyntaxResolver
         return new StringLiteral
         {
             Span = span,
-            Type = RecType.Pointer(CTX.BuiltinTypes.U8),
+            Type = RecType.Array(CTX.BuiltinTypes.U8),
             Value = value.ToString()
         };
     }

@@ -8,9 +8,9 @@ public class FunctionType : RecType
     public override bool Equals(RecType? other)
         => other is FunctionType fn
         && fn.Parameters == Parameters
-        && object.Equals(fn.Return, Return);
+        && fn.Return == Return;
     public override int GetHashCode()
-        => HashCode.Combine(Parameters, Return);
+        => HashCode.Combine(typeof(FunctionType), Parameters, Return);
 
     private string GetName(Func<RecType, string> stringifier)
     {

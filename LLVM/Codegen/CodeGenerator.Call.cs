@@ -14,10 +14,9 @@ public partial class CodeGenerator
 
         var fnValue = ValueOf(call.TargetPtr);
         var fnPtrType = CurrentFunction.InstructionByValue(call.TargetPtr).Type;
-
+        
         var fnType = fnPtrType
-            .UnwrapAs<PointerType>()
-            .Pointee
+            .Deref.Unwrap()
             .UnwrapAs<FunctionType>();
 
         return Option.Some(

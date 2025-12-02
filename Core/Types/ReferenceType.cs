@@ -9,7 +9,7 @@ public class ReferenceType : RecType
         => other is ReferenceType t
         && t.Referee.Equals(Referee);
     public override int GetHashCode()
-        => HashCode.Combine(Referee);
+        => HashCode.Combine(typeof(ReferenceType), Referee);
 
     public override string Name => $"&{Referee.Name}";
     public override string FullName => $"&{Referee.FullName}";

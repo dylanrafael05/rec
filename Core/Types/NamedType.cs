@@ -16,7 +16,7 @@ public abstract class NamedType : RecType, IDefinition
         && t.Identifier == Identifier
         && t.Parent == Parent;
     public override int GetHashCode()
-        => HashCode.Combine(Identifier, Parent);
+        => HashCode.Combine(GetType(), Identifier, Parent);
 
     public override string Name => Identifier.ToString();
     public override string FullName => (this as IDefinition).FullName;

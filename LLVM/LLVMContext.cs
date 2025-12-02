@@ -4,8 +4,6 @@ using Re.C.LLVM.Codegen;
 using Re.C.LLVM.Passes;
 using Re.C.Passes;
 
-using LLVM_Api = LLVMSharp.Interop.LLVM;
-
 namespace Re.C.LLVM;
 
 public class LLVMContext
