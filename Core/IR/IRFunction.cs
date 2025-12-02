@@ -9,6 +9,7 @@ public class IRFunction(Function function)
 
     private readonly List<InstructionBlock> blocks = [];
     private readonly Bimapping<Variable, ValueID> variables = [];
+    private readonly HashSet<ValueID> droppedNamedValues = [];
     private InstructionBlock? finalBlock;
     private readonly Dictionary<ValueID, Instruction> valueToInstruction = [];
 
@@ -16,6 +17,7 @@ public class IRFunction(Function function)
     public InstructionBlock FinalBlock => finalBlock.UnwrapNull();
     public IReadOnlyList<InstructionBlock> Blocks => blocks;
     public IReadOnlyBimapping<Variable, ValueID> VariableMappings => variables;
+    public IReadOnlySet<ValueID> DroppedNamedValues => droppedNamedValues;
     
     private long maxValueID = 0;
 
@@ -56,6 +58,11 @@ public class IRFunction(Function function)
     {
         variables.Remove(var);
         variables.Add(var, valueID);
+    }
+
+    public void NamedDropValue(ValueID valueID)
+    {
+        droppedNamedValues.Add(valueID);
     }
 
     public string ToIRString()

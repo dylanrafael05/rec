@@ -42,6 +42,10 @@ public class LLVMContext
     /// A reference to the code generator
     /// </summary>
     public CodeGenerator CodeGenerator { get; }
+    /// <summary>
+    /// A reference to the destructor compiler
+    /// </summary>
+    public DestructorCompiler DestructorCompiler { get; }
 
     /// <summary>
     /// A reference to the containing ReC context
@@ -89,6 +93,7 @@ public class LLVMContext
 
         TypeCompiler = new(this);
         CodeGenerator = new(this);
+        DestructorCompiler = new(this);
 
         DefaultPasses = new([
             new DeclarationsPass(this),
@@ -108,13 +113,15 @@ public class LLVMContext
             ReC.ExecutePasses(DefaultPasses);
         }
 
+        DestructorCompiler.CompileDefined();
+
         unsafe
         {
             LLVMPassBuilderOptionsRef options = LLVM_Api.CreatePassBuilderOptions();
 
             options.SetVerifyEach(true);
             options.SetCallGraphProfile(true);
-            options.SetInlinerThreshold(10);
+            options.SetInlinerThreshold(50);
             options.SetLoopVectorization(true);
             options.SetLoopUnrolling(true);
             options.SetLoopInterleaving(true);

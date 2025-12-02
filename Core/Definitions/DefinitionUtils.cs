@@ -9,10 +9,17 @@ public static class DefinitionUtils
     {
         public void BuildFullName(StringBuilder builder)
         {
-            if (self.IsLinked && self.Parent is not null && self.Parent.Identifier.IsName(out _))
-            {
-                self.Parent.BuildFullName(builder);
-                builder.Append("::");
+            if (self.IsLinked && self.Parent is not null)
+            {   
+                if(self.Parent.Identifier.IsName(out _))
+                {
+                    self.Parent.BuildFullName(builder);
+                    builder.Append("::");
+                }
+                else if(self.Parent.AssociatedType is var ty and not null)
+                {
+                    builder.Append($"{ty.FullName}::");
+                }
             }
             
             builder.Append(self.Identifier);

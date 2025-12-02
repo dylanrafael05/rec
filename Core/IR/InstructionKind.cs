@@ -269,22 +269,22 @@ public abstract record InstructionKind
         public override bool IsTerminal => true;
     }
     
-    public record DropPtr(ValueID Ptr) : InstructionKind
+    public record Drop(ValueID Value, bool Named, DropMethod Method) : InstructionKind
     {
         public override string ToString()
-            => $"drop ptr {Ptr}";
+            => $"drop{(Named ? " named" : "")} {Value} via {
+                Method switch
+                {
+                    DropMethod.ThroughPointer => "ptr",
+                    DropMethod.ThroughArray => "array",
+                    DropMethod.Direct => "value",
+
+                    _ => throw Unreachable
+                }
+            }";
         public override void GetArguments(IList<ValueID> values)
         {
-            values.Add(Ptr);
-        }
-    }
-    public record DropVal(ValueID Val) : InstructionKind
-    {
-        public override string ToString()
-            => $"drop val {Val}";
-        public override void GetArguments(IList<ValueID> values)
-        {
-            values.Add(Val);
+            values.Add(Value);
         }
     }
 

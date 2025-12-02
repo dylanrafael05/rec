@@ -12,11 +12,15 @@ public partial class CodeGenerator(LLVMContext ctx)
     private Dictionary<Function, LLVMValueRef> LLVMFunctions { get; } = [];
     private Dictionary<InstructionBlock, LLVMBasicBlockRef> LLVMBlocks { get; } = [];
     private Dictionary<ValueID, LLVMValueRef> LLVMValues { get; } = [];
+    private Dictionary<ValueID, LLVMValueRef> NamedDropFlags { get; } = [];
 
     private IRFunction CurrentFunction
         => CTX.ReC.Functions.Current.UnwrapNull().IRFunction.Unwrap();
     private LLVMValueRef CurrentLLVMFunction 
         => LLVMFunctions[CurrentFunction.Function];
+        
+    public LLVMValueRef GetLLVMFunction(Function fn)
+        => LLVMFunctions[fn];
 
     public void DefineFunction(Function function)
     {
@@ -133,6 +137,7 @@ public partial class CodeGenerator(LLVMContext ctx)
             InstructionKind.Branch br => GenerateBranch(br, inst),
             InstructionKind.BuiltinCast cast => GenerateCast(cast, inst),
             InstructionKind.Call call => GenerateCall(call, inst),
+            InstructionKind.Drop drop => GenerateDrop(drop, inst),
             InstructionKind.FieldCopy fc => GenerateFieldCopy(fc, inst),
             InstructionKind.FieldPtr fp => GenerateFieldPtr(fp, inst),
             InstructionKind.FloatLiteral flt => GenerateFloat(flt, inst),
@@ -163,6 +168,20 @@ public partial class CodeGenerator(LLVMContext ctx)
             _ => throw Unimplemented
         };
 
-        LLVMValues.Add(inst.ValueID.Unwrap(), optval.If(!inst.Type.IsNone).Or(NoneLiteral));
+        // Add named drop flag as needed
+        var instResult = inst.ValueID.Unwrap();
+        if (CurrentFunction.DroppedNamedValues.Contains(instResult))
+        {
+            var flag = CTX.Builder.BuildAlloca(CTX.LLVM.Int1Type);
+            CTX.Builder.BuildStore(
+                LLVMValueRef.CreateConstInt(CTX.LLVM.Int1Type, 0),
+                flag
+            );
+
+            NamedDropFlags.Add(instResult, flag);
+        }
+
+        // Join llvm value
+        LLVMValues.Add(instResult, optval.If(!inst.Type.IsNone).Or(NoneLiteral));
     }
 }

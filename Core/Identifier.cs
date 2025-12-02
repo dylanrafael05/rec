@@ -30,6 +30,7 @@ public readonly partial record struct Identifier
         public static Identifier Self => Name("self");
         public static Identifier Size => Name("size");
         public static Identifier Ptr => Name("ptr");
+        public static Identifier Drop => Name("drop");
     }
 }
 

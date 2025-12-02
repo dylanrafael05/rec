@@ -4,13 +4,6 @@ using Re.C.Visitor;
 
 namespace Re.C.IR;
 
-public enum DropMethod
-{
-    ThroughPointer,
-    ThroughArray,
-    Direct
-}
-
 public class InstructionBlock(IRFunction function, string name, Scope lexicalScope) : IVisitable
 {
     public IRFunction Function { get; } = function;

@@ -9,6 +9,22 @@ public class IRBuilder(RecContext CTX)
     public int CurrentIndex { get; private set; }
     public bool CurrentBlockIsComplete => CurrentBlock.UnwrapNull().IsComplete;
 
+    public void PositionAfterLastPhi(InstructionBlock block)
+    {
+        CurrentBlock = block;
+        CurrentIndex = block.Instructions
+            .FindFirstIndex(i => i.Kind is not InstructionKind.Phi)
+            .Or(0);
+    }
+
+    public void PositionBeforeLastTerminal(InstructionBlock block)
+    {
+        CurrentBlock = block;
+        CurrentIndex = block.Instructions
+            .FindLastIndex(i => !i.Kind.IsTerminal)
+            .Or(block.InstructionCount - 1) + 1;
+    }
+
     public void PositionAtEnd(InstructionBlock block)
     {
         CurrentBlock = block;
@@ -20,8 +36,13 @@ public class IRBuilder(RecContext CTX)
     /// </summary>
     public ValueID Build(RecType type, SourceSpan span, InstructionKind kind)
     {
-        if(CurrentBlockIsComplete)
+        if(CurrentBlockIsComplete && (
+            CurrentIndex == CurrentBlock.UnwrapNull().InstructionCount + 1
+            || kind.IsTerminal))
             throw Panic($"Attempt to build an expression in a completed block.");
+
+        if(kind is InstructionKind.Drop(var value, true, _))
+            CurrentBlock.UnwrapNull().Function.NamedDropValue(value);
 
         var instruction = new Instruction(type, span, kind);
         return CurrentBlock.UnwrapNull().InsertInstruction(CurrentIndex++, instruction);

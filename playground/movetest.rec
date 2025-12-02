@@ -3,6 +3,15 @@ struct Movable
     x usize
 }
 
+struct MovableX2
+{
+    a Movable,
+    b Movable
+}
+
+external fn puts(str *u8)
+external fn sink(v usize)
+
 mod as Movable
 {
     // TODO; improper syntax leads to crashes (adding '->' before return type)
@@ -20,8 +29,15 @@ mod as Movable
     {
         return self.x cast(u64);
     }
+
+    fn drop(&self)
+    {
+        puts("Hello, world!\n".ptr);
+        sink(self*.x);
+    }
 }
 
+/*
 fn leak_test() none
 {
     let from = new Movable 
@@ -29,12 +45,16 @@ fn leak_test() none
         x = 2uz
     };
 
-    __intrinsic leak(from);
-    let t1 = from;
-    let t2 = from;
+    unsafe
+    {
+        __intrinsic leak(from);
+        let t1 = from;
+        let t2 = from;
 
-    __intrinsic store_uninit(from& cast(*Movable), from);
+        uninitialized (from& cast(*Movable))* = from;
+    }
 }
+*/
 
 fn return_test() none
 {
@@ -42,6 +62,22 @@ fn return_test() none
     {
         x = 1uz,
     };
+
+    let m2 = mov;
+    let mx = m2.clone();
+
+    if mx.x == 1uz
+    {
+        let m4 = mx;
+    }
+
+    let m3 = new MovableX2
+    {
+        a = m2.clone(),
+        b = m2.clone()
+    };
+
+    /*
     let mov1 = mov.clone();
 
     if mov.x == 1uz
@@ -60,4 +96,5 @@ fn return_test() none
     let x = 10;
     let y = x;
     let z = x;
+    */
 }
