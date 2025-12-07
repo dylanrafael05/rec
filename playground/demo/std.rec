@@ -1,0 +1,96 @@
+// External functions //
+unsafe external fn puts(s *u8)
+unsafe external fn malloc(n usize) *none
+unsafe external fn free(ptr *none)
+
+// NOTE; this is a hack to deal with rogue
+//       linker errors!
+unsafe fn __chkstk_ms(ptr *none) {}
+unsafe fn __chkstk(ptr *none) {}
+
+// String type //
+mod std
+
+struct String
+{
+    raw [u8],
+    on_heap bool
+}
+
+mod as String
+{
+    // Drop implementation
+    fn drop(&self)
+    {
+        if self*.on_heap
+        {
+            unsafe 
+            {
+                free(self*.raw.ptr cast(*none));
+            }
+        }
+    }
+
+    // Get the length of a string
+    fn len(&self) usize
+    {
+        return self*.raw.size;
+    }
+
+    // Concat two strings together
+    fn then(&self, other &String) String
+    {
+        let len = self*.len() + other*.len();
+        let ptr = unsafe (malloc(len + 1uz) cast(*u8));
+        let arr = unsafe ([ptr ;; len]);
+
+        let i = 0uz;
+        while i < self*.len()
+        {
+            arr[i] = self*.raw[i];
+            i = i + 1uz;
+        }
+
+        while i < len
+        {
+            arr[i] = other*.raw[i - self*.len()];
+            i = i + 1uz;
+        }
+
+        arr[i] = 0u8;
+
+        return struct String
+        {
+            raw = arr,
+            on_heap = true
+        };
+    }
+
+    // Create a new empty string
+    fn new() String
+    {
+        return struct String
+        {
+            raw = "",
+            on_heap = false
+        };
+    }
+
+    // Create a raw string
+    fn from(raw [u8]) String
+    {
+        return struct String
+        {
+            raw = raw,
+            on_heap = false
+        };
+    }
+
+    fn print(&self)
+    {
+        unsafe
+        {
+            puts(self*.raw.ptr);
+        }
+    }
+}

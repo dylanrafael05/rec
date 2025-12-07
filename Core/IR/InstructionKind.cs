@@ -8,7 +8,7 @@ public abstract record InstructionKind
 {
     public virtual void GetJumpBlocks(IList<InstructionBlock> blocks)
     {}
-    public virtual void GetArguments(IList<ValueID> values)
+    public virtual void GetArguments(IList<ValueRef> values)
     {}
     public virtual bool IsTerminal => false;
 
@@ -38,11 +38,11 @@ public abstract record InstructionKind
         public override string ToString()
             => $"function {Function.FullName}";
     }
-    public record StructLiteral(ValueID[] Fields) : InstructionKind
+    public record StructLiteral(ValueRef[] Fields) : InstructionKind
     {
         public override string ToString()
             => $"struct [{string.Join(", ", Fields)}]";
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             foreach(var f in Fields)
                 values.Add(f);
@@ -58,29 +58,29 @@ public abstract record InstructionKind
     {
         public override string ToString()
             => Construction.ToString();
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
             => Construction.GetArguments(values);
     }
-    public record ArraySize(ValueID Array) : InstructionKind
+    public record ArraySize(ValueRef Array) : InstructionKind
     {
         public override string ToString()
             => $"{Array} .size";
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
             => values.Add(Array);
     }
-    public record ArrayPtr(ValueID Array) : InstructionKind
+    public record ArrayPtr(ValueRef Array) : InstructionKind
     {
         public override string ToString()
             => $"{Array} .ptr";
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
             => values.Add(Array);
     }
-    public record IndexAddress(ValueID Array, ValueID Index) : InstructionKind
+    public record IndexAddress(ValueRef Array, ValueRef Index) : InstructionKind
     {
         public override string ToString()
             => $"{Array}[{Index}]&";
 
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(Array);
             values.Add(Index);
@@ -91,12 +91,12 @@ public abstract record InstructionKind
     /// "noop" is mostly used to signal that a no-op but meaningful operation has taken place,
     /// like a cast from a pointer to a reference.
     /// </summary>
-    public record Noop(ValueID Value) : InstructionKind
+    public record Noop(ValueRef Value) : InstructionKind
     {
         public override string ToString()
             => $"{Value}";
 
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(Value);
         }
@@ -108,12 +108,12 @@ public abstract record InstructionKind
     /// the perspective of the move checker). It is used to implement the 'break' expression
     /// syntax.
     /// </summary>
-    public record Leak(ValueID Value) : InstructionKind
+    public record Leak(ValueRef Value) : InstructionKind
     {
         public override string ToString()
             => $"leak {Value}";
 
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(Value);
         }
@@ -125,102 +125,102 @@ public abstract record InstructionKind
             => $"argument {Index}";
     }
 
-    public record Binary(ValueID LHS, ValueID RHS, BinaryOperator Operator) : InstructionKind
+    public record Binary(ValueRef LHS, ValueRef RHS, BinaryOperator Operator) : InstructionKind
     {
         public override string ToString()
             => $"{LHS} {BinaryOperator.GetRepr(Operator)} {RHS}";
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(LHS);
             values.Add(RHS);
         }
     }
-    public record Unary(ValueID Op, UnaryOperator Operator) : InstructionKind
+    public record Unary(ValueRef Op, UnaryOperator Operator) : InstructionKind
     {
         public override string ToString()
             => $"{UnaryOperator.GetRepr(Operator)} {Op}";
             
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(Op);
         }
     }
-    public record Local(ValueID Value) : InstructionKind
+    public record Local(ValueRef Value) : InstructionKind
     {
         public override string ToString()
             => $"new local, init {Value}";
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(Value);
         }
     }
 
-    public record FieldPtr(ValueID Ptr, int Index) : InstructionKind
+    public record FieldPtr(ValueRef Ptr, int Index) : InstructionKind
     {
         public override string ToString()
             => $"fieldptr {Ptr} field {Index}";
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(Ptr);
         }
     }
-    public record FieldCopy(ValueID Value, int Index) : InstructionKind
+    public record FieldCopy(ValueRef Value, int Index) : InstructionKind
     {
         public override string ToString()
             => $"fieldcp {Value} field {Index}";
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(Value);
         }
     }
 
-    public record Load(ValueID Ptr) : InstructionKind
+    public record Load(ValueRef Ptr) : InstructionKind
     {
         public override string ToString()
             => $"load {Ptr}";
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(Ptr);
         }
     }
-    public record Store(ValueID Ptr, ValueID Value, bool Uninit) : InstructionKind
+    public record Store(ValueRef Ptr, ValueRef Value, bool Uninit) : InstructionKind
     {
         public override string ToString()
             => $"store {(Uninit ? "uninit " : "")}{Ptr} <- {Value}";
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(Ptr);
             values.Add(Value);
         }
     }
 
-    public record Call(ValueID TargetPtr, ValueID[] Arguments) : InstructionKind
+    public record Call(ValueRef TargetPtr, ValueRef[] Arguments) : InstructionKind
     {
         public override string ToString()
             => $"call {TargetPtr} with {string.Join(", ", Arguments)}";
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(TargetPtr);
             foreach(var f in Arguments)
                 values.Add(f);
         }
     }
-    public record BuiltinCast(ValueID Value) : InstructionKind
+    public record BuiltinCast(ValueRef Value) : InstructionKind
     {
         public override string ToString()
             => $"cast {Value}";
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(Value);
         }
     }
 
-    public record Phi(Dictionary<InstructionBlock, ValueID> Incoming) : InstructionKind
+    public record Phi(Dictionary<InstructionBlock, ValueRef> Incoming) : InstructionKind
     {
         public override string ToString()
             => $"phi {string.Join(", ", from kvp in Incoming select $"{kvp.Key.Name}: {kvp.Value}")}";
         
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             foreach(var i in Incoming.Values)
                 values.Add(i);
@@ -240,18 +240,18 @@ public abstract record InstructionKind
 
         public override bool IsTerminal => true;
     }
-    public record Return(ValueID Value) : InstructionKind
+    public record Return(ValueRef Value) : InstructionKind
     {
         public override string ToString()
             => $"return {Value}";
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(Value);
         }
 
         public override bool IsTerminal => true;
     }
-    public record Branch(ValueID Cond, InstructionBlock WhenTrue, InstructionBlock WhenFalse) : InstructionKind
+    public record Branch(ValueRef Cond, InstructionBlock WhenTrue, InstructionBlock WhenFalse) : InstructionKind
     {
         public override string ToString()
             => $"if {Cond} then {WhenTrue.Name} else {WhenFalse.Name}";
@@ -261,7 +261,7 @@ public abstract record InstructionKind
             blocks.Add(WhenTrue);
             blocks.Add(WhenFalse);
         }
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(Cond);
         }
@@ -269,7 +269,7 @@ public abstract record InstructionKind
         public override bool IsTerminal => true;
     }
     
-    public record Drop(ValueID Value, bool Named, DropMethod Method) : InstructionKind
+    public record Drop(ValueRef Value, bool Named, DropMethod Method) : InstructionKind
     {
         public override string ToString()
             => $"drop{(Named ? " named" : "")} {Value} via {
@@ -282,7 +282,7 @@ public abstract record InstructionKind
                     _ => throw Unreachable
                 }
             }";
-        public override void GetArguments(IList<ValueID> values)
+        public override void GetArguments(IList<ValueRef> values)
         {
             values.Add(Value);
         }

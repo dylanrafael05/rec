@@ -1,0 +1,12 @@
+use std
+
+fn main() i32
+{
+    let a = String::from("Hello, ");
+    let b = String::from("World!");
+    let c = a;
+
+    c.then(b&).print();
+
+    return 0;
+}

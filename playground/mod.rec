@@ -1,20 +1,19 @@
+// Module definition
 mod example
 {
-    struct Type
-    {
-        x isize
-    }
+    // Simple type definition
+    struct Type { x isize }
 
-    fn make_type() Type
+    // 'Constructor'
+    fn new_type() Type
     {
-        return new Type
-        {
-            x = 0isize,
-        };
+        return struct Type { x = 0iz };
     }
 }
 
+// Usage example
 fn use_type() example::Type
 {
-    return example::make_type();
+    let unused = example::new_type();
+    return example::new_type();
 }

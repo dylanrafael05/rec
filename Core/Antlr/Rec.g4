@@ -42,7 +42,6 @@ Break    : 'break';
 Defer    : 'defer';
 Struct   : 'struct';
 Template : 'template';
-New      : 'new';
 Return   : 'return';
 For      : 'for';
 Mod      : 'mod';
@@ -345,7 +344,7 @@ structExprAssign
     ;
 
 structExpression
-    : New StructType=typename '{' (Parts+=structExprAssign ',')* (Parts+=structExprAssign)? '}'
+    : Struct StructType=typename '{' (Parts+=structExprAssign ',')* (Parts+=structExprAssign)? '}'
     ;
 
 variableReference

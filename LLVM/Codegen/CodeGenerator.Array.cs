@@ -34,7 +34,7 @@ public partial class CodeGenerator
 
         var llvmArray = array.Construction switch 
         {
-            var x and { MatchesRaw: true } => ValueOf(x.UnwrapAsRaw().Count),
+            var x and { MatchesRaw: true } => ValueOf(x.UnwrapAsRaw().Ptr),
             _                              => CTX.Builder.BuildArrayAlloca(llvmElemTy, arrSize)
         };
 

@@ -18,12 +18,12 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
         bool throughPointer,
         bool emitErrors)
     {
-        // Ignore leaked values entirely //
-        if(block.LeakedValues.Contains(value))
-            return;
-
         var argInst = block.Function.InstructionByValue(value);
         var argType = throughPointer ? argInst.Type.Deref.Unwrap() : argInst.Type;
+
+        // Ignore leaked values entirely //
+        if(block.LeakedValues.Contains(value) || argType.TriviallyCopyable)
+            return;
         
         block.DropAtEnd.Remove(value);
 
@@ -51,10 +51,7 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
         }
 
         // Mark as moved if not leaked and not copyable
-        if(!argType.TriviallyCopyable)
-        {
-            block.MovedValues.TryAdd(value, mover.Span);
-        }
+        block.MovedValues.TryAdd(value, mover.Span);
     }
 
     protected override void VisitBlock(InstructionBlock block)
@@ -106,7 +103,7 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
         {
             var inst = block.Instructions[i];
 
-            using var args = Temporary.List<ValueID>();
+            using var args = Temporary.List<ValueRef>();
             inst.Kind.GetArguments(args.Value);
 
             // General drop analysis; move all arguments (unless copied or leaked) //
@@ -125,7 +122,7 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
             // Local declarations; mark result as a drop-via-pointer type
             if(inst.Kind is InstructionKind.Local local)
             {
-                if(!block.Function.InstructionByValue(local.Value).Type.TriviallyCopyable)
+                if(!inst.Type.Deref.Unwrap().TriviallyCopyable)
                     block.DropAtEnd.Add(inst.ValueID.Unwrap(), DropMethod.ThroughPointer);
             }
 
@@ -139,7 +136,7 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
             // Stores; drop existing value before assigning
             if(inst.Kind is InstructionKind.Store store && !store.Uninit)
             {
-                if(block.Function.InstructionByValue(store.Value).Type.TriviallyCopyable)
+                if(!block.Function.InstructionByValue(store.Value).Type.TriviallyCopyable)
                 {
                     block.InsertInstruction(i, new Instruction(
                         CTX.BuiltinTypes.None, inst.Span,
@@ -156,7 +153,7 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
                 var ptrInst = block.Function.InstructionByValue(load.Ptr);
                 if(ptrInst.Kind is InstructionKind.Local)
                 {
-                    TryMoveValue(block, inst, load.Ptr, throughPointer: true, emitErrors: false);
+                    TryMoveValue(block, inst, load.Ptr, throughPointer: true, emitErrors: true);
                 }
                 else if(ptrInst.Type is ReferenceType && !inst.Type.TriviallyCopyable)
                 {
@@ -184,6 +181,10 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
                 break;
             }
         }
+
+        // If there are no consequents, this block returns and thus
+        // we must drop values.
+        shouldDropValues |= block.Consequents.Count == 0;
 
         if(shouldDropValues)
         {

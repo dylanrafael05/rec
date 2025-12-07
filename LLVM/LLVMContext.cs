@@ -119,7 +119,7 @@ public class LLVMContext
         {
             LLVMPassBuilderOptionsRef options = LLVM_Api.CreatePassBuilderOptions();
 
-            options.SetVerifyEach(true);
+            // options.SetVerifyEach(true);
             options.SetCallGraphProfile(true);
             options.SetInlinerThreshold(50);
             options.SetLoopVectorization(true);
@@ -131,6 +131,7 @@ public class LLVMContext
             var error = LLVM_Api.RunPasses(Module, str, TargetMachine, options);
 
             LLVM_Api.CantFail(error);
+            options.Dispose();
 
             TargetMachine.EmitToFile(
                 Module, outfile, LLVMCodeGenFileType.LLVMObjectFile);

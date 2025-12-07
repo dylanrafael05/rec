@@ -86,9 +86,9 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
         var type = new FunctionType
         {
             Parameters = [
+                ..Option.Nonnull(selfType),
                 ..from arg in context._Args
                     select CTX.Resolvers.Type.Visit(arg.typename()),
-                ..Option.Nonnull(selfType)
             ],
 
             Return = context.Ret is null
@@ -97,14 +97,14 @@ public class FunctionDeclarationsPass(RecContext ctx) : BasePass(ctx)
         };
 
         var argNames = (Identifier[])[
+            ..Option.If(selfType is not null, Identifier.Builtin.Self),
             ..from arg in context._Args
                 select arg.Identifier().TextAsIdentifier,
-            ..Option.If(selfType is not null, Identifier.Builtin.Self)
         ];
 
         var argSyntaxes = (IParseTree[])[
+            ..Option.Nonnull(context.fnSelfDefine()),
             ..context._Args,
-            ..Option.Nonnull(context.fnSelfDefine())
         ];
 
         // Define arguments in an anonymous inner scope

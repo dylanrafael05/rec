@@ -42,7 +42,7 @@ public class Scoped<T>(T init)
         public T Exit()
         {
             var cur = Current.Unwrap();
-            Current = Stack.Count is 0 ? Option.Some(Stack.Pop()) : Option.None;
+            Current = Stack.Count is 0 ? Option.None : Option.Some(Stack.Pop());
 
             return cur;
         }

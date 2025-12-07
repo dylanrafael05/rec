@@ -7,6 +7,10 @@ fn main()
 
     let x = Vector2::make(0.51, 0.0);
     let y = x.get_x().x;
+
+    /*
+        Test?
+    */
     
     if y == 0.0
     {

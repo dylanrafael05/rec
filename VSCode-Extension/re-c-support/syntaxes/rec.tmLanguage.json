@@ -7,6 +7,9 @@
 		},
 		{
 			"include": "#expressions"
+		},
+		{
+			"include": "#comments"
 		}
 	],
 	"repository": {
@@ -14,7 +17,7 @@
 			"patterns": [
 				{
 					"name": "keyword.rec",
-					"match": "\\b(var|let|end|if|else|while|fn|continue|break|defer|type|struct|template|new|return|for|mod|use|auto|self|and|not|or|true|false|as|cast|external)\\b"
+					"match": "\\b(var|let|end|if|else|while|fn|continue|break|defer|struct|return|for|mod|use|auto|self|and|not|or|true|false|as|cast|external)\\b"
 				},
 				{
 					"name": "entity.name.type.rec",
@@ -23,6 +26,19 @@
 				{
 					"name": "entity.name.class.rec",
 					"match": "\\b[A-Z]([A-Z]|[a-z]|[0-9]|_)*"
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.block",
+					"begin": "/\\*",
+					"end": "\\*/"
+				},
+				{
+					"name": "comment.line",
+					"match": "//.*"
 				}
 			]
 		},
@@ -41,7 +57,7 @@
 				},
 				{
 					"name": "constant.numeric.rec",
-					"match": "[0-9]+(\\.[0-9]+)?"
+					"match": "[0-9]+(\\.[0-9]+)?(f32|f64|(u|i)(8|16|32|64|size|z))?"
 				},
 				{
 					"name": "entity.name.rec",

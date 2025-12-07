@@ -6,7 +6,7 @@ public partial class IRGenerator
 {
     private ValueID GenerateVariable(VariableExpression context)
     {
-        var ptr = Function.VariableMappings.Get(context.Variable);
+        var ptr = GenerateVariableAsLHS(context);
         return Builder.Build(context, new InstructionKind.Load(ptr));
     }
 
