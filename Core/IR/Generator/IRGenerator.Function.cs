@@ -5,7 +5,7 @@ namespace Re.C.IR;
 
 public partial class IRGenerator
 {
-    private ValueID GenerateFunctionRef(FunctionExpression context)
+    private ValueRef GenerateFunctionRef(FunctionExpression context)
         => Builder.Build(RecType.Pointer(context.Type), context.Span, 
             new InstructionKind.FunctionLiteral(context.Function));
 }

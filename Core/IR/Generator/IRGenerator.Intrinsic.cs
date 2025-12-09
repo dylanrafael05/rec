@@ -4,7 +4,7 @@ namespace Re.C.IR;
 
 public partial class IRGenerator
 {
-    public ValueID GenerateLeakIntrinsic(IntrinsicExpression context)
+    public ValueRef GenerateLeakIntrinsic(IntrinsicExpression context)
     {
         if(context.Args is not [VariableExpression arg])
             return Builder.BuildError(context);
@@ -19,7 +19,7 @@ public partial class IRGenerator
         return leaked;
     }
 
-    public ValueID GenerateIntrinsic(IntrinsicExpression context)
+    public ValueRef GenerateIntrinsic(IntrinsicExpression context)
     {
         return context.Intrinsic switch
         {

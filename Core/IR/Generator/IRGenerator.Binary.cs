@@ -4,7 +4,7 @@ namespace Re.C.IR;
 
 public partial class IRGenerator
 {
-    private ValueID GenerateBinary(BinaryExpression context)
+    private ValueRef GenerateBinary(BinaryExpression context)
     {
         if(context.Operator is BinaryOperator.LogicAnd)
             return CompileAnd(context);
@@ -18,7 +18,7 @@ public partial class IRGenerator
         return Builder.Build(context, new InstructionKind.Binary(lhs, rhs, context.Operator));
     }
 
-    private ValueID CompileAnd(BinaryExpression context)
+    private ValueRef CompileAnd(BinaryExpression context)
     {
         // Compute the lhs value
         var lhs = Generate(context.LHS);
@@ -46,7 +46,7 @@ public partial class IRGenerator
             ]));
     }
     
-    private ValueID CompileOr(BinaryExpression context)
+    private ValueRef CompileOr(BinaryExpression context)
     {
         // Compute the lhs value
         var lhs = Generate(context.LHS);

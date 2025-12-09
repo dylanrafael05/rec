@@ -11,7 +11,7 @@ public partial class IRGenerator(RecContext CTX)
 
     public Scoped<LoopBlocks>.Optional Loops { get; } = new();
 
-    public void LinkVariable(Variable var, ValueID id)
+    public void LinkVariable(Variable var, ValueRef id)
     {
         Function.BindVariable(var, Builder.Build(
             RecType.Pointer(var.Type), 
@@ -118,7 +118,7 @@ public partial class IRGenerator(RecContext CTX)
     /// Compile an expression, returning the value associated with the result of the
     /// expression.
     /// </summary>
-    public ValueID Generate(Expression context)
+    public ValueRef Generate(Expression context)
     {
         return context switch
         {
@@ -152,7 +152,7 @@ public partial class IRGenerator(RecContext CTX)
     /// Compile an expression as though it were on the left hand side of
     /// an assignment operator. Returns the associated pointer value.
     /// </summary>
-    public ValueID GenerateAsLHS(Expression context)
+    public ValueRef GenerateAsLHS(Expression context)
     {
         return context switch
         {

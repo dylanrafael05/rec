@@ -4,7 +4,7 @@ namespace Re.C.IR;
 
 public partial class IRGenerator
 {
-    public ValueID GenerateSizeof(SizeofExpression context)
+    public ValueRef GenerateSizeof(SizeofExpression context)
     {
         return Builder.Build(context, new InstructionKind.Sizeof(context.Target));
     }

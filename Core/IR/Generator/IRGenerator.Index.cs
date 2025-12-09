@@ -5,14 +5,14 @@ namespace Re.C.IR;
 
 public partial class IRGenerator
 {
-    private ValueID GenerateIndex(IndexExpression context)
+    private ValueRef GenerateIndex(IndexExpression context)
     {
         var addr = GenerateIndexAsLHS(context);
         return Builder.Build(
             context, new InstructionKind.Load(addr));
     }
 
-    private ValueID GenerateIndexAsLHS(IndexExpression context)
+    private ValueRef GenerateIndexAsLHS(IndexExpression context)
     {
         return Builder.Build(
             RecType.Reference(context.Type), 

@@ -4,7 +4,7 @@ namespace Re.C.IR;
 
 public partial class IRGenerator
 {
-    private ValueID GenerateArray(ArrayExpression context)
+    private ValueRef GenerateArray(ArrayExpression context)
     {
         return Builder.Build(context, new InstructionKind.ArrayLiteral(ArrayConstruction.Direct([..
             from v in context.Values
@@ -12,7 +12,7 @@ public partial class IRGenerator
         ])));
     }
 
-    private ValueID GenerateArrayRepeat(ArrayRepeatExpression context)
+    private ValueRef GenerateArrayRepeat(ArrayRepeatExpression context)
     {
         return Builder.Build(context, new InstructionKind.ArrayLiteral(ArrayConstruction.Duplication(
             Generate(context.ValueToRepeat),
@@ -20,7 +20,7 @@ public partial class IRGenerator
         )));
     }
 
-    private ValueID GenerateArrayRaw(ArrayRawExpression context)
+    private ValueRef GenerateArrayRaw(ArrayRawExpression context)
     {
         return Builder.Build(context, new InstructionKind.ArrayLiteral(ArrayConstruction.Raw(
             Generate(context.Ptr),

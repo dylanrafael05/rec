@@ -4,9 +4,9 @@ namespace Re.C.IR;
 
 public partial class IRGenerator
 {
-    public ValueID GenerateStruct(StructExpression context)
+    public ValueRef GenerateStruct(StructExpression context)
     {
-        var fields = (ValueID[])[..
+        var fields = (ValueRef[])[..
             from f in context.Fields
             select Generate(f)
         ];

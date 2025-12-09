@@ -4,7 +4,7 @@ namespace Re.C.IR;
 
 public partial class IRGenerator
 {
-    public ValueID GenerateError(ErrorExpression context)
+    public ValueRef GenerateError(ErrorExpression context)
     {
         return Builder.BuildError(context);
     }

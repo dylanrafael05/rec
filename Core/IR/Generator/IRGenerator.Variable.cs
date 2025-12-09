@@ -4,16 +4,16 @@ namespace Re.C.IR;
 
 public partial class IRGenerator
 {
-    private ValueID GenerateVariable(VariableExpression context)
+    private ValueRef GenerateVariable(VariableExpression context)
     {
         var ptr = GenerateVariableAsLHS(context);
         return Builder.Build(context, new InstructionKind.Load(ptr));
     }
 
-    private ValueID GenerateVariableAsLHS(VariableExpression context)
+    private ValueRef GenerateVariableAsLHS(VariableExpression context)
     {
-        return Builder.BuildNoop(
-            context,
-            Function.VariableMappings.Get(context.Variable));
+        return ValueRef.WithSpan(
+            Function.VariableMappings.Get(context.Variable),
+            context.Span);
     }
 }

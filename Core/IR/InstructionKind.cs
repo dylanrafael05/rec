@@ -86,21 +86,6 @@ public abstract record InstructionKind
             values.Add(Index);
         }
     }
-
-    /// <summary>
-    /// "noop" is mostly used to signal that a no-op but meaningful operation has taken place,
-    /// like a cast from a pointer to a reference.
-    /// </summary>
-    public record Noop(ValueRef Value) : InstructionKind
-    {
-        public override string ToString()
-            => $"{Value}";
-
-        public override void GetArguments(IList<ValueRef> values)
-        {
-            values.Add(Value);
-        }
-    }
     
     /// <summary>
     /// "leak" is a special instruction which signals that the value returned by this

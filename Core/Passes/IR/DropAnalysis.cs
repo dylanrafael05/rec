@@ -21,11 +21,7 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
         var argInst = block.Function.InstructionByValue(value);
         var argType = throughPointer ? argInst.Type.Deref.Unwrap() : argInst.Type;
 
-        // Ignore leaked values entirely //
-        if(block.LeakedValues.Contains(value) || argType.TriviallyCopyable)
-            return;
-        
-        block.DropAtEnd.Remove(value);
+        var tcopyable = argType.TriviallyCopyable;
 
         // Throw error on use after move 
         // (note that it is illegal to move in a potentially recursive block)
@@ -35,7 +31,11 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
             if(!moved)
                 moveLocation = mover.Span;
 
-            if(block.CanRecurse || moved)
+            // NOTE; bug when using a reference to moved variable
+            // inside of a while loop. rework moved values system
+            // to be aware of 'named (via ptr)' vs 'unnamed (direct)' 
+            // values
+            if((block.CanRecurse && !tcopyable) || moved)
             {
                 CTX.Diagnostics.AddError(
                     mover.Span,
@@ -49,6 +49,12 @@ public class DropAnalysis(RecContext ctx) : IRPass(ctx)
                 return;
             }
         }
+
+        // Ignore leaked values entirely //
+        if(block.LeakedValues.Contains(value) || tcopyable)
+            return;
+        
+        block.DropAtEnd.Remove(value);
 
         // Mark as moved if not leaked and not copyable
         block.MovedValues.TryAdd(value, mover.Span);

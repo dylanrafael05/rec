@@ -4,10 +4,10 @@ namespace Re.C.IR;
 
 public partial class IRGenerator
 {
-    private ValueID GenerateAddrOf(AddressOfExpression context)
+    private ValueRef GenerateAddrOf(AddressOfExpression context)
         => GenerateAsLHS(context.Inner);
         
-    private ValueID GenerateTempAddrOf(TempAddressOfExpression context)
+    private ValueRef GenerateTempAddrOf(TempAddressOfExpression context)
     {
         if(context.Inner.HasAddress)
             return GenerateAsLHS(context.Inner);
@@ -16,12 +16,12 @@ public partial class IRGenerator
         return Builder.Build(context, new InstructionKind.Local(val));
     }
 
-    private ValueID GenerateDeref(DerefExpression context)
+    private ValueRef GenerateDeref(DerefExpression context)
     {
         var inner = Generate(context.Inner);
         return Builder.Build(context, new InstructionKind.Load(inner));
     }
 
-    private ValueID GenerateDerefAsLHS(DerefExpression context)
-        => Builder.BuildNoop(context, Generate(context.Inner));
+    private ValueRef GenerateDerefAsLHS(DerefExpression context)
+        => ValueRef.WithSpan(Generate(context.Inner), context.Span);
 }

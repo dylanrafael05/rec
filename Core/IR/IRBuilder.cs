@@ -34,7 +34,7 @@ public class IRBuilder(RecContext CTX)
     /// <summary>
     /// Build an instruction, panicking if the current block is complete.
     /// </summary>
-    public ValueID Build(RecType type, SourceSpan span, InstructionKind kind)
+    public ValueRef Build(RecType type, SourceSpan span, InstructionKind kind)
     {
         if(CurrentBlockIsComplete && (
             CurrentIndex == CurrentBlock.UnwrapNull().InstructionCount + 1
@@ -48,16 +48,7 @@ public class IRBuilder(RecContext CTX)
         return CurrentBlock.UnwrapNull().InsertInstruction(CurrentIndex++, instruction);
     }
 
-    public ValueID BuildNoop(BoundSyntax expr, ValueID inner)
-    {
-        var innerInstruction = CurrentBlock.UnwrapNull().Function.InstructionByValue(inner);
-        return Build(
-            innerInstruction.Type,
-            expr.Span,
-            new InstructionKind.Noop(inner));
-    }
-
-    public ValueID BuildError(BoundSyntax expr)
+    public ValueRef BuildError(BoundSyntax expr)
     {
         return Build(CTX.BuiltinTypes.Error, expr.Span, new InstructionKind.Error());
     }
@@ -65,7 +56,7 @@ public class IRBuilder(RecContext CTX)
     /// <summary>
     /// Build an instruction, panicking if the current block is complete.
     /// </summary>
-    public ValueID Build(BoundSyntax expr, InstructionKind kind)
+    public ValueRef Build(BoundSyntax expr, InstructionKind kind)
     {
         return Build(
             expr.As<Expression>().Map(static x => x.Type).Or(CTX.BuiltinTypes.None), 
@@ -102,7 +93,7 @@ public class IRBuilder(RecContext CTX)
     /// Attempts to build an instruction if the current block is not already complete.
     /// Returns the associated value id if instruction was successfully built.
     /// </summary>
-    public Option<ValueID> TryBuildInst(RecType type, SourceSpan span, InstructionKind kind)
+    public Option<ValueRef> TryBuildInst(RecType type, SourceSpan span, InstructionKind kind)
     {
         if(CurrentBlockIsComplete)
             return Option.None;

@@ -18,4 +18,9 @@ public readonly struct ValueRef(ValueID value, Option<SourceSpan> referenceSpan)
 
     public static implicit operator ValueID(ValueRef self)
         => self.Value;
+    public static implicit operator ValueRef(ValueID self)
+        => new(self, Option.None);
+
+    public static ValueRef WithSpan(ValueID value, SourceSpan span)
+        => new(value, Option.Some(span));
 }

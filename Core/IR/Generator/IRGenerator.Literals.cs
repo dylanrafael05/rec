@@ -4,12 +4,12 @@ namespace Re.C.IR;
 
 public partial class IRGenerator
 {
-    private ValueID GenerateInt(IntLiteral context)
+    private ValueRef GenerateInt(IntLiteral context)
         => Builder.Build(context, new InstructionKind.IntLiteral(context.Value));
 
-    private ValueID GenerateFloat(FloatLiteral context)
+    private ValueRef GenerateFloat(FloatLiteral context)
         => Builder.Build(context, new InstructionKind.FloatLiteral(context.Value));
     
-    private ValueID GenerateString(StringLiteral context)
+    private ValueRef GenerateString(StringLiteral context)
         => Builder.Build(context, new InstructionKind.StringLiteral(context.Value));
 }

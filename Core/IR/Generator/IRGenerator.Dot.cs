@@ -4,7 +4,7 @@ namespace Re.C.IR;
 
 public partial class IRGenerator
 {
-    public ValueID GenerateDot(DotExpression context)
+    public ValueRef GenerateDot(DotExpression context)
     {
         if(context.Field.IsStruct(out var index))
         {
@@ -35,7 +35,7 @@ public partial class IRGenerator
         throw Unreachable;
     }
 
-    public ValueID GenerateDotAsLHS(DotExpression context)
+    public ValueRef GenerateDotAsLHS(DotExpression context)
     {
         var ptr = GenerateAsLHS(context.Inner);
         return Builder.Build(context, 

@@ -5,9 +5,9 @@ namespace Re.C.IR;
 
 public partial class IRGenerator
 {
-    private ValueID GenerateCall(CallExpression context)
+    private ValueRef GenerateCall(CallExpression context)
     {
-        var args = (ValueID[])[..
+        var args = (ValueRef[])[..
             from arg in context.Args select Generate(arg)
         ];
 

@@ -5,6 +5,7 @@ fn main() i32
     let a = String::from("Hello, ");
     let b = String::from("World!");
     let c = a;
+    let d = c;
 
     c.then(b&).print();
 
