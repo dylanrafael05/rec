@@ -89,7 +89,7 @@ public partial class CodeGenerator
             // Comparison operators //
             BinaryOperator.CompEq => (t1, t2) switch
             {
-                ({ IsInteger: true } or { IsBool: true } or PointerType, _)
+                ({ IsInteger: true } or { IsBool: true } or PointerType or { IsEnum: true }, _)
                     => b.BuildICmp(LLVMIntPredicate.LLVMIntEQ, lhs, rhs),
                     
                 ({ IsFloat: true }, _)
@@ -100,7 +100,7 @@ public partial class CodeGenerator
 
             BinaryOperator.CompNe => (t1, t2) switch
             {
-                ({ IsInteger: true } or { IsBool: true } or PointerType, _)
+                ({ IsInteger: true } or { IsBool: true } or PointerType or { IsEnum: true }, _)
                     => b.BuildICmp(LLVMIntPredicate.LLVMIntNE, lhs, rhs),
                     
                 ({ IsFloat: true }, _)
@@ -111,7 +111,7 @@ public partial class CodeGenerator
             
             BinaryOperator.CompLe => (t1, t2) switch
             {
-                ({ IsInteger: true, IsSigned: false } or { IsBool: true } or PointerType, _)
+                ({ IsInteger: true, IsSigned: false } or { IsBool: true } or PointerType or { IsEnum: true }, _)
                     => b.BuildICmp(LLVMIntPredicate.LLVMIntULT, lhs, rhs),
                     
                 ({ IsInteger: true, IsSigned: true }, _)
@@ -125,7 +125,7 @@ public partial class CodeGenerator
             
             BinaryOperator.CompLEq => (t1, t2) switch
             {
-                ({ IsInteger: true, IsSigned: false } or { IsBool: true } or PointerType, _)
+                ({ IsInteger: true, IsSigned: false } or { IsBool: true } or PointerType or { IsEnum: true }, _)
                     => b.BuildICmp(LLVMIntPredicate.LLVMIntULE, lhs, rhs),
                     
                 ({ IsInteger: true, IsSigned: true }, _)
@@ -139,7 +139,7 @@ public partial class CodeGenerator
             
             BinaryOperator.CompGr => (t1, t2) switch
             {
-                ({ IsInteger: true, IsSigned: false } or { IsBool: true } or PointerType, _)
+                ({ IsInteger: true, IsSigned: false } or { IsBool: true } or PointerType or { IsEnum: true }, _)
                     => b.BuildICmp(LLVMIntPredicate.LLVMIntUGT, lhs, rhs),
                     
                 ({ IsInteger: true, IsSigned: true }, _)
@@ -153,7 +153,7 @@ public partial class CodeGenerator
             
             BinaryOperator.CompGEq => (t1, t2) switch
             {
-                ({ IsInteger: true, IsSigned: false } or { IsBool: true } or PointerType, _)
+                ({ IsInteger: true, IsSigned: false } or { IsBool: true } or PointerType or { IsEnum: true }, _)
                     => b.BuildICmp(LLVMIntPredicate.LLVMIntUGT, lhs, rhs),
                     
                 ({ IsInteger: true, IsSigned: true }, _)

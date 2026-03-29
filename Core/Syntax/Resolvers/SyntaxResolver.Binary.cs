@@ -105,7 +105,7 @@ public partial class SyntaxResolver
                     context, op,
                     static (CTX, op, lhs, rhs, ref result, ref error) =>
                     {
-                        if (lhs == rhs && (lhs is PointerType || lhs.IsPrimitive))
+                        if (lhs == rhs && (lhs is PointerType || lhs.IsPrimitive || lhs.IsEnum))
                         {
                             result = CTX.BuiltinTypes.Bool;
                             return true;
@@ -122,7 +122,7 @@ public partial class SyntaxResolver
                     context, op,
                     static (CTX, op, lhs, rhs, ref result, ref error) =>
                     {
-                        if (lhs == rhs && (lhs is PointerType || lhs.IsArithmetic))
+                        if (lhs == rhs && (lhs is PointerType || lhs.IsArithmetic || lhs.IsEnum))
                         {
                             result = CTX.BuiltinTypes.Bool;
                             return true;
