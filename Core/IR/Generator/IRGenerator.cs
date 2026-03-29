@@ -129,6 +129,7 @@ public partial class IRGenerator(RecContext CTX)
             FunctionExpression x => GenerateFunctionRef(x),
             BinaryExpression x => GenerateBinary(x),
             VariableExpression x => GenerateVariable(x),
+            EnumExpression x => GenerateEnum(x),
             UnaryExpression x => GenerateUnary(x),
             CastExpression x => GenerateCast(x),
             DerefExpression x => GenerateDeref(x),

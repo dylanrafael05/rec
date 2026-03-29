@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,15 +8,72 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DiscriminatedUnion;
 
-/// <summary>
-/// A generator which creates a discriminated union-like interface
-/// wrapping around OneOf
-/// </summary>
-[Generator]
-public class Generator : IIncrementalGenerator
+public record Union(string Name, ITypeSymbol DefiningType, Case[] Cases);
+public record Field(Case Case, string Name, ITypeSymbol FieldType);
+public record Case(Union Union, string Name, ITypeSymbol DefiningType, Field[] Fields);
+public record FieldStorage(int Index, ITypeSymbol Type);
+
+public record UnionStorage(
+    Dictionary<Field, FieldStorage> FieldMap, 
+    Dictionary<ITypeSymbol, int> FieldCounts);
+
+public class UnionStorageBuilder
+{
+    private Dictionary<ITypeSymbol, int> Counts { get; set; } = [];
+    private Dictionary<ITypeSymbol, int> CurrentIndices { get; } = [];
+
+    public static UnionStorage BuildFor(Union union)
+    {
+        var builder = new UnionStorageBuilder();
+        var map = (Dictionary<Field, FieldStorage>)[];
+
+        foreach(var c in union.Cases)
+        {
+            builder.StartNewCase();
+
+            foreach(var f in c.Fields)
+                map.Add(f, builder.Request(f.FieldType));
+        }
+
+        return new(map, builder.Counts);
+    }
+
+    private void StartNewCase()
+    {
+        CurrentIndices.Clear();
+    }
+
+    private FieldStorage Request(ITypeSymbol typeSymbol)
+    {
+        if(typeSymbol.IsReferenceType)
+        {
+            // Get a type symbol for 'object'
+            // Im sure there's a better way to do this but oh well
+            while(typeSymbol.SpecialType is not SpecialType.System_Object)
+                typeSymbol = typeSymbol.BaseType;
+        }
+
+        if(!CurrentIndices.ContainsKey(typeSymbol))
+            CurrentIndices[typeSymbol] = 0;
+
+        var index = CurrentIndices[typeSymbol];
+        CurrentIndices[typeSymbol]++;
+        
+        if(!Counts.ContainsKey(typeSymbol))
+            Counts[typeSymbol] = 0;
+        
+        Counts[typeSymbol] = Math.Max(
+            Counts[typeSymbol], CurrentIndices[typeSymbol] + 1);
+
+        return new FieldStorage(index, typeSymbol);
+    }
+}
+
+// [Generator]
+public class GeneratorV2 : IIncrementalGenerator
 {
     public const string Attribute = "DiscriminatedUnionAttribute";
-    public const string AttributeNamespace = "Re.C";
+    public const string AttributeNamespace = "DUnions";
 
     public const string DUSource = @$"
 
@@ -33,7 +90,7 @@ namespace {AttributeNamespace}
 
     public static DiagnosticDescriptor NotMeetingSpec => new("DU001", 
         title: "DU must meet spec",
-        messageFormat: "Discriminated union types must be top-level partial record",
+        messageFormat: "Discriminated union types must be top-level partial class or struct",
         category: "DiscriminatedUnion",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -80,7 +137,7 @@ namespace {AttributeNamespace}
 
         var attributeLoc = symbol.Locations.FirstOrDefault() ?? Location.None;
 
-        if(!symbol.IsRecord
+        if(symbol.IsRecord
         || !syntax.Modifiers.Any(SyntaxKind.PartialKeyword) 
         || symbol.ContainingType is not null)
         {
@@ -106,6 +163,8 @@ namespace {AttributeNamespace}
             ctx.ReportDiagnostic(Diagnostic.Create(AtLeastOneCase, attributeLoc));
             return;
         }
+
+
 
         var oneOfArgs = CSV( 
             from ty in constituentTypes select ty.ToDisplayString());

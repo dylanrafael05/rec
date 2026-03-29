@@ -23,11 +23,19 @@ public abstract class RecType : IEquatable<RecType>, IVisitable
     /// </summary>
     [FieldOption(PrintLevel.Verbose)] 
     public virtual bool IsSigned => false;
+    
+    /// <summary>
+    /// Return if this type is an enumeration type.
+    /// </summary>
+    [FieldOption(PrintLevel.Verbose)] 
+    public virtual bool IsEnum => false;
+
     /// <summary>
     /// Return if this type is a builtin integer type.
     /// </summary>
     [FieldOption(PrintLevel.Verbose)] 
     public virtual bool IsInteger => false;
+
     /// <summary>
     /// Return the minimum possible bit-depth of the maximum
     /// value storage in this integer type, or none if this
@@ -47,6 +55,7 @@ public abstract class RecType : IEquatable<RecType>, IVisitable
     /// </summary>
     [FieldOption(PrintLevel.Verbose)] 
     public virtual bool IsPrimitive => false;
+
     /// <summary>
     /// Return if this type is an arithmetic (float or integer) type.
     /// </summary>

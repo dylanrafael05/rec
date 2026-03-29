@@ -12,6 +12,9 @@ public partial class CodeGenerator
 
         var t1 = CurrentFunction.InstructionByValue(cast.Value).Type;
         var t2 = inst.Type;
+        
+        if(t1.IsEnum) t1 = CTX.ReC.BuiltinTypes.I32;
+        if(t2.IsEnum) t2 = CTX.ReC.BuiltinTypes.I32;
 
         var b = CTX.Builder;
 

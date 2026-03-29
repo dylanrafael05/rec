@@ -7,7 +7,7 @@ fn main() i32
     let c = a;
     let d = c;
 
-    c.then(b&).print();
+    d.then(b&).print();
 
     return 0;
 }

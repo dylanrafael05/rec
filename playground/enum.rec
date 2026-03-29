@@ -1,0 +1,18 @@
+enum Weekday
+{
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+    Sunday
+}
+
+
+fn main() i32
+{
+    let monday = Weekday::Sunday - 1;
+
+    return monday cast(i32);
+}

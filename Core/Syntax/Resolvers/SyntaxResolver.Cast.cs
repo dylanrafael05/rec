@@ -20,7 +20,9 @@ public partial class SyntaxResolver
 
         return (from, to) is
             (PointerType, PointerType) or
-            ({ IsArithmetic: true }, { IsArithmetic: true });
+            ({ IsArithmetic: true }, { IsArithmetic: true }) or
+            ({ IsEnum: true }, { IsInteger: true }) or
+            ({ IsInteger: true }, { IsEnum: true });
     }
 
     public override BoundSyntax VisitCastExpression([NotNull] RecParser.CastExpressionContext context)

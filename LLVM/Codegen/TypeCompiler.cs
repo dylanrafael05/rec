@@ -26,6 +26,7 @@ public class TypeCompiler(LLVMContext ctx)
             NoneType => CTX.LLVM.VoidType,
             PointerType => LLVMTypeRef.CreatePointer(CTX.LLVM.VoidType, 0),
             ReferenceType => LLVMTypeRef.CreatePointer(CTX.LLVM.VoidType, 0),
+            EnumType => CTX.LLVM.Int32Type,
 
             // Complex to compile types
             ArrayType a => ImplementCompileArray(a),

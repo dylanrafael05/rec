@@ -64,4 +64,31 @@ public class TypeDeclarationsPass(RecContext ctx) : BasePass(ctx)
 
         return default;
     }
+
+    public override Unit VisitEnumDefine([NotNull] RecParser.EnumDefineContext context)
+    {
+        var span = context.CalculateSourceSpan();
+
+        var innerScope = new Scope
+        {
+            Identifier = Identifier.None,
+            Parent = CTX.Scopes.Current,
+            DefinitionLocation = span,
+            CTX = CTX
+        };
+
+        var def = new EnumType
+        {
+            Identifier = context.Identifier().TextAsIdentifier,
+            DefinitionLocation = span,
+            InnerScope = innerScope
+        };
+
+        CTX.Scopes.Current.DefineOrDiagnose(span, def);
+        context.DefinedEnum = def;
+
+        CTX.TypeAssociations.AddUnnamed(def, innerScope);
+
+        return default;
+    }
 }

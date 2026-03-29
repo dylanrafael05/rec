@@ -44,6 +44,15 @@ public partial class SyntaxResolver
                 Function = fn
             };
         }
+        else if (defn is EnumMember em)
+        {
+            return new EnumExpression
+            {
+                Span = span,
+                Type = em.Type,
+                Member = em
+            };
+        }
         
         CTX.Diagnostics.AddError(span, Errors.ReferenceToNonValueDefinition(defn));
         

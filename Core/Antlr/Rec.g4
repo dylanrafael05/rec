@@ -41,6 +41,7 @@ Continue : 'continue';
 Break    : 'break';
 Defer    : 'defer';
 Struct   : 'struct';
+Enum     : 'enum';
 Template : 'template';
 Return   : 'return';
 For      : 'for';
@@ -96,6 +97,7 @@ program
 topLevelStatement
     : fnDefine
     | { !InAsBlock }? structDefine
+    | { !InAsBlock }? enumDefine
     | { !InAsBlock }? letStatement
     | { !InAsBlock }? modStatement
     | { !InAsBlock }? asStatement
@@ -160,6 +162,20 @@ locals [
     : Struct Name=Identifier templateDef? '{' 
         (Fields+=structFieldDefine ',' )*
         (Fields+=structFieldDefine ','?)?
+      '}'
+    ;
+
+enumMemberDefine
+    : Name=Identifier ('=' Integer)?
+    ;
+
+enumDefine
+locals [
+    Re.C.Types.EnumType DefinedEnum = null
+]
+    : Enum Name=Identifier '{'
+        (Members+=enumMemberDefine ',' )*
+        (Members+=enumMemberDefine ','?)?
       '}'
     ;
 

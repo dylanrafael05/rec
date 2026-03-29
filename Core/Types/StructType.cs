@@ -1,3 +1,5 @@
+using Re.C.Definitions;
+
 namespace Re.C.Types;
 
 public class StructType : NamedType, IStructlikeDefinition
@@ -26,7 +28,7 @@ public class StructType : NamedType, IStructlikeDefinition
     public void SetBody(Field[] fields)
     {
         if (this.fields is not null)
-            throw Panic("Attepmt to set the body of a struct more than once.");
+            throw Panic("Attempt to set the body of a struct more than once.");
 
         this.fields = fields;
     }
